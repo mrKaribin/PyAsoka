@@ -1,0 +1,75 @@
+
+17-05-2021 15:56:17 :: Database connected from "filesystem.db"
+17-05-2021 15:56:17 :: Database connected from "filesystem.db"
+17-05-2021 15:56:17 :: Database connected from "filesystem.db"
+17-05-2021 15:56:17 :: Database connected from "filesystem.db"
+17-05-2021 16:35:39 :: Database connected from "filesystem.db"
+17-05-2021 16:35:39 :: Database connected from "filesystem.db"
+17-05-2021 16:35:39 :: Database connected from "filesystem.db"
+17-05-2021 16:40:08 :: Database connected from "filesystem.db"
+17-05-2021 16:40:08 :: Database connected from "filesystem.db"
+17-05-2021 16:40:08 :: Database connected from "filesystem.db"
+17-05-2021 16:44:28 :: Database connected from ""
+17-05-2021 16:44:28 :: Database connected from ""
+17-05-2021 16:44:28 :: Database connected from "filesystem.db"
+17-05-2021 16:44:28 :: ERROR !!! SQL execute exception (no such table: locations) with: INSERT INTO locations (country, city) VALUES("Россия", "Санкт-Петербург");
+17-05-2021 16:45:54 :: Database connected from ""
+17-05-2021 16:45:54 :: Database connected from ""
+17-05-2021 16:45:54 :: Database connected from "filesystem.db"
+17-05-2021 16:45:54 :: ERROR !!! SQL execute exception (no such table: locations) with: INSERT INTO locations (country, city) VALUES("Россия", "Санкт-Петербург");
+17-05-2021 16:45:54 :: Database connected from "filesystem.db"
+17-05-2021 16:45:54 :: ERROR !!! SQL execute exception (no such table: profiles) with: INSERT INTO profiles (name, age, male, location) VALUES("Демьян", 20, True, 'from tester import Location 
+new_obj = Location(-1)');
+17-05-2021 16:53:14 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:53:14 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:53:14 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:53:14 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:53:14 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:53:53 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:57:26 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:57:26 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:57:26 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:57:26 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:57:26 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:59:00 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:59:00 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:59:00 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:59:00 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 16:59:00 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 17:00:18 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 17:00:18 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 17:00:18 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 17:00:18 :: ERROR !!! Type.loadField(): ошибка получения данных
+17-05-2021 17:00:18 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:14:29 :: ERROR !!! SQL execute exception (1 values for 2 columns) with: INSERT INTO locations (country, city) VALUES("Санкт-Петербург");
+18-05-2021 17:14:30 :: ERROR !!! SQL execute exception (table profiles has no column named numericons) with: INSERT INTO profiles (name, age, male, location, numericons) VALUES("Демьян", 10, True, '{"id": -1, "generator": "from tester import Location \nnew_obj = Location()"}', '{"ids": [-1, -1, -1, -1, -1], "generator": "from tester import Numbericon \nnew_obj = Numbericon()"}');
+18-05-2021 17:14:30 :: ERROR !!! Type.load(): пустой результат SQL запроса
+18-05-2021 17:14:30 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:14:30 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:14:30 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:14:30 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:17:20 :: ERROR !!! SQL execute exception (1 values for 2 columns) with: INSERT INTO locations (country, city) VALUES("Санкт-Петербург");
+18-05-2021 17:19:03 :: ERROR !!! SQL execute exception (1 values for 2 columns) with: INSERT INTO locations (country, city) VALUES("Санкт-Петербург");
+18-05-2021 17:20:08 :: ERROR !!! SQL execute exception (1 values for 2 columns) with: INSERT INTO locations (country, city) VALUES("Санкт-Петербург");
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:20:08 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:21:37 :: ERROR !!! SQL execute exception (1 values for 2 columns) with: INSERT INTO locations (country, city) VALUES("Санкт-Петербург");
+18-05-2021 17:41:13 :: ERROR !!! SQL execute exception (1 values for 2 columns) with: INSERT INTO locations (country, city) VALUES("Санкт-Петербург");
+18-05-2021 17:41:13 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:41:13 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:54:33 :: ERROR !!! SQL execute exception (1 values for 2 columns) with: INSERT INTO locations (country, city) VALUES("Санкт-Петербург");
+18-05-2021 17:54:33 :: ERROR !!! Type.loadField(): ошибка получения данных
+18-05-2021 17:54:33 :: ERROR !!! Type.loadField(): ошибка получения данных
