@@ -1,4 +1,3 @@
-from PyAsoka.Connections.AEvent import AEvent
 from enum import Enum, auto
 
 
@@ -13,7 +12,7 @@ class AConnector:
 
     def __init__(self, callback, process_name: str = None, call_type=None, _type=None):
         from PyAsoka.Processing.AProcess import AProcess
-        from PyAsoka.Id import Id
+        from PyAsoka.Core.Id import Id
 
         if _type is None:
             _type = AConnector.Type.DEFAULT

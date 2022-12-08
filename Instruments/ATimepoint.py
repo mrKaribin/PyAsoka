@@ -1,4 +1,4 @@
-from PyAsoka.Instruments import Log
+from PyAsoka.Debug.Logs import Logs
 
 from datetime import datetime, timedelta, timezone
 from enum import Enum, auto
@@ -30,7 +30,7 @@ class ATimepoint:
         elif isinstance(other, int):
             timepoint.fromTimedelta(self.toTimedelta() + timedelta(seconds=other))
         else:
-            Log.exception_unsupportable_type(type(other))
+            Logs.exception_unsupportable_type(type(other))
         return timepoint
 
     def __sub__(self, other):
@@ -42,7 +42,7 @@ class ATimepoint:
         elif isinstance(other, int):
             timepoint.fromTimedelta(self.toTimedelta() - timedelta(seconds=other))
         else:
-            Log.exception_unsupportable_type(type(other))
+            Logs.exception_unsupportable_type(type(other))
         return timepoint
 
     def set(self, year: int = -1, month: int = -1, day: int = -1,
@@ -123,7 +123,7 @@ class ATimepoint:
             self._second_ = timepoint.second()
             self._timezone_ = timepoint.timezone()
         else:
-            Log.exception_unsupportable_type(type(timepoint))
+            Logs.exception_unsupportable_type(type(timepoint))
 
     def fromDatetime(self, timepoint):
         if issubclass(type(timepoint), datetime):
@@ -135,7 +135,7 @@ class ATimepoint:
             self._second_ = timepoint.second
             self._timezone_ = 3
         else:
-            Log.exception_unsupportable_type(type(timepoint))
+            Logs.exception_unsupportable_type(type(timepoint))
 
     def fromTimedelta(self, tdelta: timedelta):
         if isinstance(tdelta, timedelta):
@@ -147,7 +147,7 @@ class ATimepoint:
             if tdelta.days < 0 and self._day_ == 1:
                 self._day_ = 0
         else:
-            Log.exception_unsupportable_type(type(tdelta))
+            Logs.exception_unsupportable_type(type(tdelta))
 
     def toDatetime(self):
         return datetime(self.year() if self._year_ > 0 else 1,

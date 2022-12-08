@@ -18,7 +18,7 @@ class AEvent:
         AI = auto()
 
     def __init__(self, name: str = 'custom_event', type: Type = Type.CUSTOM):
-        from PyAsoka.Id import Id
+        from PyAsoka.Core.Id import Id
 
         self.id = Id()
         # print(f'New event with id = {self.id()}')
@@ -31,7 +31,6 @@ class AEvent:
 
     def connect(self, slot, _type=None, call_type=None):
         from PyAsoka import asoka as a
-        from PyAsoka.Connections.AConnector import AConnector
         a.connect(self, slot, call_type=call_type)
         return self
 

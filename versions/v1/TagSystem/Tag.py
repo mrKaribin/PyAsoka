@@ -1,8 +1,8 @@
 from PyAsoka.Instruments import Log
-from PyAsoka.Instruments.AType import AType, ADatabaseProfile, DatabaseType
+from PyAsoka.Core.AModel import AModel, DatabaseType
 
 
-class Tag(AType):
+class Tag(AModel):
 
     def __init__(self, id=None, name=None):
         super(Tag, self).__init__(self.DBProfile, self.DBTableName)

@@ -5,9 +5,9 @@ import threading
 import multiprocessing
 import time
 
-from PyAsoka.Id import Id
+from PyAsoka.Core.Id import Id
 from PyAsoka.Processing.ConnectorsManager import ConnectorsProcessManager
-from PyAsoka.Processing.InterfaceManager import InterfaceManager, Interface
+from PyAsoka.Processing.InterfaceManager import InterfaceManager
 from multiprocessing.connection import Connection
 from enum import Enum, auto
 
@@ -136,7 +136,6 @@ class AProcess:
             Log.warning(f'Не удалось создать новый процесс из процесса {multiprocessing.current_process().name}. AProcess не инициализирован в текущем процессе')
 
     def __init__(self, core_channel, proc_type):
-        from PyAsoka.Connections.AConnector import AConnector
         self.name = multiprocessing.current_process().name
         self.type = proc_type
         self.core = ProcessCutaway('', None, AProcess.Type.CORE)

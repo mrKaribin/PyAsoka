@@ -1,8 +1,8 @@
-from PyAsoka.Instruments.AType import AType, ADatabaseProfile, DatabaseType
+from PyAsoka.Core.AModel import AModel, DatabaseType
 from PyAsoka.Instruments import Log
 
 
-class TagLink(AType):
+class TagLink(AModel):
 
     def __init__(self, id=None, tag_id=None, obj_id=None):
         super(TagLink, self).__init__(self.DBProfile, self.DBTableName)

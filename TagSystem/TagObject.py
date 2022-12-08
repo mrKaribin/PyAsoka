@@ -1,7 +1,7 @@
-from PyAsoka.Instruments.AType import AType, DatabaseType
+from PyAsoka.Core.AModel import AModel, DatabaseType
 
 
-class TagObject(AType):
+class TagObject(AModel):
     def __init__(self, id=None, reference=None):
         super(TagObject, self).__init__(self.DBProfile, self.DBTableName)
 
