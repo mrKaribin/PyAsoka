@@ -1,10 +1,10 @@
-import PyAsoka.asoka as a
+import PyAsoka.Asoka as a
 
 from PyAsoka.GUI.Widgets.AWidget import AWidget, QPaintEvent, QPoint, QSize, QRect
 from PyAsoka.GUI.Widgets.ATextView import ATextView
 from PyAsoka.GUI.Widgets.AIconView import AIconView
 from PyAsoka.GUI.Widgets.AImageView import AImageView
-from PyAsoka.GUI.Styles import Styles, AStyle, AColor
+from PyAsoka.GUI.Styles import Styles, Style, Color
 
 from PySide6.QtCore import Qt, Property
 from PySide6.QtGui import QColor, QPainter, QPen, QBrush

@@ -1,10 +1,10 @@
-from PyAsoka.Core.AModel import AModel, DatabaseType
+from PyAsoka.Core.Model import Model, DatabaseType
 from PyAsoka.Instruments.AFile import File as OsFile
 from PyAsoka.TagSystem.TagObject import TagObject
 from PyAsoka.Instruments import Log
 
 
-class File(AModel):
+class File(Model):
 
     def __init__(self, id=None, name=None, data=None, format=None):
         super(File, self).__init__(self.DBProfile, 'Files')

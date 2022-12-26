@@ -1,29 +1,29 @@
 from PyAsoka.Debug.Logs import Logs
 from PyAsoka.Debug.Tester import UnitTester
-from PyAsoka.Core.AModel import AModel, model
+from PyAsoka.Core.Model import model, ModelConfiguration, ADatabaseProfile, DatabaseType
 
 
 class ModelTester(UnitTester):
-    database = AModel.DatabaseProfile(AModel.DatabaseType.SQLITE, 'tests.db')
+    database = ADatabaseProfile(DatabaseType.SQLITE, 'tests.db')
 
     def modelsSimpleTest(self):
         Logs.message('Models simple test')
 
         @model
-        class Person(AModel):
-            settings = AModel.createSettings(self.database, 'Person')
-            name = settings.StrField().NOT_NULL()
-            age = settings.IntField().NOT_NULL()
-            sex = settings.BoolField().NOT_NULL()
+        class Person:
+            conf = ModelConfiguration(self.database, 'Person')
+            name = conf.StrField().NOT_NULL()
+            age = conf.IntField().NOT_NULL()
+            sex = conf.BoolField().NOT_NULL()
 
         person = Person.instance(name='Денчик', age=23, sex=True)
         person.save()
         pid = person.id
-        print(person)
+        # print(person)
 
         person = Person.instance(id=pid).load()
         self.breakPoint(person.name == 'Денчик' and person.age == 23 and person.sex is True)
-        print(person)
+        # print(person)
 
         person.name = 'Василиса'
         person.sex = False
@@ -31,20 +31,20 @@ class ModelTester(UnitTester):
 
         person = Person.instance(id=pid).load()
         self.breakPoint(person.name == 'Василиса' and person.age == 23 and person.sex is False)
-        print(person)
+        # print(person)
         person.delete()
 
     def modelsForeignKeyTest(self):
 
         @model
-        class Chat(AModel):
-            settings = AModel.createSettings(self.database, 'Chat')
-            name = settings.StrField()
-            info = settings.StrField()
+        class Chat:
+            conf = ModelConfiguration(self.database, 'Chat')
+            name = conf.StrField()
+            info = conf.StrField()
 
         @model
-        class Talker(AModel):
-            settings = AModel.createSettings(self.database, 'Talker')
+        class Talker:
+            settings = ModelConfiguration(self.database, 'Talker')
             name = settings.StrField()
             priority = settings.IntField()
 

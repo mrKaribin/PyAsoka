@@ -78,18 +78,18 @@ class AWord:
 
     @staticmethod
     def create(word, params):
-        from PyAsoka.Core.Linguistics.ANoun import ANoun
-        from PyAsoka.Core.Linguistics.AVerb import AVerb
-        from PyAsoka.Core.Linguistics.AAdjective import AAdjective
+        from PyAsoka.Core.Linguistics.Noun import Noun
+        from PyAsoka.Core.Linguistics.Verb import Verb
+        from PyAsoka.Core.Linguistics.Adjective import Adjective
         part = AWord.PartOfSpeech
 
         # print(params)
         if params.tag.POS in part.to_pymorphy2(part.NOUN):
-            return ANoun(word, params)
+            return Noun(word, params)
         elif params.tag.POS in part.to_pymorphy2(part.VERB):
-            return AVerb(word, params)
+            return Verb(word, params)
         elif params.tag.POS in part.to_pymorphy2(part.ADJECTIVE):
-            return AAdjective(word, params)
+            return Adjective(word, params)
         else:
             return AWord(word, params)
 

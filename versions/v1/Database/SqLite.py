@@ -134,9 +134,9 @@ class SqLite:
 
         @staticmethod
         def toSqlType(datatype):
-            from PyAsoka.Core.AModel import AModel
+            from PyAsoka.Core.Model import Model
 
-            if datatype in (int, bool) or issubclass(datatype, AModel):
+            if datatype in (int, bool) or issubclass(datatype, Model):
                 return 'INTEGER'
             elif datatype == float:
                 return 'FLOAT'

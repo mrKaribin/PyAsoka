@@ -44,9 +44,15 @@ class Logs:
             Logs.write(text, preline, postline)
 
     @staticmethod
+    def success(text, preline: bool = False, postline: bool = False):
+        if Logs.level <= Logs.Levels.WARNINGS:
+            text = f'\033[32m{text}\033[0m'
+            Logs.write(text, preline, postline)
+
+    @staticmethod
     def warning(text, preline: bool = False, postline: bool = False):
         if Logs.level <= Logs.Levels.WARNINGS:
-            text = f'\033[33mWARNING: {text}\033[0m'
+            text = f'\033[33m{text}\033[0m'
             Logs.write(text, preline, postline)
 
     @staticmethod
@@ -54,12 +60,4 @@ class Logs:
         if Logs.level <= Logs.Levels.ERRORS:
             text = f'\033[31mERROR: {text}\033[0m'
             Logs.write(text, preline, postline)
-
-    @staticmethod
-    def exception_unsupportable_type(*values):
-        text = f'Получен некорректный тип данных: '
-        for value in values:
-            text += f' {type(value)}'
-        Logs.error(text)
-        raise Exception(text)
 

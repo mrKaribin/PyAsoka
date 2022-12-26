@@ -1,14 +1,14 @@
 import subprocess
 
-from PyAsoka.Environment.BuildParameters import BuildParameters
-from PyAsoka.Environment.Module import Package
+from PyAsoka.Environment.Builder import Builder
+from PyAsoka.Environment.Package import Package
 
 
 class SystemEnvironment:
     @staticmethod
     def check(package: Package):
-        if package.params.architecture == BuildParameters.Architecture.LINUX \
-                and package.params.system == BuildParameters.System.MANJARO:
+        if package.params.architecture == Builder.Architecture.LINUX \
+                and package.params.system == Builder.System.MANJARO:
             script = f'pacman -Q {package.name}'
             if package.version is not None:
                 script += f'={package.version}'
@@ -19,7 +19,7 @@ class SystemEnvironment:
     def install_script(package: Package):
         script = ''
         arch, sys = package.params.architecture, package.params.system
-        Arch, Sys = BuildParameters.Architecture, BuildParameters.System
+        Arch, Sys = Builder.Architecture, Builder.System
 
         if arch == Arch.LINUX and sys == Sys.MANJARO:
             if package.version is not None:

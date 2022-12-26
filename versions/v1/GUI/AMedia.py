@@ -1,6 +1,6 @@
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyAsoka.GUI.Widgets.AVideo import AVideo
-from PyAsoka.Connections.ASignal import ASignal
+from PyAsoka.Connections.Signal import Signal
 
 
 class AMedia:
@@ -11,8 +11,8 @@ class AMedia:
         self._position_ = 0
         self._volume_ = 0
 
-        self.position_changed = ASignal(int)
-        self.media_changed = ASignal()
+        self.position_changed = Signal(int)
+        self.media_changed = Signal()
 
         self._player_.setAudioOutput(self._audio_)
         self._player_.positionChanged.connect(self.position_changed)

@@ -1,4 +1,4 @@
-import PyAsoka.asoka as a
+import PyAsoka.Asoka as a
 import PyAsoka.Instruments.Log as Log
 import pymorphy2
 
@@ -100,7 +100,7 @@ def _parse_phrase_(regex: str, phrases: list = []):
 
 def _parse_word_(scheme: str):
     global analyzer
-    from PyAsoka.Core.Linguistics.APhraseModel import AWordModel, AWord, ANoun, AVerb
+    from PyAsoka.Core.Linguistics.APhraseModel import AWordModel, Word, Noun, Verb
     if scheme.find('{') != -1:
         word, args = scheme.split('{')
     else:
@@ -122,31 +122,31 @@ def _parse_word_(scheme: str):
         'p': {
             'value': None,
             'states': {
-                'verb': AWord.PartOfSpeech.VERB,
-                'noun': AWord.PartOfSpeech.NOUN,
-                'adj': AWord.PartOfSpeech.ADJECTIVE,
-                'pron': AWord.PartOfSpeech.PRONOUN,
-                'adv': AWord.PartOfSpeech.ADVERB,
-                'num': AWord.PartOfSpeech.NUMERAL
+                'verb': Word.PartOfSpeech.VERB,
+                'noun': Word.PartOfSpeech.NOUN,
+                'adj': Word.PartOfSpeech.ADJECTIVE,
+                'pron': Word.PartOfSpeech.PRONOUN,
+                'adv': Word.PartOfSpeech.ADVERB,
+                'num': Word.PartOfSpeech.NUMERAL
             }
         },
         'c': {
             'value': [],
             'states': {
-                'nom': ANoun.Case.NOMINATIVE,
-                'gen': ANoun.Case.GENITIVE,
-                'dat': ANoun.Case.DATIVE,
-                'acc': ANoun.Case.ACCUSATIVE,
-                'ins': ANoun.Case.INSTRUMENTAL,
-                'pre': ANoun.Case.PREPOSITIONAL
+                'nom': Noun.Case.NOMINATIVE,
+                'gen': Noun.Case.GENITIVE,
+                'dat': Noun.Case.DATIVE,
+                'acc': Noun.Case.ACCUSATIVE,
+                'ins': Noun.Case.INSTRUMENTAL,
+                'pre': Noun.Case.PREPOSITIONAL
             }
         },
         't': {
             'value': [],
             'states': {
-                'pst': AVerb.Tense.PAST,
-                'prs': AVerb.Tense.PRESENT,
-                'ftr': AVerb.Tense.FUTURE
+                'pst': Verb.Tense.PAST,
+                'prs': Verb.Tense.PRESENT,
+                'ftr': Verb.Tense.FUTURE
             }
         }
     })

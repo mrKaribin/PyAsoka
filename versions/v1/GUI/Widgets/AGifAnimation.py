@@ -13,7 +13,7 @@ class AGifAnimation(AWidget):
         self.looped = looped
 
         # signals
-        self.ended = ASignal(AGifAnimation)
+        self.ended = Signal(AGifAnimation)
 
         # prepare
         self.gif.start()

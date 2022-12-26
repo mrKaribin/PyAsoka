@@ -251,7 +251,7 @@ class AType:
 
     @classmethod
     def databaseSettings(cls, database_name, database_type: DatabaseType, table_name, database_password=None):
-        from PyAsoka import asoka as a
+        from PyAsoka import Asoka as a
         cls.DBName = database_name
         cls.DBTableName = table_name
         if database_password is None:

@@ -2,9 +2,9 @@ from PySide6.QtGui import QColor, QPainter, QPen, QBrush
 from PySide6.QtGui import QPaintEvent, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, Property, QPoint, QRect, QSize
-from PyAsoka.GUI.Styles import Styles, AStyle, AColor
+from PyAsoka.GUI.Styles import Styles, Style, Color
 from PyAsoka.GUI.Screen import Screen
-from PyAsoka.Connections.ASignal import ASignal
+from PyAsoka.Connections.Signal import Signal
 from PyAsoka.Instruments.AnimationManager import AnimationManager, Animation
 
 from threading import Timer
@@ -59,7 +59,7 @@ class AWidget(QWidget):
         DEFAULT = 'LOADING'
 
     def __init__(self, parent: QWidget = None, movable: bool = False, clickable: bool = False, keyboard: bool = False,
-                 geometry: tuple = None, style: AStyle = None, animated: bool = True, with_super: bool = True,
+                 geometry: tuple = None, style: Style = None, animated: bool = True, with_super: bool = True,
                  frame_size: int = 2, round_size: int = 20):
         if with_super:
             super().__init__(parent)
@@ -69,7 +69,7 @@ class AWidget(QWidget):
 
         # public
         self.style = (Styles.window() if parent is None else Styles.widget()) if style is None else style
-        self.colors = AStyle(self.style)
+        self.colors = Style(self.style)
         self.states = AWidgetStateManager()\
             .add(self.State.PREPARATION, self.renderLoader) \
             .add(self.State.DEFAULT, self.renderBackground)
@@ -91,9 +91,9 @@ class AWidget(QWidget):
         self._initialization_timer_ = Timer(0.05, self.__preparation__)
 
         # signals
-        self.clicked = ASignal(QWidget)
-        self.resized = ASignal(QRect)
-        self.destroyed = ASignal(QWidget)
+        self.clicked = Signal(QWidget)
+        self.resized = Signal(QRect)
+        self.destroyed = Signal(QWidget)
 
         # class preparation
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
@@ -142,8 +142,8 @@ class AWidget(QWidget):
     def setColor(self, color: QColor, value: QColor, duration=None, anim_type=Animation.Type.QUEUE, autorun=True):
         if duration is not None:
             animation = Animation(color, b'color')
-            animation.setStartValue(color.color if isinstance(color, AColor) else color)
-            animation.setEndValue(value.color if isinstance(color, AColor) else value)
+            animation.setStartValue(color.color if isinstance(color, Color) else color)
+            animation.setEndValue(value.color if isinstance(color, Color) else value)
             animation.setDuration(duration)
             if autorun:
                 self._animations_color_.add(animation, anim_type)
@@ -261,7 +261,7 @@ class AWidget(QWidget):
 
     def enterEvent(self, event):
         if self.animated and self.parent() is None and self.style.background is not None and self.style.background.alpha() < 255:
-            color = AColor(self.colors.background)
+            color = Color(self.colors.background)
             color.setAlpha(255)
             self.setColor(self.colors.background, color, 200, Animation.Type.PARALLEL)
 

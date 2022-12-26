@@ -1,9 +1,9 @@
-from PyAsoka.Environment.Module import Package
-from PyAsoka.Environment.BuildParameters import BuildParameters
+from PyAsoka.Environment.Package import Package
+from PyAsoka.Environment.Builder import Builder
 
 
 class Fitting:
-    def __init__(self, params: BuildParameters):
+    def __init__(self, params: Builder):
         self.params = params
         self.packages = []
 

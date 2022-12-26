@@ -70,7 +70,7 @@ class AVoice:
                     self.phrases.remove(phrase)
                     speed = self.default_speed
 
-                    if phrase.voice_set.engine != self.voice_set.engine:
+                    if phrase.voice_set._engine_ != self.voice_set.engine:
                         self.voice_set = phrase.voice_set
                         self.__update_voice_set__()
 

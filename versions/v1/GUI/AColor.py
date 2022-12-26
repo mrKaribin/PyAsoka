@@ -1,6 +1,6 @@
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QObject, Property
-from PyAsoka.Connections.ASignal import ASignal
+from PyAsoka.Connections.Signal import Signal
 
 
 class AColor(QColor, QObject):
@@ -8,7 +8,7 @@ class AColor(QColor, QObject):
         super().__init__()
         QObject.__init__(self, None)
 
-        self.changed = ASignal()
+        self.changed = Signal()
 
         if isinstance(r, QColor) or isinstance(r, AColor):
             color = r

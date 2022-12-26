@@ -30,11 +30,11 @@ class AEvent:
         AProcess.current_process.connect_to(self.id, args, kwargs)
 
     def connect(self, slot, _type=None, call_type=None):
-        from PyAsoka import asoka as a
+        from PyAsoka import Asoka as a
         a.connect(self, slot, call_type=call_type)
         return self
 
     def disconnect(self):
-        from PyAsoka import asoka as a
+        from PyAsoka import Asoka as a
         a.disconnect(self.id, None)
 

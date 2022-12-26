@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from PySide6.QtCore import QPropertyAnimation
 
-from PyAsoka.Connections.ASignal import ASignal
+from PyAsoka.Connections.Signal import Signal
 
 
 class Animation(QPropertyAnimation):
@@ -12,7 +12,7 @@ class Animation(QPropertyAnimation):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.ended = ASignal(Animation)
+        self.ended = Signal(Animation)
         self.finished.connect(lambda: self.ended(self))
 
     def timeRemaining(self):

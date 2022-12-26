@@ -1,10 +1,11 @@
-from PyAsoka.Environment.Fitting import Fitting
-from PyAsoka.Environment.Module import Package
-from PyAsoka.Environment.BuildParameters import BuildParameters as Params
+from PyAsoka.Environment.Fit import Fit
+from PyAsoka.Environment.Package import Package
+from PyAsoka.Environment.Builder import Builder as Params
 
 
 params = Params(Params.Architecture.LINUX, Params.System.MANJARO)
-fit = Fitting(params).addPackage(Package(params, Package.Type.SYSTEM, 'python', '3.10.5-1'))\
+fit = Fit(params)\
+    .addPackage(Package(params, Package.Type.SYSTEM, 'python', '3.10.5-1'))\
     .addPackage(Package(params, Package.Type.SYSTEM, 'rhvoice', '1.8.0-1'))\
     .addPackage(Package(params, Package.Type.SYSTEM, 'scons', '4.3.0-3'))\
     .addPackage(Package(params, Package.Type.SYSTEM, 'gcc', '12.1.0-2'))\

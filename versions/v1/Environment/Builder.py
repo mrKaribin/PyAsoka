@@ -1,12 +1,12 @@
-from PyAsoka.Environment.BuildParameters import BuildParameters
-from PyAsoka.Environment.Module import Package
+from PyAsoka.Environment.Builder import Builder
+from PyAsoka.Environment.Package import Package
 from PyAsoka.Instruments.AFile import File
 
 
 class Builder:
     def __init__(self, path: str = None):
         self.path = path
-        self.params = BuildParameters(path)
+        self.params = Builder(path)
         self.script = ''
 
     def install_system_modules(self):

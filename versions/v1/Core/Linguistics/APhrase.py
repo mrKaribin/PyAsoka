@@ -1,15 +1,15 @@
-from PyAsoka.Core.Linguistics.AWord import AWord
+from PyAsoka.Core.Linguistics.Word import Word
 
 
 class APhrase:
     def __init__(self, words: list):
         self.words = words
 
-    def __add__(self, other: AWord):
+    def __add__(self, other: Word):
         self.words.append(other)
         return self
 
-    def __sub__(self, other: AWord):
+    def __sub__(self, other: Word):
         self.words.remove(other)
         return self
 
@@ -19,7 +19,7 @@ class APhrase:
     def string(self):
         result = ''
         for word in self.words:
-            result += word.string + ' '
+            result += word.text + ' '
         return result.strip()
 
     def __contains__(self, item):

@@ -1,9 +1,9 @@
 from copy import copy
 from enum import Enum, auto
 
-import PyAsoka.asoka as a
+import PyAsoka.Asoka as a
 from PyAsoka.Core.Linguistics.AWordModel import *
-from PyAsoka.Core.Linguistics.APhrase import APhrase
+from PyAsoka.Core.Linguistics.Phrase import Phrase
 
 
 class APhraseModel:
@@ -31,7 +31,7 @@ class APhraseModel:
 
     def __eq__(self, _phrase):
         phrase = copy(_phrase)
-        if isinstance(phrase, APhrase):
+        if isinstance(phrase, Phrase):
             self.coincidences = []
             t = APhraseModel.Type
 
@@ -57,9 +57,9 @@ class APhraseModel:
                                 else:
                                     return False
 
-                            fragment = APhrase(phrase.words[i + shift: i + shift + interval])
+                            fragment = Phrase(phrase.words[i + shift: i + shift + interval])
                             condition = self.components[i] == fragment
-                            print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
+                            print(f'Comparing component and {[word.text for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **self.components[i].keys}
                                 self.coincidences = [*self.coincidences, *self.components[i].coincidences]
@@ -88,14 +88,14 @@ class APhraseModel:
 
                         elif isinstance(component, APhraseModel):
                             if length + i <= len(phrase.words):
-                                fragment = APhrase(phrase.words[i: i + length])
+                                fragment = Phrase(phrase.words[i: i + length])
                             elif component.type in (t.CHOICE, t.OPTIONS):
-                                fragment = APhrase(phrase.words[i: len(phrase.words)])
+                                fragment = Phrase(phrase.words[i: len(phrase.words)])
                             else:
                                 return False
 
                             condition = component == fragment
-                            print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
+                            print(f'Comparing component and {[word.text for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **component.keys}
                                 self.coincidences = [*self.coincidences, *component.coincidences]
@@ -124,14 +124,14 @@ class APhraseModel:
                         length = component.words_count()
                         for i in range(len(phrase.words) - length + 1):
                             if length + i <= len(phrase.words):
-                                fragment = APhrase(phrase.words[i: i + length])
+                                fragment = Phrase(phrase.words[i: i + length])
                             elif component.type in (t.CHOICE, t.OPTIONS):
-                                fragment = APhrase(phrase.words[i: len(phrase.words)])
+                                fragment = Phrase(phrase.words[i: len(phrase.words)])
                             else:
                                 return False
 
                             condition = component == fragment
-                            print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
+                            print(f'Comparing component and {[word.text for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **component.keys}
                                 self.coincidences = [*self.coincidences, *component.coincidences]
@@ -146,7 +146,7 @@ class APhraseModel:
         return not self.__eq__(other)
 
     def contained(self, phrase):
-        if isinstance(phrase, APhrase):
+        if isinstance(phrase, Phrase):
             pass  # ToDo
         else:
             raise ValueError(f'Не верный тип для поверки принадлежности с APhraseModel: {type(phrase)}')

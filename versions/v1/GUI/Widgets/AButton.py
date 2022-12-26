@@ -1,7 +1,7 @@
 from PyAsoka.GUI.Widgets.AWidget import AnimationManager
 from PyAsoka.GUI.Widgets.ATextView import ATextView
 from PyAsoka.GUI.Styles import Styles, Colors
-from PyAsoka.GUI.AColor import AColor
+from PyAsoka.GUI.Color import Color
 
 
 class AButton(ATextView):
@@ -20,7 +20,7 @@ class AButton(ATextView):
     def enterEvent(self, event):
         self._animations_color_.clear()
         color = self.colors.background
-        self.setColor(color, AColor(color.red() - 10, color.green() - 10, color.blue() - 10, color.alpha()), 150)
+        self.setColor(color, Color(color.red() - 10, color.green() - 10, color.blue() - 10, color.alpha()), 150)
 
     def leaveEvent(self, event):
         self.setColor(self.colors.background, self.style.background, 150)

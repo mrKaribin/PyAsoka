@@ -1,7 +1,7 @@
 from PyAsoka.GUI.Widgets.AWidget import AWidget, Qt, QPaintEvent, QPoint, QSize, QRect, QPen, QBrush, Qt
 from PyAsoka.GUI.Widgets.AMatrixMenu.AMatrixMenuScene import AMatrixMenuScene, AMatrixMenuUnit, AMatrixMenuButton
 from PyAsoka.Instruments.Menu import Menu, Element, Button
-from PyAsoka.GUI.Styles import Styles, AColor
+from PyAsoka.GUI.Styles import Styles, Color
 from PyAsoka.GUI.API import API
 
 from PySide6.QtGui import QKeyEvent

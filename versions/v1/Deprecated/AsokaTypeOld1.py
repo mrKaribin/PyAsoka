@@ -1,6 +1,6 @@
 import os
 import json
-import PyAsoka.asoka as asoka
+import PyAsoka.Asoka as asoka
 from PyAsoka.Instruments import Log
 from PyAsoka.Database.SqLite import SqLite as Database
 

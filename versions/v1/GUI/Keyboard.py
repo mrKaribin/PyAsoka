@@ -1,6 +1,6 @@
 from pynput import keyboard
 
-from PyAsoka.Connections.ASignal import ASignal
+from PyAsoka.Connections.Signal import Signal
 
 
 class State:
@@ -38,8 +38,8 @@ class Keyboard:
         self.controller = keyboard.Controller()
         self.state = State()
         self.listener.start()
-        self.pressed = ASignal(keyboard.Key)
-        self.released = ASignal(keyboard.Key)
+        self.pressed = Signal(keyboard.Key)
+        self.released = Signal(keyboard.Key)
 
     def __on_press__(self, key):
         self.pressed(key)

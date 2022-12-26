@@ -1,9 +1,9 @@
 from PyAsoka.GUI.Widgets.AWidget import AWidget, Styles, QPaintEvent, QPoint, QSize, QRect, QPainter, QPen, QBrush, \
-    AColor, Qt, QResizeEvent
+    Color, Qt, QResizeEvent
 from PyAsoka.GUI.Widgets.AIconView import AIconView
 from PyAsoka.GUI.Widgets.ATextView import ATextView
-from PyAsoka.Connections.ASignal import ASignal
-import PyAsoka.asoka as a
+from PyAsoka.Connections.Signal import Signal
+import PyAsoka.Asoka as a
 import os
 
 from PySide6.QtMultimediaWidgets import QVideoWidget
@@ -27,9 +27,9 @@ class VideoPanel(AWidget):
         self.vol.setFixedSize(50, 50)
 
         self.pause.clicked.bind(self.pause_clicked)
-        self.volume_changed = ASignal(int)
-        self.paused = ASignal()
-        self.played = ASignal()
+        self.volume_changed = Signal(int)
+        self.paused = Signal()
+        self.played = Signal()
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         self.__set_volume__(self.volume + event.pixelDelta().y() // 120 * 5)
@@ -60,7 +60,7 @@ class Video(QVideoWidget):
     def __init__(self, *args, **kwargs):
         super(Video, self).__init__(*args, **kwargs)
 
-        self.scrolled = ASignal(int)
+        self.scrolled = Signal(int)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         self.scrolled(event.pixelDelta().y() // 120)
@@ -96,7 +96,7 @@ class AVideo(AWidget):
         painter.setRenderHint(QPainter.Antialiasing)
 
         painter.setPen(QPen(self.colors.frame, self._frame_size_))
-        painter.setBrush(QBrush(AColor(0, 0, 0, 255)))
+        painter.setBrush(QBrush(Color(0, 0, 0, 255)))
         painter.drawRoundedRect(QRect(
             QPoint(indent, indent),
             QSize(self.size().width() - indent * 2, self.size().height() - indent * 2)

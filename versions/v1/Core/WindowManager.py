@@ -1,13 +1,13 @@
-from PyAsoka.Connections.ASignal import ASignal
-from PyAsoka.Connections.ASlot import ASlot
+from PyAsoka.Connections.Signal import Signal
+from PyAsoka.Connections.Slot import Slot
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import QObject
 
 
 class WindowManager(QObject):
     windows = []
-    win_create = ASignal(type, list, tuple)
-    gui_connect = ASignal(ASlot, list, tuple)
+    win_create = Signal(type, list, tuple)
+    gui_connect = Signal(Slot, list, tuple)
 
     def __init__(self, *args):
         super().__init__(*args)

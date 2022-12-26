@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from PyAsoka.Environment.BuildParameters import BuildParameters
+from PyAsoka.Environment.Builder import Builder
 
 
 class Package:
@@ -10,7 +10,7 @@ class Package:
         PYTHON = auto()
         CUSTOM = auto()
 
-    def __init__(self, params: BuildParameters, _type, name, version: str = None, in_package: bool = True, script=None):
+    def __init__(self, params: Builder, _type, name, version: str = None, in_package: bool = True, script=None):
         self.params = params
         self.type = _type
         self.name = name

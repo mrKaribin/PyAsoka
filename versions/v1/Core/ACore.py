@@ -153,7 +153,7 @@ class ACore(AProcess):
         # self.listening_start()
         while self.active:
             phrase = self.recognition.listen()
-            text = phrase.string()
+            text = phrase.text()
             if text == self.voice.last_phrase:
                 continue
 
@@ -181,16 +181,16 @@ class ACore(AProcess):
 
     def listening_start(self):
         if self.listening_timer is not None:
-            self.listening_timer.cancel()
+            self.listening_timer._cancel_()
         self.listening = True
         self.listening_timer = Timer(self.listening_duration, self.listening_stop)
         self.listening_timer.start()
-        self.dialog.listening(True)
+        self.dialog._listening_(True)
 
     def listening_stop(self):
         self.listening = False
         self.listening_timer = None
-        self.dialog.listening(False)
+        self.dialog._listening_(False)
 
     def connections(self):
         while self.active:

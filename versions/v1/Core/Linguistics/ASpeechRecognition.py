@@ -1,9 +1,9 @@
 import struct
 
-from PyAsoka.Core.Linguistics.APhrase import APhrase
-from PyAsoka.Core.Linguistics.AWord import AWord
+from PyAsoka.Core.Linguistics.Phrase import Phrase
+from PyAsoka.Core.Linguistics.Word import Word
 from vosk import Model, KaldiRecognizer, SetLogLevel
-import PyAsoka.asoka as a
+import PyAsoka.Asoka as a
 import os, pyaudio, pymorphy2, json
 
 from PyAsoka.Instruments.Stopwatch import Stopwatch
@@ -43,13 +43,13 @@ class ASpeechRecognition:
                 if answer["text"]:
                     # print(f'Listened with {timer.finish()}s')
                     text = answer['text'].split(' ')
-                    _phrase = APhrase([])
+                    _phrase = Phrase([])
                     timer.start()
                     # print('Parsing... ', end='')
                     for word in text:
                         params = self.analyzer.parse(word)
                         params = params[0]
-                        _phrase += AWord.create(word, params)
+                        _phrase += Word.create(word, params)
                     # print(f'ok with {timer.finish()}s')
                     return _phrase
             else:

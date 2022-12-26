@@ -1,13 +1,13 @@
-from PyAsoka.GUI.Widgets.AWidget import AWidget, QPaintEvent, QColor, Styles, AStyle, QMouseEvent
+from PyAsoka.GUI.Widgets.AWidget import AWidget, QPaintEvent, QColor, Styles, Style, QMouseEvent
 from PyAsoka.GUI.API import API
 from PyAsoka.GUI.Widgets.ALabelWidget import ALabelWidget
-from PyAsoka.Connections.ASignal import ASignal
+from PyAsoka.Connections.Signal import Signal
 
 from PySide6.QtWidgets import QLabel, QLineEdit
 
 
 class ALineEdit(ALabelWidget):
-    def __init__(self, text: str = '', style: AStyle = Styles.widget(), **kwargs):
+    def __init__(self, text: str = '', style: Style = Styles.widget(), **kwargs):
         super().__init__(QLineEdit, text=text, style=style, keyboard=True, round_size=15, **kwargs)
 
         # class preparation
@@ -17,8 +17,8 @@ class ALineEdit(ALabelWidget):
 
         self._label_.textChanged.connect(self.__textChanged__)
         API.Keyboard.pressed.bind(self.__keyboard_listener__)
-        self.text_changed = ASignal(str)
-        self.enter_pressed = ASignal(str)
+        self.text_changed = Signal(str)
+        self.enter_pressed = Signal(str)
 
     def setTextSize(self, size: int):
         super().setTextSize(size)

@@ -1,9 +1,9 @@
-from PyAsoka.Core.AModel import AModel, ADatabaseProfile, DatabaseType
+from PyAsoka.Core.Model import Model, ADatabaseProfile, DatabaseType
 
 import random
 
 
-class Params(AModel):
+class Params(Model):
     def __init__(self):
         super(Params, self).__init__(ADatabaseProfile(DatabaseType.SQLITE, 'tests.db', 'admin', 'password'), 'Parameters')
 
@@ -15,7 +15,7 @@ class Params(AModel):
         self.initialization()
 
 
-class People(AModel):
+class People(Model):
     def __init__(self):
         super(People, self).__init__(ADatabaseProfile(DatabaseType.SQLITE, 'tests.db', 'admin', 'password'), 'People')
 

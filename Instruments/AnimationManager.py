@@ -1,4 +1,4 @@
-from PyAsoka.Instruments.Animation import Animation, QPropertyAnimation, ASignal
+from PyAsoka.Instruments.Animation import Animation, QPropertyAnimation, Signal
 from PySide6.QtCore import QObject
 
 
@@ -13,8 +13,8 @@ class AnimationManager(QObject):
         self.parallel_is_run = False
 
         # signals
-        self.ended_queue = ASignal(AnimationManager)
-        self.ended_parallel = ASignal(AnimationManager)
+        self.ended_queue = Signal(AnimationManager)
+        self.ended_parallel = Signal(AnimationManager)
 
     def timeRemaining(self):
         time = 0

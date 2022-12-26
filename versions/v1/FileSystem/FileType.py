@@ -1,7 +1,7 @@
-import PyAsoka.asoka as a
+import PyAsoka.Asoka as a
 
 from PyAsoka.FileSystem.File import File
-from PyAsoka.GUI.Imports import AWidget
+from PyAsoka.GUI.Types import AWidget
 from PyAsoka.Processing.AProcess import AProcess, Headers, ProcessMessage
 from PyAsoka.Instruments.AFile import File as OsFile
 

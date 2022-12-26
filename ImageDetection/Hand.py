@@ -4,7 +4,7 @@ import mediapipe as mp
 
 from enum import Enum, auto
 from PyAsoka.Maths.Geometry.APoint import APoint as Point
-from PyAsoka.Connections.ASignal import ASignal
+from PyAsoka.Connections.Signal import Signal
 from PySide6.QtCore import QObject
 
 
@@ -162,11 +162,11 @@ class Hand(QObject, HandData):
         self.cursor_delta = None
         self.last_cursor_position = None
 
-        self.moved = ASignal(float, float)
-        self.scrolled = ASignal(float, float)
-        self.clicked = ASignal(Point)
-        self.pressed = ASignal(Point)
-        self.released = ASignal(Point)
+        self.moved = Signal(float, float)
+        self.scrolled = Signal(float, float)
+        self.clicked = Signal(Point)
+        self.pressed = Signal(Point)
+        self.released = Signal(Point)
 
     def update(self, hand: HandData):
         landmarks = hand.landmarks

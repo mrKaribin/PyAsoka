@@ -1,4 +1,4 @@
-import PyAsoka.asoka as a
+import PyAsoka.Asoka as a
 
 class
 

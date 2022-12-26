@@ -1,4 +1,4 @@
-import PyAsoka.asoka as a
+import PyAsoka.Asoka as a
 import PyAsoka.Instruments.Log as Log
 
 import threading

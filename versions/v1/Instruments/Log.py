@@ -1,5 +1,5 @@
 import datetime
-import PyAsoka.asoka as a
+import PyAsoka.Asoka as a
 
 
 def write(text, newline: bool = False):
