@@ -4,7 +4,7 @@ import threading
 from enum import Enum
 from PyAsoka.Instruments import Log
 from PyAsoka.Instruments.ATimepoint import ATimepoint
-from PyAsoka.Database.ADatabaseTable import ADatabaseProfile
+from PyAsoka.Database.ADatabaseTable import DatabaseProfile
 
 
 def dict_factory(cursor, row):
@@ -22,7 +22,7 @@ class SqLite:
     cursor = None
 
     @staticmethod
-    def connect(profile: ADatabaseProfile):
+    def connect(profile: DatabaseProfile):
         if SqLite.profile is None or SqLite.profile != profile or threading.current_thread().native_id != SqLite.thread_id:
             SqLite.profile = profile
             SqLite.connection = None
@@ -134,7 +134,7 @@ class SqLite:
 
         @staticmethod
         def toSqlType(datatype):
-            from PyAsoka.Core.Model import Model
+            from PyAsoka.src.MVC.Model.Model import Model
 
             if datatype in (int, bool) or issubclass(datatype, Model):
                 return 'INTEGER'
@@ -263,7 +263,7 @@ class SqLite:
             SqLite.execute(f'DELETE FROM {self.table.name} WHERE {where};')
 
     class Table:
-        def __init__(self, profile: ADatabaseProfile, name, columns=None, references=None):
+        def __init__(self, profile: DatabaseProfile, name, columns=None, references=None):
             if references is None:
                 references = []
             if columns is None:

@@ -1,4 +1,4 @@
-from PyAsoka.Core.Model import Model, DatabaseType
+from PyAsoka.src.MVC.Model.Model import Model, DatabaseType
 from PyAsoka.Instruments.AFile import File as OsFile
 from PyAsoka.TagSystem.TagObject import TagObject
 from PyAsoka.Instruments import Log

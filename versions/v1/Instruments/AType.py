@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from PyAsoka.Instruments import Log
 from PyAsoka.Instruments.ATimepoint import ATimepoint
-from PyAsoka.Database.ADatabaseProfile import ADatabaseProfile, DatabaseType
+from PyAsoka.Database.DatabaseProfile import DatabaseProfile, DatabaseType
 
 
 class AField:
@@ -132,9 +132,9 @@ class AField:
 class AType:
     DBName = ''
     DBTableName = ''
-    DBProfile = ADatabaseProfile(DatabaseType.SQLITE, DBName, 'root', '')
+    DBProfile = DatabaseProfile(DatabaseType.SQLITE, DBName, 'root', '')
 
-    def __init__(self, profile: ADatabaseProfile, table_name):
+    def __init__(self, profile: DatabaseProfile, table_name):
         self.database = profile.getDriver()
         self.table = self.database.Table(profile, table_name)
         self.fields = []
@@ -256,4 +256,4 @@ class AType:
         cls.DBTableName = table_name
         if database_password is None:
             database_password = a.getDatabasePassword(database_name)
-        cls.DBProfile = ADatabaseProfile(database_type, cls.DBName, 'root', database_password)
+        cls.DBProfile = DatabaseProfile(database_type, cls.DBName, 'root', database_password)

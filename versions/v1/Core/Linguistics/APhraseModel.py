@@ -1,9 +1,8 @@
 from copy import copy
 from enum import Enum, auto
 
-import PyAsoka.Asoka as a
-from PyAsoka.Core.Linguistics.AWordModel import *
-from PyAsoka.Core.Linguistics.Phrase import Phrase
+from PyAsoka.src.Linguistics.AWordModel import *
+from PyAsoka.src.Linguistics.Phrase import Phrase
 
 
 class APhraseModel:
@@ -15,7 +14,7 @@ class APhraseModel:
 
     @staticmethod
     def parse(regex: str):
-        import PyAsoka.Core.Linguistics.APhraseModelParser as Parser
+        import PyAsoka.src.Linguistics.APhraseModelParser as Parser
         return Parser.parse(regex)
 
     def __init__(self, _type: Type):

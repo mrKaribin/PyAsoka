@@ -1,4 +1,4 @@
-from PyAsoka.Core.Linguistics.Word import Word
+from PyAsoka.src.Linguistics.Word import Word
 
 
 class APhrase:
@@ -23,6 +23,6 @@ class APhrase:
         return result.strip()
 
     def __contains__(self, item):
-        from PyAsoka.Core.Linguistics.APhraseModel import APhraseModel
+        from PyAsoka.src.Linguistics.APhraseModel import APhraseModel
         if isinstance(item, APhraseModel):
             pass  # ToDo

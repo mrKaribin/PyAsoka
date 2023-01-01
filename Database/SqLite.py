@@ -1,10 +1,9 @@
 import sqlite3
 import sqlite3 as sql
 import threading
-from enum import Enum
-from PyAsoka.Debug.Logs import Logs
+from PyAsoka.src.Debug.Logs import Logs
 from PyAsoka.Instruments.ATimepoint import ATimepoint
-from PyAsoka.Database.ADatabaseTable import ADatabaseProfile
+from PyAsoka.Database.ADatabaseTable import DatabaseProfile
 
 
 def dict_factory(cursor, row):
@@ -22,7 +21,7 @@ class SqLite:
     cursor = None
 
     @staticmethod
-    def connect(profile: ADatabaseProfile):
+    def connect(profile: DatabaseProfile):
         if SqLite.profile is None or SqLite.profile != profile or threading.current_thread().native_id != SqLite.thread_id:
             SqLite.profile = profile
             SqLite.connection = None
@@ -41,7 +40,7 @@ class SqLite:
     def execute(query, params=None):
         try:
             if isinstance(SqLite.cursor, sqlite3.Cursor):
-                # Logs.message(query)
+                Logs.message(query)
                 if params is None:
                     SqLite.cursor.execute(query)
                 else:
@@ -134,7 +133,7 @@ class SqLite:
 
         @staticmethod
         def toSqlType(datatype):
-            from PyAsoka.Core.Model import ModelContainer
+            from PyAsoka.src.MVC.Model.Model import ModelContainer
             if datatype == int or issubclass(datatype, ModelContainer):
                 return 'INTEGER'
             elif datatype == bool:
@@ -149,46 +148,15 @@ class SqLite:
                 Logs.exception_unsupportable_type(datatype)
 
     class Reference:
-        class Mode(Enum):
-            CASCADE = 'CASCADE'
-            SET_NULL = 'SET NULL'
-            RESTRICT = 'RESTRICT'
-            NO_ACTION = 'NO ACTION'
-            SET_DEFAULT = 'SET DEFAULT'
-
-        def __init__(self, key, table, column):
-            self.key = key
-            self.table = table
+        def __init__(self, column, ref_table, ref_column, on_update, on_delete):
             self.column = column
-            self._on_update_ = None
-            self._on_delete_ = None
-
-        def ON_UPDATE_CASCADE(self):
-            self._on_update_ = 'CASCADE'
-
-        def ON_UPDATE_RESTRICT(self):
-            self._on_update_ = 'CASCADE'
-
-        def ON_UPDATE_SET_NULL(self):
-            self._on_update_ = 'SET NULL'
-
-        def ON_UPDATE_SET_DEFAULT(self):
-            self._on_update_ = 'SET DEFAULT'
-
-        def ON_DELETE_CASCADE(self):
-            self._on_delete_ = 'CASCADE'
-
-        def ON_DELETE_RESTRICT(self):
-            self._on_delete_ = 'CASCADE'
-
-        def ON_DELETE_SET_NULL(self):
-            self._on_delete_ = 'SET NULL'
-
-        def ON_DELETE_SET_DEFAULT(self):
-            self._on_delete_ = 'SET DEFAULT'
+            self.ref_table = ref_table
+            self.ref_column = ref_column
+            self.on_update = on_update
+            self.on_delete = on_delete
 
     class Table:
-        def __init__(self, profile: ADatabaseProfile, name, columns=None, references=None):
+        def __init__(self, profile: DatabaseProfile, name, columns=None, references=None):
             if references is None:
                 references = []
             if columns is None:
@@ -209,11 +177,11 @@ class SqLite:
             for column in self.columns:
                 query += column.column_declaration() + ', '
             for reference in self.references:
-                query += f'FOREIGN KEY ({reference.key}) REFERENCES {reference.table} ({reference.column})'
-                if reference._on_update_ is not None:
-                    query += f' ON UPDATE {reference._on_update_}'
-                if reference._on_delete_ is not None:
-                    query += f' ON DELETE {reference._on_delete_}'
+                query += f'FOREIGN KEY ({reference.column}) REFERENCES {reference.ref_table} ({reference.ref_column})'
+                if reference.on_update is not None:
+                    query += f' ON UPDATE {reference.on_update}'
+                if reference.on_delete is not None:
+                    query += f' ON DELETE {reference.on_delete}'
                 query += ', '
             query = query[:len(query) - 2] + ' );'
             # print(query)

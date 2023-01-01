@@ -1,9 +1,8 @@
-from PyAsoka.GUI.Widgets.AWidget import AWidget, Qt, QPoint, QRect, QSize
-from PyAsoka.Instruments.Menu import Menu, Element, Button
+from PyAsoka.GUI.Widgets.AWidget import AWidget, QPoint, QRect, QSize
+from PyAsoka.Instruments.Menu import Menu, Button
 from PyAsoka.GUI.Widgets.AMatrixMenu.AMatrixMenuButtonWidget import AMatrixMenuButtonWidget
 from PyAsoka.GUI.Widgets.AMatrixMenu.AMatrixMenuUnitWidget import AMatrixMenuUnitWidget
 from PyAsoka.Core.Logic.ALogicObject import ALogicObject
-from PyAsoka.Core.Linguistics.APhraseModel import APhraseModel
 
 
 class AMatrixMenuElement:

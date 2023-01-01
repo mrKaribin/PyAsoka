@@ -1,11 +1,11 @@
-from PyAsoka.Core.Model import Model, ADatabaseProfile, DatabaseType
+from PyAsoka.src.MVC.Model.Model import Model, DatabaseProfile, DatabaseType
 
 import random
 
 
 class Params(Model):
     def __init__(self):
-        super(Params, self).__init__(ADatabaseProfile(DatabaseType.SQLITE, 'tests.db', 'admin', 'password'), 'Parameters')
+        super(Params, self).__init__(DatabaseProfile(DatabaseType.SQLITE, 'tests.db', 'admin', 'password'), 'Parameters')
 
         self.id = self.IntField('id').PRIMARY_KEY().AUTOINCREMENT().UNIQUE().NOT_NULL()
         self.growth = self.IntField('growth').NOT_NULL()
@@ -17,7 +17,7 @@ class Params(Model):
 
 class People(Model):
     def __init__(self):
-        super(People, self).__init__(ADatabaseProfile(DatabaseType.SQLITE, 'tests.db', 'admin', 'password'), 'People')
+        super(People, self).__init__(DatabaseProfile(DatabaseType.SQLITE, 'tests.db', 'admin', 'password'), 'People')
 
         self.id = self.IntField('id').PRIMARY_KEY().AUTOINCREMENT().UNIQUE().NOT_NULL()
         self.name = self.StrField('name').NOT_NULL()

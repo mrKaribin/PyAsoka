@@ -1,8 +1,6 @@
-import json
 import platform
 
-from enum import Enum, auto
-from PyAsoka.Debug.Logs import Logs
+from PyAsoka.src.Debug.Logs import Logs
 
 
 class OSInfo:

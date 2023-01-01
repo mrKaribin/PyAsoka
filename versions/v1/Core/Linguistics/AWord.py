@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import auto
 
 
 class LinguisticTags:
@@ -78,9 +78,9 @@ class AWord:
 
     @staticmethod
     def create(word, params):
-        from PyAsoka.Core.Linguistics.Noun import Noun
-        from PyAsoka.Core.Linguistics.Verb import Verb
-        from PyAsoka.Core.Linguistics.Adjective import Adjective
+        from PyAsoka.src.Linguistics.Noun import Noun
+        from PyAsoka.src.Linguistics.Verb import Verb
+        from PyAsoka.src.Linguistics.Adjective import Adjective
         part = AWord.PartOfSpeech
 
         # print(params)

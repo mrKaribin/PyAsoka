@@ -1,4 +1,4 @@
-from PyAsoka.Database.ADatabaseProfile import ADatabaseProfile, DatabaseType
+from PyAsoka.Database.DatabaseProfile import DatabaseProfile, DatabaseType
 
 
 class ADatabaseColumn:
@@ -14,5 +14,5 @@ class ADatabaseColumn:
 
 
 class ADatabaseTable:
-    def __init__(self, profile: ADatabaseProfile):
+    def __init__(self, profile: DatabaseProfile):
         self.profile = profile

@@ -1,6 +1,4 @@
-from enum import Enum, auto
-
-import time
+from enum import Enum
 
 
 class Asoka:
@@ -42,9 +40,8 @@ class Asoka:
 
     @staticmethod
     def initialization():
-        from PyAsoka.Core.Core import Core
+        from PyAsoka.src.Core.Core import Core
         from PyAsoka.GUI.Application import Application
-        from threading import Thread
 
         app = Application()
         core = Core()
@@ -53,7 +50,7 @@ class Asoka:
 
     @staticmethod
     def core():
-        from PyAsoka.Core.Core import core
+        from PyAsoka.src.Core.Core import core
         return core()
 
     @staticmethod

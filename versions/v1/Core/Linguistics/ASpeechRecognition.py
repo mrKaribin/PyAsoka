@@ -1,8 +1,6 @@
-import struct
-
-from PyAsoka.Core.Linguistics.Phrase import Phrase
-from PyAsoka.Core.Linguistics.Word import Word
-from vosk import Model, KaldiRecognizer, SetLogLevel
+from PyAsoka.src.Linguistics.Phrase import Phrase
+from PyAsoka.src.Linguistics.Word import Word
+from vosk import Model, KaldiRecognizer
 import PyAsoka.Asoka as a
 import os, pyaudio, pymorphy2, json
 

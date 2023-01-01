@@ -1,12 +1,12 @@
 from PyAsoka.Processing.AProcess import ProcessCutaway, ProcessMessage, Headers
-from PyAsoka.Database.SqLite import SqLite, ADatabaseProfile, DatabaseType
+from PyAsoka.Database.SqLite import SqLite, DatabaseProfile, DatabaseType
 
 
 class DatabaseManager:
     def __init__(self):
         self.queue = []
         self.busy = False
-        self.profile = ADatabaseProfile(DatabaseType.SQLITE, 'lotos.db')  # not correct ToDo
+        self.profile = DatabaseProfile(DatabaseType.SQLITE, 'lotos.db')  # not correct ToDo
 
     def addRequest(self, process: ProcessCutaway):
         self.queue.append(process)

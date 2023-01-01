@@ -1,4 +1,3 @@
-import PyAsoka.Asoka as a
 import PyAsoka.Instruments.Log as Log
 import pymorphy2
 
@@ -68,7 +67,7 @@ def _wrap_phrase_(regex: str, phrases: list, str_ind: int = 0, fin_ind: int = -1
 
 
 def _parse_phrase_(regex: str, phrases: list = []):
-    from PyAsoka.Core.Linguistics.APhraseModel import APhraseModel
+    from PyAsoka.src.Linguistics.APhraseModel import APhraseModel
     lng = len(regex)
     regex = regex[1:lng - 1]
 
@@ -100,7 +99,7 @@ def _parse_phrase_(regex: str, phrases: list = []):
 
 def _parse_word_(scheme: str):
     global analyzer
-    from PyAsoka.Core.Linguistics.APhraseModel import AWordModel, Word, Noun, Verb
+    from PyAsoka.src.Linguistics.APhraseModel import AWordModel, Word, Noun, Verb
     if scheme.find('{') != -1:
         word, args = scheme.split('{')
     else:

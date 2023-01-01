@@ -1,4 +1,4 @@
-from PyAsoka.Database.ADatabaseProfile import *
+from PyAsoka.Database.DatabaseProfile import *
 from PyAsoka.Instruments.Log import *
 import json
 
@@ -76,7 +76,7 @@ class NetProfile:
 
 
 class Mode:
-    def __init__(self, database_profile: ADatabaseProfile = False, net_profile: NetProfile = False):
+    def __init__(self, database_profile: DatabaseProfile = False, net_profile: NetProfile = False):
         self.database = database_profile
         self.network = net_profile
 

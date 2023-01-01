@@ -144,7 +144,7 @@ class ACore(AProcess):
                 time.sleep(self.cycle_delay)
 
     def listen(self):
-        from PyAsoka.Core.Linguistics import APhraseModelParser as Model
+        from PyAsoka.src.Linguistics import APhraseModelParser as Model
 
         name = 'ева'
         hello_model = Model.parse(f'[N {name} [C окей привет здравствуй здорово [N ты [C тут здесь]] [N добрый [C день вечер утро]]]]')
@@ -312,7 +312,6 @@ class ACore(AProcess):
     def connect_to(self, id, args, kwargs):
         from PyAsoka.Core.EventConnectorsManager import EventConnector
         from PyAsoka.Core.ConnectorsMultiprocessManager import ConnectorsCutaway
-        from PyAsoka.Connections.AConnector import AConnector
         if (event_connector := self.event_connectors.find(id)) is not None and isinstance(event_connector, EventConnector):
             for connector_id in event_connector.connectors_id:
                 if (cutaway := self.multi_connectors.find(connector_id)) is not None and isinstance(cutaway, ConnectorsCutaway):

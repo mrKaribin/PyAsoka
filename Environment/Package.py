@@ -1,9 +1,7 @@
-from enum import Enum, auto
+from enum import Enum
 from PyAsoka.Environment.Builder import Builder
-from PyAsoka.Debug.Logs import Logs
+from PyAsoka.src.Debug.Logs import Logs
 from PyAsoka.Instruments.ShellProcess import ShellProcess
-
-import time
 
 
 class Package:

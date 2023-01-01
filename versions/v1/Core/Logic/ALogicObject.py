@@ -1,4 +1,4 @@
-from PyAsoka.Core.Linguistics.APhraseModel import APhraseModel
+from PyAsoka.src.Linguistics.APhraseModel import APhraseModel
 from PyAsoka.Core.Logic.AAction import AFunctionAction
 from PyAsoka.Connections.AEvent import AEvent
 from PyAsoka.Connections.AConnector import AConnector
@@ -35,7 +35,7 @@ class ALogicObject:
         return self
 
     def enable(self):
-        from PyAsoka.Processing.AProcess import AProcess, Task
+        from PyAsoka.Processing.AProcess import AProcess
         AProcess.add_task(AProcess.Type.CUSTOM, self.__enable__)
 
     def __enable__(self):
