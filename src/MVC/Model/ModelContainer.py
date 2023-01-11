@@ -47,7 +47,7 @@ class ModelContainer(object):
         result = f'\n{indent}class {self.__class__.__name__} || id: {self.fields["id"].value}'
         for field in {**self.fields, **self.references}.values():
             result += f'\n    {indent}({type(field.value)}) {field.column.name}: ' \
-                      f'{field() if not issubclass(field.type, ModelContainer) else field().print(indent_size + 4)}'
+                      f'{field() if not issubclass(field._type_, ModelContainer) else field().print(indent_size + 4)}'
         return result
 
     def insert(self):

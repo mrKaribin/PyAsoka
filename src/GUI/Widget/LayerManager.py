@@ -41,6 +41,6 @@ class LayerManager:
         if name in self._active_.keys():
             self._active_[name].disable()
 
-    def paint(self, widget):
+    def paint(self, event):
         for layer in self._active_.values():
-            layer.paint(widget)
+            layer.paint(event)

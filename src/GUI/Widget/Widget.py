@@ -1,4 +1,4 @@
-from PySide6.QtGui import QColor, QPainter, QPen, QBrush
+from PySide6.QtGui import QColor, QPainter, QPen, QBrush, QPainterPath
 from PySide6.QtGui import QPaintEvent, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, Property, QPoint, QRect, QSize
@@ -10,7 +10,9 @@ from PyAsoka.src.GUI.Widget.Layer import Layer
 from PyAsoka.src.GUI.Widget.LayerManager import LayerManager
 from PyAsoka.src.GUI.Widget.MouseManager import MouseManager
 from PyAsoka.src.GUI.Widget.Configuration import Configuration
+from PyAsoka.src.GUI.Widget.Display import Display
 from PyAsoka.src.GUI.Widget.StyleManager import StyleManager
+from PyAsoka.src.GUI.Widget.Animations import Animations
 
 from threading import Timer
 
@@ -19,7 +21,6 @@ class Widget(QWidget):
 
     def __init__(self, parent: QWidget = None, movable: bool = False, clickable: bool = False, keyboard: bool = False,
                  geometry: tuple = None, style: Style = None, animated: bool = True,
-                 frame_size: int = 2, round_size: int = 20,
                  with_super: bool = True):
         if with_super:
             super().__init__(parent)
@@ -33,17 +34,15 @@ class Widget(QWidget):
         self.animated = animated
 
         # private
-        self._layers_ = LayerManager()\
-            .add(Layer('loading',           self.renderLoader)) \
-            .add(Layer('background',        self.renderBackground))
+        self._display_ = Display(self)
+        self._layers_ = LayerManager() \
+            .add(Layer('loading',           self.layerLoading, animation=Animations.loading(self))) \
+            .add(Layer('background',        self.layerBackground)) \
+            .add(Layer('content',           self.layerContent))
         self._style_ = StyleManager(self, style)
         self._mouse_ = MouseManager()
-        self._configuration_ = Configuration(self, 1.0)
+        self._configuration_ = Configuration(self)
 
-        self._opacity_ = 1.0
-        self._default_opacity_ = 1.0
-        self._frame_size_ = frame_size
-        self._round_size_ = round_size
         self._moved_by_mouse_ = False
         self._animation_opacity_ = AnimationManager()
         self._animations_color_ = AnimationManager()
@@ -82,12 +81,14 @@ class Widget(QWidget):
         self.layers.background.enable()
 
     def preparation(self):
-        pass
+        from time import sleep
+        sleep(2.4)
+        print('Loading finished')
 
     def setOpacity(self, level, duration=None, anim_type=Animation.Type.QUEUE, autorun=True):
         if duration is not None:
             animation = Animation(self, b"alpha")
-            animation.setStartValue(self.alpha)
+            animation.setStartValue(self.display)
             animation.setEndValue(level)
             animation.setDuration(duration)
             self._animation_opacity_.add(animation, anim_type)
@@ -168,7 +169,7 @@ class Widget(QWidget):
     def show(self, duration=250):
         if duration is not None:
             self.alpha = 0
-            animation = self.setOpacity(self._default_opacity_, duration, Animation.Type.PARALLEL)
+            animation = self.setOpacity(self.display.defaultOpacity, duration, Animation.Type.PARALLEL)
             super().show()
             self.activateWindow()
             return animation
@@ -182,9 +183,6 @@ class Widget(QWidget):
             return animation
         else:
             super().hide()
-
-    def setDefaultOpacity(self, value: float):
-        self._default_opacity_ = value
 
     def move(self, _to: QPoint, duration=None, anim_type=Animation.Type.QUEUE, autorun=True):
         if duration is not None:
@@ -242,27 +240,64 @@ class Widget(QWidget):
             painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceIn)
         return painter
 
-    def renderLoader(self, event: QPaintEvent):
-        pass
+    def layerLoading(self, event: QPaintEvent):
+        self.layerBackground(event)
 
-    def renderBackground(self, event: QPaintEvent):
+    def layerBackground(self, event: QPaintEvent):
         if self.style.current.frame is not None or self.style.current.background is not None:
             painter = self.__get_painter__()
-            pen_size = self._frame_size_
+            thickness = self.display.frame.thickness
+            angle_size = self.display.frame.anglesRadius
+            angle_side = angle_size * 2
+            indent = int(thickness * 1.5)
+
+            # Готовим перо для отрисовки рамки
             if self.style.current.frame is not None:
-                painter.setPen(QPen(self.style.current.frame, pen_size))
+                painter.setPen(QPen(self.style.current.frame, thickness))
             else:
-                painter.setPen(QPen(self.style.current.background, pen_size))
+                painter.setPen(QPen(self.style.current.background, thickness))
+
+            # Готовим заливку для фона
             if self.style.current.background is not None:
                 painter.setBrush(QBrush(self.style.current.background))
-            indent = int(pen_size * 1.5)
-            painter.drawRoundedRect(QRect(
-                QPoint(indent, indent),
-                QSize(self.size().width() - indent * 2, self.size().height() - indent * 2)
-            ), self._round_size_, self._round_size_)
+
+            path = QPainterPath()
+            path.moveTo(0, angle_size)
+            if self.display.frame.topLeft:
+                path.arcTo(QRect(0, 0, angle_side, angle_side), 180, -90)
+            else:
+                path.lineTo(0, 0)
+                path.lineTo(angle_size, 0)
+
+            path.lineTo(self.width() - angle_size, 0)
+            if self.display.frame.topRight:
+                path.arcTo(QRect(self.width() - angle_side, 0, angle_side, angle_side), 90, -90)
+            else:
+                path.lineTo(self.width(), 0)
+                path.lineTo(self.width(), angle_size)
+
+            path.lineTo(self.width(), self.height() - angle_size)
+            if self.display.frame.bottomRight:
+                path.arcTo(QRect(self.width() - angle_side, self.height() - angle_side, angle_side, angle_side), 0, -90)
+            else:
+                path.lineTo(self.width(), self.height())
+                path.lineTo(self.width() - angle_side, self.height())
+
+            path.lineTo(angle_size, self.height())
+            if self.display.frame.bottomLeft:
+                path.arcTo(QRect(0, self.height() - angle_side, angle_side, angle_side), 270, -90)
+            else:
+                path.lineTo(0, self.height())
+                path.lineTo(0, self.height() - angle_size)
+
+            path.lineTo(0, angle_size)
+            painter.drawPath(path)
+
+    def layerContent(self, event: QPaintEvent):
+        pass
 
     def paintEvent(self, event: QPaintEvent):
-        self.layers.paint(self)
+        self.layers.paint(event)
 
     def mousePressEvent(self, event: QMouseEvent):
         parent = self.parent()
@@ -348,12 +383,23 @@ class Widget(QWidget):
         super(Widget, self).deleteLater()
 
     def __get_opacity__(self):
-        self.conf.display.__get_opacity__()
+        self.display.get_opacity()
 
     def __set_opacity__(self, opacity):
-        self.conf.display.__set_opacity__(opacity)
+        self.display.set_opacity(opacity)
 
-    alpha = Property(float, __get_opacity__, __set_opacity__)
+    # alpha = Property(float, __get_opacity__, __set_opacity__)
+    @Property(float)
+    def alpha(self):
+        return self.display.opacity
+
+    @alpha.getter
+    def alpha(self):
+        return self.display.opacity
+
+    @alpha.setter
+    def alpha(self, opacity):
+        self.display.opacity = opacity
 
     @property
     def layers(self):
@@ -370,6 +416,10 @@ class Widget(QWidget):
     @property
     def conf(self):
         return self._configuration_
+
+    @property
+    def display(self):
+        return self._display_
 
     @staticmethod
     def proportional(value, percentage):

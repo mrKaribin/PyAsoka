@@ -8,7 +8,8 @@ from PySide6.QtWidgets import QLineEdit
 
 class LineEdit(ALabelWidget):
     def __init__(self, text: str = '', style: Style = Styles.widget(), **kwargs):
-        super().__init__(QLineEdit, text=text, style=style, keyboard=True, round_size=15, **kwargs)
+        super().__init__(QLineEdit, text=text, style=style, keyboard=True, **kwargs)
+        # self.display.angleRoundingSize = 15
 
         # class preparation
         # self.colors.changed.bind(self.__update_palette__)

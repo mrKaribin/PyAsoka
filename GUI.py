@@ -12,4 +12,7 @@ from PyAsoka.src.GUI.Style.Styles import Styles
 from PyAsoka.src.GUI.Widgets.TextView import TextView
 from PyAsoka.src.GUI.Widgets.LineEdit import LineEdit
 
+from PyAsoka.src.GUI.Animation import Animation
+from PyAsoka.src.GUI.AnimationManager import AnimationManager
+
 from PySide6.QtCore import QPoint, QRect, QSize

@@ -168,7 +168,7 @@ class AType:
         result = f'\n{indent}class {self.__class__.__name__} || key: {self.primary_key.value}'
         for field in self.fields:
             result += f'\n    {indent}{field.column.name}: ' \
-                      f'{field() if not issubclass(field.type, AType) or field() is None else field().print(indent_size + 4)}'
+                      f'{field() if not issubclass(field._type_, AType) or field() is None else field().print(indent_size + 4)}'
         return result
 
     def REFERENCE(self, key, table, column):
@@ -214,7 +214,7 @@ class AType:
             if key is not False:
                 state = True
                 if self.primary_key.column.autoincrement:
-                    self.primary_key.set(self.primary_key.type(key))
+                    self.primary_key.set(self.primary_key._type_(key))
             else:
                 state = False
         if state is True:
@@ -233,9 +233,9 @@ class AType:
 
     def delete(self, where: str = None):
         for field in self.fields:
-            if issubclass(field.type, AType):
+            if issubclass(field._type_, AType):
                 field().delete()
-        row = self.table.row(*[field.toSql() if not issubclass(field.type, AType) else None for field in self.fields])
+        row = self.table.row(*[field.toSql() if not issubclass(field._type_, AType) else None for field in self.fields])
         row.delete(where)
 
     def setRow(self, row):

@@ -138,7 +138,7 @@ class ACore(AProcess):
     def create_dialog(self):  # ToDo убрать инициализацию модуля Лотос из ядра Асоки
         while True:
             for process in self.processes:
-                if process.type == AProcess.Type.GUI and process.run is not None and self.create_window is not None:
+                if process._type_ == AProcess.Type.GUI and process.run is not None and self.create_window is not None:
                     time.sleep(0.05)
                     return NativeDialog()
                 time.sleep(self.cycle_delay)
@@ -362,7 +362,7 @@ class ACore(AProcess):
 
     def run_task_in_process(self, task: Task, proc_type: AProcess.Type):
         for process in self.processes:
-            if process.type == proc_type:
+            if process._type_ == proc_type:
                 process.run(task)
 
     def connect(self, event_id, connector_id):

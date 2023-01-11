@@ -51,7 +51,7 @@ class APhraseModel:
                         elif isinstance(self.components[i], APhraseModel):
                             interval = self.components[i].words_count()
                             if len(phrase.words) <= i + shift + interval:
-                                if self.components[i].type in (t.OPTIONS, t.CHOICE):
+                                if self.components[i]._type_ in (t.OPTIONS, t.CHOICE):
                                     interval = len(phrase.words) - 1 - i - shift
                                 else:
                                     return False
