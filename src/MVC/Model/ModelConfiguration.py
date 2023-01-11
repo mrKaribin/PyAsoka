@@ -1,5 +1,5 @@
-from PyAsoka.Instruments.ATimepoint import ATimepoint
-from PyAsoka.Database.DatabaseProfile import DatabaseProfile
+from PyAsoka.src.Instruments.Timepoint import Timepoint
+from PyAsoka.src.Database.DatabaseProfile import DatabaseProfile
 from PyAsoka.src.MVC.Model.Field import Field, ReferenceField
 
 
@@ -29,7 +29,7 @@ class ModelConfiguration:
         return self.addField(bool, autoload, autosave)
 
     def TimepointField(self, autoload: bool = False, autosave: bool = False):
-        return self.addField(ATimepoint, autoload, autosave)
+        return self.addField(Timepoint, autoload, autosave)
 
     def Reference(self, cls, field, autoload: bool = False, autosave: bool = False):
         return ReferenceField(self.database, self.table, cls, field, autoload, autosave)

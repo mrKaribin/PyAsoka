@@ -1,5 +1,5 @@
 from PyAsoka.src.MVC.Model.Model import Model, DatabaseType
-from PyAsoka.Instruments.AFile import File as OsFile
+from PyAsoka.src.Instruments.File import File as OsFile
 from PyAsoka.TagSystem.TagObject import TagObject
 from PyAsoka.Instruments import Log
 
@@ -54,7 +54,7 @@ class File(Model):
 
     @staticmethod
     def findByFilters(name_contains: str = None, tags: list = None):
-        from PyAsoka.Database.SqLite import SqLite as database
+        from PyAsoka.src.Database.SqLite import SqLite as database
         from PyAsoka.TagSystem.Tag import Tag
         query = f'SELECT id FROM Files WHERE '
 
@@ -77,7 +77,7 @@ class File(Model):
 
     @staticmethod
     def getAll(limit=50, order_by='name'):
-        from PyAsoka.Database.SqLite import SqLite as database
+        from PyAsoka.src.Database.SqLite import SqLite as database
         from PyAsoka.FileSystem.FileType import FileType
         database.connect(File.DBProfile)
         data = database.query(f'SELECT id, format FROM Files ORDER BY {order_by} LIMIT {limit};')

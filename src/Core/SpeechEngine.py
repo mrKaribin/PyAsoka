@@ -1,6 +1,5 @@
-from PyAsoka.Connections.Signal import Signal
+from PyAsoka.src.Core.Signal import Signal
 from threading import Thread
-from enum import Enum, auto
 
 import random
 import time

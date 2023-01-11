@@ -1,8 +1,8 @@
-from PyAsoka.GUI.Widgets.AWidget import AWidget, QPaintEvent, QColor, Styles, Style
-from PyAsoka.GUI.Widgets.ALabelWidget import ALabelWidget, Qt
+from PyAsoka.GUI.Widgets.AWidget import Styles, Style
+from PyAsoka.src.GUI.Widgets.ALabelWidget import ALabelWidget
 
 from PySide6.QtWidgets import QLabel
-from PySide6.QtGui import QResizeEvent, QPalette
+from PySide6.QtGui import QPalette
 
 
 class ATextView(ALabelWidget):

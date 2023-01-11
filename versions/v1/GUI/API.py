@@ -1,7 +1,7 @@
-from pynput.mouse import Button as MouseButton, Controller, Listener
+from pynput.mouse import Controller, Listener
 
-from PyAsoka.GUI.Screen import Screen
-from PyAsoka.GUI.Keyboard import Keyboard
+from PyAsoka.src.GUI.API.Screen import Screen
+from PyAsoka.src.GUI.API.Keyboard import Keyboard
 
 from PySide6.QtCore import QPoint
 

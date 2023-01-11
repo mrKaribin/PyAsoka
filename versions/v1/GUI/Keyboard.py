@@ -1,6 +1,6 @@
 from pynput import keyboard
 
-from PyAsoka.Connections.Signal import Signal
+from PyAsoka.src.Core.Signal import Signal
 
 
 class State:

@@ -1,6 +1,6 @@
 from PySide6.QtGui import QColor
 from PySide6.QtCore import QObject, Property
-from PyAsoka.Connections.Signal import Signal
+from PyAsoka.src.Core.Signal import Signal
 
 
 class AColor(QColor, QObject):

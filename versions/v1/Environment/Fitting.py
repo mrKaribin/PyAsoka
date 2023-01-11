@@ -1,5 +1,5 @@
-from PyAsoka.Environment.Package import Package
-from PyAsoka.Environment.Builder import Builder
+from PyAsoka.src.Environment.Package import Package
+from PyAsoka.src.Environment.Builder import Builder
 
 
 class Fitting:

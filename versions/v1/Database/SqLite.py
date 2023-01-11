@@ -3,7 +3,7 @@ import sqlite3 as sql
 import threading
 from enum import Enum
 from PyAsoka.Instruments import Log
-from PyAsoka.Instruments.ATimepoint import ATimepoint
+from PyAsoka.src.Instruments.Timepoint import Timepoint
 from PyAsoka.Database.ADatabaseTable import DatabaseProfile
 
 
@@ -142,7 +142,7 @@ class SqLite:
                 return 'FLOAT'
             elif datatype == bytes:
                 return 'BLOB'
-            elif datatype in (str, ATimepoint):
+            elif datatype in (str, Timepoint):
                 return 'TEXT'
             else:
                 Log.exception_unsupportable_type(datatype)

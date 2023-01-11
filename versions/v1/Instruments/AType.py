@@ -1,8 +1,8 @@
 from copy import deepcopy
 
 from PyAsoka.Instruments import Log
-from PyAsoka.Instruments.ATimepoint import ATimepoint
-from PyAsoka.Database.DatabaseProfile import DatabaseProfile, DatabaseType
+from PyAsoka.src.Instruments.Timepoint import Timepoint
+from PyAsoka.src.Database.DatabaseProfile import DatabaseProfile, DatabaseType
 
 
 class AField:
@@ -45,7 +45,7 @@ class AField:
         elif self.type in (int, float, bool, str, bytes):
             return self.value
 
-        elif self.type == ATimepoint:
+        elif self.type == Timepoint:
             return self.value.encode()
 
         elif issubclass(self.type, AType):
@@ -67,8 +67,8 @@ class AField:
         elif self.type in (str, bytes, int, float, bool):
             self.set(self.type(data))
 
-        elif self.type == ATimepoint:
-            self.set(ATimepoint.decode(data))
+        elif self.type == Timepoint:
+            self.set(Timepoint.decode(data))
 
         elif issubclass(self.type, AType):
             obj = self.type()
@@ -199,7 +199,7 @@ class AType:
         return AField(self, bytes, name, value, autoload, autosave, load)
 
     def TimepointField(self, name: str, value=None, autoload: bool = False, autosave: bool = False, load=True):
-        return AField(self, ATimepoint, name, value, autoload, autosave, load)
+        return AField(self, Timepoint, name, value, autoload, autosave, load)
 
     def AField(self, name: str, table_name: str, column_name: str, datatype, value=None, autoload: bool = False, autosave: bool = False, load=True):
         self.REFERENCE(name, table_name, column_name)

@@ -1,6 +1,6 @@
 import math
 
-from PyAsoka.Maths.Geometry.APoint import APoint
+from PyAsoka.src.Geometry.Point import Point
 
 
 class AVector:
@@ -9,7 +9,7 @@ class AVector:
         self.y = 0
         self.z = 0
 
-        if isinstance(arg1, APoint) and isinstance(arg2, APoint):
+        if isinstance(arg1, Point) and isinstance(arg2, Point):
             self.from_points(arg1, arg2)
         elif isinstance(arg1, float) and isinstance(arg2, float) and isinstance(arg3, float):
             self.from_values(arg1, arg2, arg3)
@@ -18,7 +18,7 @@ class AVector:
         else:
             raise Exception(f'Получен неверный тип данных аргументов: {type(arg1), type(arg2), type(arg3)}')
 
-    def from_points(self, point1: APoint, point2: APoint):
+    def from_points(self, point1: Point, point2: Point):
         self.x = point2.x - point1.x
         self.y = point2.y - point1.y
         self.z = point2.z - point1.z

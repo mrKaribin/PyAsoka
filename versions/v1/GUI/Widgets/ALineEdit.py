@@ -1,9 +1,9 @@
-from PyAsoka.GUI.Widgets.AWidget import AWidget, QPaintEvent, QColor, Styles, Style, QMouseEvent
+from PyAsoka.GUI.Widgets.AWidget import Styles, Style
 from PyAsoka.GUI.API import API
-from PyAsoka.GUI.Widgets.ALabelWidget import ALabelWidget
-from PyAsoka.Connections.Signal import Signal
+from PyAsoka.src.GUI.Widgets.ALabelWidget import ALabelWidget
+from PyAsoka.src.Core.Signal import Signal
 
-from PySide6.QtWidgets import QLabel, QLineEdit
+from PySide6.QtWidgets import QLineEdit
 
 
 class ALineEdit(ALabelWidget):

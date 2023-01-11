@@ -1,7 +1,7 @@
 from PyAsoka.FileSystem.File import File
 from PyAsoka.TagSystem.Tag import Tag
 from PyAsoka.TagSystem.TagLink import TagLink
-from PyAsoka.Instruments.AFile import File as OsFile
+from PyAsoka.src.Instruments.File import File as OsFile
 
 
 class FileSystemTester:

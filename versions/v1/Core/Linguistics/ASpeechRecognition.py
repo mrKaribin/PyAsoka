@@ -4,7 +4,7 @@ from vosk import Model, KaldiRecognizer
 import PyAsoka.Asoka as a
 import os, pyaudio, pymorphy2, json
 
-from PyAsoka.Instruments.Stopwatch import Stopwatch
+from PyAsoka.src.Instruments.Stopwatch import Stopwatch
 
 
 class ASpeechRecModel:

@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from PyAsoka.Environment.Builder import Builder
+from PyAsoka.src.Environment.Builder import Builder
 
 
 class Package:
@@ -20,10 +20,10 @@ class Package:
 
     def create_install_script(self):
         if self.type == Package.Type.SYSTEM:
-            from PyAsoka.Environment.SystemEnvironment import SystemEnvironment
+            from PyAsoka.src.Environment.SystemEnvironment import SystemEnvironment
             return SystemEnvironment.install_script(self)
         if self.type == Package.Type.PYTHON:
-            from PyAsoka.Environment.PythonEnvironment import PythonEnvironment
+            from PyAsoka.src.Environment.PythonEnvironment import PythonEnvironment
             return PythonEnvironment.install_script(self)
 
 

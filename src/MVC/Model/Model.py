@@ -1,4 +1,4 @@
-from PyAsoka.Database.DatabaseProfile import DatabaseProfile, DatabaseType
+from PyAsoka.src.Database.DatabaseProfile import DatabaseProfile, DatabaseType
 from PyAsoka.src.MVC.Model.ModelContainer import ModelContainer
 from PyAsoka.src.MVC.Model.Selector import Selector
 from PyAsoka.src.MVC.Model.Field import Field, ReferenceField

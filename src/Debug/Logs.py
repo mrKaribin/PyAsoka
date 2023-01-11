@@ -58,6 +58,6 @@ class Logs:
     @staticmethod
     def error(text, preline: bool = False, postline: bool = False):
         if Logs.level <= Logs.Levels.ERRORS:
-            text = f'\033[31mERROR: {text}\033[0m'
+            text = f'\033[31m{text}\033[0m'
             Logs.write(text, preline, postline)
 

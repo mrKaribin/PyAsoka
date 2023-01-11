@@ -1,4 +1,4 @@
-from PyAsoka.Database.DatabaseProfile import *
+from PyAsoka.src.Database.DatabaseProfile import *
 from PyAsoka.Instruments.Log import *
 import json
 
@@ -38,7 +38,7 @@ class DbField:
     def get_advt(self, name, datatype, lang=a.types.db.lang.sqlite):
         l = a.types.db.lang
         if lang == l.sqlite:
-            from PyAsoka.Database.SqLite import SqLite as db
+            from PyAsoka.src.Database.SqLite import SqLite as db
             result = f'{name} {db.toSqlType(datatype)} '
             for key in self.keys.keys():
                 result += db.getConstraint(key, self.keys[key])

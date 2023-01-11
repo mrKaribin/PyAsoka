@@ -1,6 +1,6 @@
-from PyAsoka.Environment.Fit import Fit
-from PyAsoka.Environment.Package import Package
-from PyAsoka.Environment.Builder import Builder as Params
+from PyAsoka.src.Environment.Fit import Fit
+from PyAsoka.src.Environment.Package import Package
+from PyAsoka.src.Environment.Builder import Builder as Params
 
 
 params = Params(Params.Architecture.LINUX, Params.System.MANJARO)

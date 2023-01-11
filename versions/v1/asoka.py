@@ -1,8 +1,6 @@
 import os
-from datetime import datetime, date, time
 from enum import Enum, auto
-from random import randint, random as rand, randrange, randbytes
-
+from random import randint
 
 version = '1.0b'
 comment = None
@@ -59,7 +57,7 @@ class random:
 
     @staticmethod
     def timepoint(year=None, month=None, day=None, hour=None, minute=None, second=None):
-        from PyAsoka.Instruments.ATimepoint import ATimepoint
+        from PyAsoka.src.Instruments.Timepoint import Timepoint
         if year is None:
             year = random.int(1, 3000)
         if month is None:
@@ -72,7 +70,7 @@ class random:
             minute = random.int(0, 59)
         if second is None:
             second = random.int(0, 59)
-        return ATimepoint(year, month, day, hour, minute, second)
+        return Timepoint(year, month, day, hour, minute, second)
 
 
 def getDatabasePassword(database_name):

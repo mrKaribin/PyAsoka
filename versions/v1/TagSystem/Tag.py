@@ -42,7 +42,7 @@ class Tag(Model):
 
     @staticmethod
     def fromString(string):
-        from PyAsoka.Database.SqLite import SqLite as database
+        from PyAsoka.src.Database.SqLite import SqLite as database
         database.connect(Tag.DBProfile)
         data = database.query(f'SELECT * FROM Tags WHERE name like "%{string}%"')
         tags = []
@@ -54,7 +54,7 @@ class Tag(Model):
 
     @staticmethod
     def getAll():
-        from PyAsoka.Database.SqLite import SqLite as database
+        from PyAsoka.src.Database.SqLite import SqLite as database
         database.connect(Tag.DBProfile)
         data = database.query('SELECT * FROM Tags;')
         tags = []

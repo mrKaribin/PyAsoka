@@ -1,4 +1,4 @@
-from PyAsoka.Database.DatabaseProfile import DatabaseProfile, DatabaseType
+from PyAsoka.src.Database.DatabaseProfile import DatabaseProfile, DatabaseType
 from PyAsoka.src.MVC.Model.ObjectField import ObjectField, ObjectReference
 
 

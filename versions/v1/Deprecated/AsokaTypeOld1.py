@@ -2,7 +2,7 @@ import os
 import json
 import PyAsoka.Asoka as asoka
 from PyAsoka.Instruments import Log
-from PyAsoka.Database.SqLite import SqLite as Database
+from PyAsoka.src.Database.SqLite import SqLite as Database
 
 
 class FieldType:

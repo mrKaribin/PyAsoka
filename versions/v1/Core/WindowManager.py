@@ -1,6 +1,5 @@
-from PyAsoka.Connections.Signal import Signal
-from PyAsoka.Connections.Slot import Slot
-from PySide6.QtWidgets import QWidget
+from PyAsoka.src.Core.Signal import Signal
+from PyAsoka.src.Connections.Slot import Slot
 from PySide6.QtCore import QObject
 
 

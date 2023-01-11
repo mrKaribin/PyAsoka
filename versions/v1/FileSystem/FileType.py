@@ -1,9 +1,8 @@
 import PyAsoka.Asoka as a
 
 from PyAsoka.FileSystem.File import File
-from PyAsoka.GUI.Types import AWidget
-from PyAsoka.Processing.AProcess import AProcess, Headers, ProcessMessage
-from PyAsoka.Instruments.AFile import File as OsFile
+from PyAsoka.Processing.AProcess import AProcess, Headers
+from PyAsoka.src.Instruments.File import File as OsFile
 
 
 class FileType:

@@ -1,7 +1,7 @@
 from PyAsoka.Debug import Exceptions
 from PyAsoka.src.Core.SpeechEngine import SpeechEngine, Phrase
 from PyAsoka.src.Core.SpeechRecognition import SpeechRecognition
-from PyAsoka.Connections.Signal import Signal
+from PyAsoka.src.Core.Signal import Signal
 from PyAsoka.Asoka import Asoka
 from threading import Timer, Thread
 

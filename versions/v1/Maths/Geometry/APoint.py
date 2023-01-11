@@ -13,7 +13,7 @@ class APoint:
         self.x, self.y = self.y, self.x
 
     def toPoint(self):
-        from PyAsoka.Graphics.Geometry import Point
+        from PyAsoka.src.Graphics.Geometry import Point
         return Point(self.x, self.y)
 
     def arr(self):

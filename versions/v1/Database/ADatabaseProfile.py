@@ -17,9 +17,9 @@ class ADatabaseProfile:
     def getDriver(self):
         if self.driver is None:
             if self.lang == DatabaseType.SQLITE:
-                from PyAsoka.Database.SqLite import SqLite as database
+                from PyAsoka.src.Database.SqLite import SqLite as database
             elif self.lang == DatabaseType.MYSQL:
-                from PyAsoka.Database.MySql import MySql as database
+                from PyAsoka.src.Database.MySql import MySql as database
 
             self.driver = database
         return self.driver

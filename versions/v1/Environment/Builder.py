@@ -1,6 +1,6 @@
-from PyAsoka.Environment.Builder import Builder
-from PyAsoka.Environment.Package import Package
-from PyAsoka.Instruments.AFile import File
+from PyAsoka.src.Environment.Builder import Builder
+from PyAsoka.src.Environment.Package import Package
+from PyAsoka.src.Instruments.File import File
 
 
 class Builder:

@@ -41,7 +41,7 @@ class Asoka:
     @staticmethod
     def initialization():
         from PyAsoka.src.Core.Core import Core
-        from PyAsoka.GUI.Application import Application
+        from PyAsoka.src.GUI.Application import Application
 
         app = Application()
         core = Core()
