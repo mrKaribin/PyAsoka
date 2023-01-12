@@ -3,9 +3,9 @@ from PySide6.QtGui import QPaintEvent, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, Property, QPoint, QRect, QSize
 from PyAsoka.src.Core.Signal import Signal
-from PyAsoka.src.GUI.Style.Styles import Styles, Style, Color
+from PyAsoka.src.GUI.Style.Styles import Style, Color
 from PyAsoka.src.GUI.API.Screen import Screen
-from PyAsoka.src.GUI.AnimationManager import AnimationManager, Animation
+from PyAsoka.src.GUI.Animation.AnimationManager import AnimationManager, Animation
 from PyAsoka.src.GUI.Widget.Layer import Layer
 from PyAsoka.src.GUI.Widget.LayerManager import LayerManager
 from PyAsoka.src.GUI.Widget.MouseManager import MouseManager

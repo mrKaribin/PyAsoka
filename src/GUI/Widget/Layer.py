@@ -1,6 +1,6 @@
 from PyAsoka.src.Core.Signal import Signal, SignalType
-from PyAsoka.src.GUI.Animation import Animation
-from PyAsoka.src.GUI.AnimationManager import AnimationManager
+from PyAsoka.src.GUI.Animation.Animation import Animation
+from PyAsoka.src.GUI.Animation.AnimationManager import AnimationManager
 
 
 class Layer:

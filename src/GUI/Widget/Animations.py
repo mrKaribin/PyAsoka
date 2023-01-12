@@ -1,6 +1,4 @@
-from PyAsoka.src.GUI.AnimationManager import Animation, AnimationManager
-
-from PySide6.QtCore import QRect, QPoint, QSize
+from PyAsoka.src.GUI.Animation.AnimationManager import Animation
 
 
 class Animations:

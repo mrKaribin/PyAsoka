@@ -1,4 +1,4 @@
-from PyAsoka.src.GUI.Animation import Animation, QPropertyAnimation, Signal
+from PyAsoka.src.GUI.Animation.Animation import Animation, QPropertyAnimation, Signal
 from PySide6.QtCore import QObject
 
 

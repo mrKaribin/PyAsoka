@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from PySide6.QtCore import QPropertyAnimation
+from PySide6.QtCore import QPropertyAnimation, QParallelAnimationGroup
 
 from PyAsoka.src.Core.Signal import Signal
 
@@ -14,6 +14,9 @@ class Animation(QPropertyAnimation):
 
         self.ended = Signal(Animation)
         self.finished.connect(lambda: self.ended(self))
+
+        group = QParallelAnimationGroup(self)
+        group.animationAt(0).prop
 
     def timeRemaining(self):
         return self.duration() - self.currentLoopTime()
