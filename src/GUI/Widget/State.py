@@ -17,17 +17,14 @@ class State(Object, metaclass=StateMeta):
     enabled = Signal(Object)
     disabled = Signal(Object)
 
-    def __init__(self):
+    def __init__(self, widget):
         super().__init__()
-        self._widget_ = None
+        self._widget_ = widget
         self.name = ''
         self._begin_animation_ = None
         self._animation_ = None
         self._end_animation_ = None
         self._task_thread_ = None
-
-    def setWidget(self, widget):
-        self._widget_ = widget
 
     def enable(self):
         self.enabled.emit(self)

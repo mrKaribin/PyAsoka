@@ -27,57 +27,43 @@ import types
 class WidgetMeta(type(QWidget)):
     def __new__(mcs, name, bases, attrs, **extra_kwargs):
         def createManager(mng_name, manager_type, element_type):
+            list_name = f'_{mng_name}_list_'
             bases_list = {}
             for base in bases:
-                if f'_{mng_name}_' in base.__dict__.keys():
-                    bases_list = {**bases_list, **base.__dict__[f'_{mng_name}_list_']}
-
-            manager = manager_type()
-            if f'_{mng_name}_list_' not in attrs:
-                attrs[f'_{mng_name}_list_'] = {}
-            attrs[f'_{mng_name}_list_'] = {**attrs[f'_{mng_name}_list_'], **bases_list}
+                if list_name in base.__dict__.keys():
+                    bases_list = {**bases_list, **base.__dict__[list_name]}
 
             for key in list(attrs.keys()):
                 attr = attrs[key]
                 if isinstance(attr, type) and issubclass(attr, element_type):
                     attrs.pop(key)
                     lay_name = key[0].lower() + key[1:]
-                    attrs[f'_{mng_name}_list_'][lay_name] = attr
+                    bases_list[lay_name] = attr
+            attrs[list_name] = bases_list
 
-            if f'_{mng_name}_list_' in attrs:
-                for key, layer in attrs[f'_{mng_name}_list_'].items():
-                    manager.add(key, layer())
+        def createProps():
+            props_base = Props
+            for base in bases:
+                if f'_props_class_' in base.__dict__.keys():
+                    props_base = base.__dict__[f'_props_class_']
 
-            attrs[f'_{mng_name}_'] = manager
+            props_attrs = {}
+            if 'Props' in attrs.keys():
+                props = attrs['Props'].__dict__
+                for key in list(props.keys()):
+                    attr = props[key]
+                    if isinstance(attr, Prop) or isinstance(attr, type):
+                        lay_name = key[0].lower() + key[1:]
+                        props_attrs[lay_name] = attr
+                attrs.pop('Props')
+
+            attrs[f'_props_class_'] = PropsMeta('WidgetProps', (props_base, ), props_attrs)
 
         createManager('layers', LayerManager, Layer)
         createManager('states', StateManager, State)
-        attrs[f'_mouse_'] = MouseManager()
+        createProps()
 
         # Поиск Props
-        props_list = {}
-        for base in bases:
-            if f'_props_' in base.__dict__.keys():
-                props_list = {**props_list, **base.__dict__[f'_props_list_']}
-
-        if f'_props_list_' not in attrs:
-            attrs[f'_props_list_'] = {}
-        props_list = {**attrs[f'_props_list_'], **props_list}
-
-        for key in list(attrs.keys()):
-            attr = attrs[key]
-            cond = isinstance(attr, type) and (issubclass(attr, Prop) or issubclass(attr, Props))
-            if isinstance(attr, Prop) or cond:
-                attrs.pop(key)
-                lay_name = key[0].lower() + key[1:]
-                if isinstance(attr, Prop):
-                    props_list[lay_name] = attr
-                else:
-                    props_list[lay_name] = attr
-
-        props = PropsMeta('WidgetProps', (Props, ), props_list)()
-        attrs[f'_props_'] = props
-        attrs[f'_props_list_'] = props_list
 
         return super().__new__(mcs, name, bases, attrs)
 
@@ -98,18 +84,27 @@ class Widget(QWidget, metaclass=WidgetMeta):
         if parent is not None:
             pass
 
+        def createManager(mng_name, manager_type):
+            list_name = f'_{mng_name}_list_'
+            manager = manager_type(self)
+            attrs = getattr(self, list_name, None)
+            if attrs is not None:
+                for key, item in attrs.items():
+                    manager.add(key, item(self))
+            return manager
+
         # public
         self.animated = animated
 
         # private
-        self.layers.setWidget(self)
-        self.states.setWidget(self)
+        self._layers_ = createManager('layers', LayerManager)
+        self._states_ = createManager('states', StateManager)
+        self._mouse_ = MouseManager()
+        self._props_ = self._props_class_(self)
+
         self.mouse.setWidget(self)
-        self.props.setWidget(self)
         self._style_ = StyleManager(self, style)
         self._configuration_ = Configuration(self, movable, clickable)
-
-        self._moved_by_mouse_ = False
 
         # class preparation
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
@@ -146,36 +141,24 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self._initialization_timer_.start()
 
     # Properties -------------------------------------------------------------------------------------------------------
-    class Alpha(Prop, type=float, default=1.0):
-        def setter(self, widget, value):
-            self.value = value
+    class Props:
+        class Alpha(Prop, type=float, default=1.0):
+            def setter(self, widget, value):
+                self.value = value
 
-            col = widget.style.current
-            stl = widget.style.default
-            current = [col.background, col.background_line, col.frame, col.line, col.text]
-            default = [stl.background, stl.background_line, stl.frame, stl.line, stl.text]
+        class Frame:
+            thickness = Prop(int, 2)
+            anglesRadius = Prop(int, 20)
+            topLeft = Prop(int, True)
+            topRight = Prop(int, True)
+            bottomLeft = Prop(int, True)
+            bottomRight = Prop(int, True)
 
-            for i in range(len(current)):
-                if current[i] is not None:
-                    current[i].setAlpha(int(default[i].alpha() * value))
-
-            for child in widget.children():
-                if issubclass(type(child), Widget):
-                    child.props.alpha = value
-
-    class Frame(Props):
-        thickness = Prop(int, 2)
-        anglesRadius = Prop(int, 20)
-        topLeft = Prop(int, True)
-        topRight = Prop(int, True)
-        bottomLeft = Prop(int, True)
-        bottomRight = Prop(int, True)
-
-        def setRoundedAngles(self, top_left: bool, top_right: bool, bottom_left: bool, bottom_right: bool):
-            self.topLeft = top_left
-            self.topRight = top_right
-            self.bottomLeft = bottom_left
-            self.bottomRight = bottom_right
+            def setRoundedAngles(self, top_left: bool, top_right: bool, bottom_left: bool, bottom_right: bool):
+                self.topLeft = top_left
+                self.topRight = top_right
+                self.bottomLeft = bottom_left
+                self.bottomRight = bottom_right
 
     # Layers -----------------------------------------------------------------------------------------------------------
     class Background(Layer, level=Layer.Level.TOP):
@@ -238,8 +221,8 @@ class Widget(QWidget, metaclass=WidgetMeta):
         def animation(self, widget):
             from PyAsoka.src.GUI.Animation.CycleAnimations import CycleAnimations
             return CycleAnimations(
-                Animation(widget.props, b'alpha', 1.0, 0.5, 500),
-                Animation(widget.props, b'alpha', 0.5, 1.0, 500)
+                Animation(widget.props, b'alpha', 1.0, 0.5, 5000),
+                Animation(widget.props, b'alpha', 0.5, 1.0, 5000)
             )
 
         def endAnimation(self, widget):
@@ -248,9 +231,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
     # Methods ----------------------------------------------------------------------------------------------------------
     def prepare(self):
-        from time import sleep
-        sleep(4.7)
-        # print('Loading finished')
+        pass
 
     def enterEvent(self, event):
         style = self.style.default

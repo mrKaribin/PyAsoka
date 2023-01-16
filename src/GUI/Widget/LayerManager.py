@@ -4,23 +4,17 @@ from PyAsoka.src.Core.Object import Object
 
 
 class LayerManager(Object):
-    def __init__(self):
+    def __init__(self, widget):
         super(LayerManager, self).__init__()
-        self._widget_ = None
+        self._widget_ = widget
         self._layers_ = {}
         self._active_ = AsynchData([])
-
-    def setWidget(self, widget):
-        self._widget_ = widget
-        for layer in self._layers_.values():
-            layer.setWidget(widget)
 
     def __getitem__(self, item):
         return self._layers_[item]
 
     def add(self, name, layer: Layer):
         if name not in self._layers_.keys():
-            layer.setWidget(self._widget_)
             layer.name = name
             self.__dict__.update({name: layer})
             self._layers_[name] = layer

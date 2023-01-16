@@ -11,7 +11,7 @@ class LineEdit(ALabelWidget):
     text_changed = Signal(str)
     enter_pressed = Signal(str)
 
-    def __init__(self, text: str = '', style: Style = Styles.widget(), **kwargs):
+    def __init__(self, text: str = '', style: Style = Styles.Widget(), **kwargs):
         super().__init__(QLineEdit, text=text, style=style, keyboard=True, **kwargs)
         # self.display.angleRoundingSize = 15
 

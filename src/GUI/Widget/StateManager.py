@@ -4,20 +4,14 @@ from PyAsoka.src.Core.Object import Object
 
 
 class StateManager(Object):
-    def __init__(self):
+    def __init__(self, widget):
         super(StateManager, self).__init__()
-        self._widget_ = None
+        self._widget_ = widget
         self._states_ = {}
         self._active_ = AsynchData([])
 
-    def setWidget(self, widget):
-        self._widget_ = widget
-        for layer in self._states_.values():
-            layer.setWidget(widget)
-
     def add(self, name, state: State):
         if name not in self._states_.keys():
-            state.setWidget(self._widget_)
             state.name = name
             self.__dict__.update({name: state})
             self._states_[name] = state

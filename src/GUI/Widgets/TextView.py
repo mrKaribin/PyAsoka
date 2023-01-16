@@ -6,7 +6,7 @@ from PySide6.QtGui import QPalette
 
 
 class TextView(ALabelWidget):
-    def __init__(self, text: str = '', style: Style = Styles.widget(), **kwargs):
+    def __init__(self, text: str = '', style: Style = Styles.Widget, **kwargs):
         super().__init__(QLabel, text=text, style=style, **kwargs)
 
         self.style.current.changed.connect(self.__update_palette__)

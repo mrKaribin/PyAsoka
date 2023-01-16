@@ -3,13 +3,13 @@ from PyAsoka.src.GUI.Style.Colors import Colors, Color
 
 
 class Styles:
-    @staticmethod
-    def window():  # Обычные окна. Окно - виджет верхнего уровня
-        return Style(background=Colors.Background.default(),
-                     background_line=Colors.BackgroundLine.default(),
-                     frame=Colors.Frame.default(),
-                     line=Colors.Line.default(),
-                     text=Colors.Text.default())
+    class Window(Style,
+                 background=Colors.Background.default(),
+                 background_line=Colors.BackgroundLine.default(),
+                 frame=Colors.Frame.default(),
+                 line=Colors.Line.default(),
+                 text=Colors.Text.default()):
+        pass
 
     @staticmethod
     def toolWindow():  # Полупрозрачные окна для работы в режиме оверлея
@@ -27,13 +27,14 @@ class Styles:
                      line=Colors.Line.default(),
                      text=Colors.Text.default())
 
-    @staticmethod
-    def widget():  # Стандартный виджет для любого уровня вложенности
-        return Style(background=None,
-                     background_line=Colors.BackgroundLine.default(),
-                     frame=None,
-                     line=Colors.Line.default(),
-                     text=Colors.Text.default())
+    # Стандартный виджет для любого уровня вложенности
+    class Widget(Style,
+                 background=None,
+                 background_line=Colors.BackgroundLine.default(),
+                 frame=None,
+                 line=Colors.Line.default(),
+                 text=Colors.Text.default()):
+        pass
 
     @staticmethod
     def button():  # Стандартный виджет для любого уровня вложенности
@@ -66,4 +67,3 @@ class Styles:
                      frame=None,
                      line=Colors.Line.default(),
                      text=Colors.Text.focus())
-

@@ -21,13 +21,10 @@ class Layer(Object, metaclass=LayerMeta):
     enabled = Signal(Object)
     disabled = Signal(Object)
 
-    def __init__(self):
+    def __init__(self, widget):
         super(Layer, self).__init__()
-        self._widget_ = None
-        self.name = ''
-
-    def setWidget(self, widget):
         self._widget_ = widget
+        self.name = ''
 
     def enable(self):
         self.enabled.emit(self)
@@ -45,3 +42,7 @@ class Layer(Object, metaclass=LayerMeta):
     @property
     def alpha(self):
         return self._alpha_
+
+    @property
+    def style(self):
+        return self._widget_.style

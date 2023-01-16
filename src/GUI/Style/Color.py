@@ -17,3 +17,16 @@ class Color(QColor):
 
     def toStyleSheet(self):
         return f'rgba({self.red()}, {self.green()}, {self.blue()}, {self.alpha()})'
+
+
+class ColorProperty:
+    def __init__(self, color):
+        super().__init__()
+        self.value = color
+
+    def getter(self, inst):
+        return self.value
+
+    def setter(self, inst, color):
+        self.value = color
+        inst.changed.emit()
