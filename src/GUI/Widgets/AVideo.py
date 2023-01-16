@@ -11,7 +11,7 @@ from PySide6.QtGui import QWheelEvent
 
 class VideoPanel(AWidget):
     def __init__(self, position=0, volume=0, **kwargs):
-        super(VideoPanel, self).__init__(style=Styles.widget(), **kwargs)
+        super(VideoPanel, self).__init__(style=Styles._widget_(), **kwargs)
 
         self.enabled = False
         self.playing = True

@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, Property, QPoint, QRect, QSize
 from PyAsoka.GUI.Styles import Styles, Style, Color
 from PyAsoka.src.GUI.API.Screen import Screen
 from PyAsoka.src.Core.Signal import Signal
-from PyAsoka.src.GUI.Animation.AnimationManager import AnimationManager, Animation
+from PyAsoka.src.GUI.Widget.AnimationManager import AnimationManager, Animation
 
 from threading import Timer
 
@@ -68,7 +68,7 @@ class AWidget(QWidget):
             pass
 
         # public
-        self.style = (Styles.window() if parent is None else Styles.widget()) if style is None else style
+        self.style = (Styles.window() if parent is None else Styles._widget_()) if style is None else style
         self.colors = Style(self.style)
         self.states = AWidgetStateManager()\
             .add(self.State.PREPARATION, self.renderLoader) \

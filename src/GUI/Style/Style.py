@@ -1,37 +1,31 @@
-from PySide6.QtCore import QObject
+from PyAsoka.src.Core.Object import Object
+from PyAsoka.src.Core.Property import Property
 from PyAsoka.src.Core.Signal import Signal
-from PyAsoka.src.GUI.Style.Color import Color
+from PyAsoka.src.GUI.Style.Color import Color, QColor
+from PyAsoka.src.Debug.Exceptions import Exceptions
 
 
-class Style:
-    def __init__(self, style: QObject = None,
-                 background=None,
-                 background_line=None,
-                 frame=None,
-                 line=None,
-                 text=None):
-        if style is None:
-            self.background = background
-            self.background_line = background_line
-            self.frame = frame
-            self.line = line
-            self.text = text
-        else:
-            self.background = Color(style.background) if style.background is not None else None
-            self.background_line = Color(style.background_line) if style.background_line is not None else None
-            self.frame = Color(style.frame) if style.frame is not None else None
-            self.line = Color(style.line) if style.line is not None else None
-            self.text = Color(style.text) if style.text is not None else None
+class Style(Object):
 
-        if self.background is not None:
-            self.background.changed.bind(lambda: self.changed())
-        if self.background_line is not None:
-            self.background_line.changed.bind(lambda: self.changed())
-        if self.frame is not None:
-            self.frame.changed.bind(lambda: self.changed())
-        if self.line is not None:
-            self.line.changed.bind(lambda: self.changed())
-        if self.text is not None:
-            self.text.changed.bind(lambda: self.changed())
+    frame = Property(Color)
+    background = Property(Color)
+    background_line = Property(Color)
+    line = Property(Color)
+    text = Property(Color)
 
-        self.changed = Signal()
+    changed = Signal()
+
+    @staticmethod
+    def copy(style):
+        return Style(**style._colors_)
+
+    def __init__(self, **kwargs):
+        super(Style, self).__init__()
+        self._colors_ = {}
+
+        for name, color in kwargs.items():
+            if isinstance(color, Color) and name in self._properties_.keys():
+                prop = self._properties_[name]
+                if issubclass(prop.type, Color):
+                    setattr(self, f'_{name}_', color)
+                    self._colors_[name] = Color(color.red(), color.green(), color.blue(), color.alpha())

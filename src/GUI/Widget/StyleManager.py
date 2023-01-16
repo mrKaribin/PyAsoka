@@ -4,11 +4,12 @@ from PyAsoka.src.GUI.Style.Styles import Styles
 
 class StyleManager:
     def __init__(self, widget, style):
+        super(StyleManager, self).__init__()
         self.widget = widget
-        self._default_ = (Styles.window() if widget.parent() is None else Styles.widget()) if style is None else style
-        self._current_ = Style(self.default)
+        self._current_ = (Styles.window() if widget.parent() is None else Styles.widget()) if style is None else style
+        self._default_ = Style.copy(self.current)
 
-        self.current.changed.bind(widget.repaint)
+        self.current.changed.connect(widget.repaint)
 
     @property
     def default(self):

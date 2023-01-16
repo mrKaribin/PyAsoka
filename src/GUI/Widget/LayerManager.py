@@ -1,21 +1,41 @@
 from PyAsoka.src.GUI.Widget.Layer import Layer
+from PyAsoka.src.Core.AsynchData import AsynchData
+from PyAsoka.src.Core.Object import Object
 
 
-class LayerManager:
+class LayerManager(Object):
     def __init__(self):
+        super(LayerManager, self).__init__()
+        self._widget_ = None
         self._layers_ = {}
-        self._active_ = {}
+        self._active_ = AsynchData([])
+
+    def setWidget(self, widget):
+        self._widget_ = widget
+        for layer in self._layers_.values():
+            layer.setWidget(widget)
 
     def __getitem__(self, item):
         return self._layers_[item]
 
-    def add(self, layer: Layer):
-        if layer.name not in self._layers_.keys():
-            self.__dict__.update({layer.name: layer})
-            self._layers_[layer.name] = layer
-            layer.enabled.bind(self.__layer_enabled__)
-            layer.disabled.bind(self.__layer_disabled__)
+    def add(self, name, layer: Layer):
+        if name not in self._layers_.keys():
+            layer.setWidget(self._widget_)
+            layer.name = name
+            self.__dict__.update({name: layer})
+            self._layers_[name] = layer
+            layer.enabled.connect(self.__layer_enabled__)
+            layer.disabled.connect(self.__layer_disabled__)
         return self
+
+    def sort(self, active):
+        ok = False
+        while not ok:
+            ok = True
+            for i in range(len(active)):
+                if i > 0 and active[i - 1].level > active[i].level:
+                    active[i-1], active[i] = active[i], active[i-1]
+                    ok = False
 
     def remove(self, name):
         self._layers_.pop(name)
@@ -24,23 +44,19 @@ class LayerManager:
     def layers(self):
         return self._layers_.values()
 
-    def active(self):
-        return self._active_.values()
-
     def __layer_enabled__(self, layer):
-        self._active_[layer.name] = layer
+        active = self._active_.lock()
+        active.append(layer)
+        self.sort(active)
+        self._active_.unlock()
 
     def __layer_disabled__(self, layer):
-        self._active_.pop(layer.name)
+        active = self._active_.lock()
+        active.pop(active.index(layer))
+        self._active_.unlock()
 
-    def enable(self, name: str):
-        if name in self._layers_.keys():
-            self._layers_[name].enable()
-
-    def disable(self, name):
-        if name in self._active_.keys():
-            self._active_[name].disable()
-
-    def paint(self, event):
-        for layer in self._active_.values():
-            layer.paint(event)
+    def paint(self, painter, event):
+        active = self._active_.lock()
+        for layer in active:
+            layer.paint(self._widget_, painter, event)
+        self._active_.unlock()

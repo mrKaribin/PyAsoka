@@ -87,7 +87,7 @@ class AMatrixMenuScene(AWidget):
     def load_menu(self, elements):
         if len(elements) > 0:
             for element in self.elements:
-                element.widget.hide().ended.bind(element.widget.deleteLater)
+                element._widget_.hide().ended.bind(element._widget_.deleteLater)
 
         self.elements = []
         self.matrix_size = QSize(0, 0)

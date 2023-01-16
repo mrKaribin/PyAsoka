@@ -2,22 +2,92 @@ from PySide6.QtGui import QColor, QPainter, QPen, QBrush, QPainterPath
 from PySide6.QtGui import QPaintEvent, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, Property, QPoint, QRect, QSize
+
 from PyAsoka.src.Core.Signal import Signal
 from PyAsoka.src.GUI.Style.Styles import Style, Color
 from PyAsoka.src.GUI.API.Screen import Screen
-from PyAsoka.src.GUI.Animation.AnimationManager import AnimationManager, Animation
+from PyAsoka.src.GUI.Widget.AnimationManager import AnimationManager, Animation
+from PyAsoka.src.GUI.Widget.Configuration import Configuration
+from PyAsoka.src.GUI.Widget.MouseManager import MouseManager
+from PyAsoka.src.GUI.Widget.StyleManager import StyleManager
+from PyAsoka.src.GUI.Widget.Prop import Prop
+from PyAsoka.src.GUI.Widget.Props import Props, PropsMeta
 from PyAsoka.src.GUI.Widget.Layer import Layer
 from PyAsoka.src.GUI.Widget.LayerManager import LayerManager
-from PyAsoka.src.GUI.Widget.MouseManager import MouseManager
-from PyAsoka.src.GUI.Widget.Configuration import Configuration
-from PyAsoka.src.GUI.Widget.Display import Display
-from PyAsoka.src.GUI.Widget.StyleManager import StyleManager
-from PyAsoka.src.GUI.Widget.Animations import Animations
+from PyAsoka.src.GUI.Widget.State import State
+from PyAsoka.src.GUI.Widget.StateManager import StateManager
 
 from threading import Timer
+from copy import copy
+
+import inspect
+import types
 
 
-class Widget(QWidget):
+class WidgetMeta(type(QWidget)):
+    def __new__(mcs, name, bases, attrs, **extra_kwargs):
+        def createManager(mng_name, manager_type, element_type):
+            bases_list = {}
+            for base in bases:
+                if f'_{mng_name}_' in base.__dict__.keys():
+                    bases_list = {**bases_list, **base.__dict__[f'_{mng_name}_list_']}
+
+            manager = manager_type()
+            if f'_{mng_name}_list_' not in attrs:
+                attrs[f'_{mng_name}_list_'] = {}
+            attrs[f'_{mng_name}_list_'] = {**attrs[f'_{mng_name}_list_'], **bases_list}
+
+            for key in list(attrs.keys()):
+                attr = attrs[key]
+                if isinstance(attr, type) and issubclass(attr, element_type):
+                    attrs.pop(key)
+                    lay_name = key[0].lower() + key[1:]
+                    attrs[f'_{mng_name}_list_'][lay_name] = attr
+
+            if f'_{mng_name}_list_' in attrs:
+                for key, layer in attrs[f'_{mng_name}_list_'].items():
+                    manager.add(key, layer())
+
+            attrs[f'_{mng_name}_'] = manager
+
+        createManager('layers', LayerManager, Layer)
+        createManager('states', StateManager, State)
+        attrs[f'_mouse_'] = MouseManager()
+
+        # Поиск Props
+        props_list = {}
+        for base in bases:
+            if f'_props_' in base.__dict__.keys():
+                props_list = {**props_list, **base.__dict__[f'_props_list_']}
+
+        if f'_props_list_' not in attrs:
+            attrs[f'_props_list_'] = {}
+        props_list = {**attrs[f'_props_list_'], **props_list}
+
+        for key in list(attrs.keys()):
+            attr = attrs[key]
+            cond = isinstance(attr, type) and (issubclass(attr, Prop) or issubclass(attr, Props))
+            if isinstance(attr, Prop) or cond:
+                attrs.pop(key)
+                lay_name = key[0].lower() + key[1:]
+                if isinstance(attr, Prop):
+                    props_list[lay_name] = attr
+                else:
+                    props_list[lay_name] = attr
+
+        props = PropsMeta('WidgetProps', (Props, ), props_list)()
+        attrs[f'_props_'] = props
+        attrs[f'_props_list_'] = props_list
+
+        return super().__new__(mcs, name, bases, attrs)
+
+
+class Widget(QWidget, metaclass=WidgetMeta):
+
+    clicked = Signal(QWidget)
+    resized = Signal(QRect)
+    destroyed = Signal(QWidget)
+    _run_gui_task_ = Signal(types.MethodType, list)
 
     def __init__(self, parent: QWidget = None, movable: bool = False, clickable: bool = False, keyboard: bool = False,
                  geometry: tuple = None, style: Style = None, animated: bool = True,
@@ -29,30 +99,17 @@ class Widget(QWidget):
             pass
 
         # public
-        self.movable = movable
-        self.clickable = clickable
         self.animated = animated
 
         # private
-        self._display_ = Display(self)
-        self._layers_ = LayerManager() \
-            .add(Layer('loading',           self.layerLoading, animation=Animations.loading(self))) \
-            .add(Layer('background',        self.layerBackground)) \
-            .add(Layer('content',           self.layerContent))
+        self.layers.setWidget(self)
+        self.states.setWidget(self)
+        self.mouse.setWidget(self)
+        self.props.setWidget(self)
         self._style_ = StyleManager(self, style)
-        self._mouse_ = MouseManager()
-        self._configuration_ = Configuration(self)
+        self._configuration_ = Configuration(self, movable, clickable)
 
         self._moved_by_mouse_ = False
-        self._animation_opacity_ = AnimationManager()
-        self._animations_color_ = AnimationManager()
-        self._animations_geometry_ = AnimationManager()
-        self._initialization_timer_ = Timer(0.05, self.__preparation__)
-
-        # signals
-        self.clicked = Signal(QWidget)
-        self.resized = Signal(QRect)
-        self.destroyed = Signal(QWidget)
 
         # class preparation
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
@@ -66,151 +123,134 @@ class Widget(QWidget):
         else:
             self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        if geometry is not None:
-            if isinstance(geometry, tuple) or isinstance(geometry, list):
-                self.setGeometry(QRect(*geometry), duration=None)
-            if isinstance(geometry, QRect):
-                self.setGeometry(geometry, duration=None)
+        if False:
+            if geometry is not None:
+                if isinstance(geometry, tuple) or isinstance(geometry, list):
+                    self.setGeometry(QRect(*geometry), duration=None)
+                if isinstance(geometry, QRect):
+                    self.setGeometry(geometry, duration=None)
 
-        self.layers.loading.enable()
+        # Подготовка соединений с сигналами
+        def run_gui_task(method, args):
+            method(*args)
+
+        self._run_gui_task_.connect(run_gui_task)
+
+        def __preparation__():
+            self.prepare()
+            self.runGuiTask(self.states.loading.disable)
+
+        self.layers.background.enable()
+        self.states.loading.enable()
+        self._initialization_timer_ = Timer(0.05, __preparation__)
         self._initialization_timer_.start()
 
-    def __preparation__(self):
-        self.preparation()
-        self.layers.loading.disable()
-        self.layers.background.enable()
+    # Properties -------------------------------------------------------------------------------------------------------
+    class Alpha(Prop, type=float, default=1.0):
+        def setter(self, widget, value):
+            self.value = value
 
-    def preparation(self):
+            col = widget.style.current
+            stl = widget.style.default
+            current = [col.background, col.background_line, col.frame, col.line, col.text]
+            default = [stl.background, stl.background_line, stl.frame, stl.line, stl.text]
+
+            for i in range(len(current)):
+                if current[i] is not None:
+                    current[i].setAlpha(int(default[i].alpha() * value))
+
+            for child in widget.children():
+                if issubclass(type(child), Widget):
+                    child.props.alpha = value
+
+    class Frame(Props):
+        thickness = Prop(int, 2)
+        anglesRadius = Prop(int, 20)
+        topLeft = Prop(int, True)
+        topRight = Prop(int, True)
+        bottomLeft = Prop(int, True)
+        bottomRight = Prop(int, True)
+
+        def setRoundedAngles(self, top_left: bool, top_right: bool, bottom_left: bool, bottom_right: bool):
+            self.topLeft = top_left
+            self.topRight = top_right
+            self.bottomLeft = bottom_left
+            self.bottomRight = bottom_right
+
+    # Layers -----------------------------------------------------------------------------------------------------------
+    class Background(Layer, level=Layer.Level.TOP):
+        def paint(self, widget, painter, event):
+            if widget.style.current.frame is not None or widget.style.current.background is not None:
+                painter = widget.__get_painter__()
+                thickness = widget.props.frame.thickness
+                angle_size = widget.props.frame.anglesRadius
+                angle_side = angle_size * 2
+                indent = int(thickness * 1.5)
+
+                # Готовим перо для отрисовки рамки
+                if widget.style.current.frame is not None:
+                    frame = widget.style.current.frame
+                    painter.setPen(QPen(frame, thickness))
+                else:
+                    background = widget.style.current.background
+                    painter.setPen(QPen(background, thickness))
+
+                # Готовим заливку для фона
+                if widget.style.current.background is not None:
+                    painter.setBrush(QBrush(widget.style.current.background))
+
+                # print(self.style.default.background.alpha())
+                path = QPainterPath()
+                path.moveTo(0, angle_size)
+                if widget.props.frame.topLeft:
+                    path.arcTo(QRect(0, 0, angle_side, angle_side), 180, -90)
+                else:
+                    path.lineTo(0, 0)
+                    path.lineTo(angle_size, 0)
+
+                path.lineTo(widget.width() - angle_size, 0)
+                if widget.props.frame.topRight:
+                    path.arcTo(QRect(widget.width() - angle_side, 0, angle_side, angle_side), 90, -90)
+                else:
+                    path.lineTo(widget.width(), 0)
+                    path.lineTo(widget.width(), angle_size)
+
+                path.lineTo(widget.width(), widget.height() - angle_size)
+                if widget.props.frame.bottomRight:
+                    path.arcTo(QRect(widget.width() - angle_side, widget.height() - angle_side, angle_side, angle_side),
+                               0, -90)
+                else:
+                    path.lineTo(widget.width(), widget.height())
+                    path.lineTo(widget.width() - angle_side, widget.height())
+
+                path.lineTo(angle_size, widget.height())
+                if widget.props.frame.bottomLeft:
+                    path.arcTo(QRect(0, widget.height() - angle_side, angle_side, angle_side), 270, -90)
+                else:
+                    path.lineTo(0, widget.height())
+                    path.lineTo(0, widget.height() - angle_size)
+
+                path.lineTo(0, angle_size)
+                painter.drawPath(path)
+
+    # States -----------------------------------------------------------------------------------------------------------
+    class Loading(State):
+        def animation(self, widget):
+            from PyAsoka.src.GUI.Animation.CycleAnimations import CycleAnimations
+            return CycleAnimations(
+                Animation(widget.props, b'alpha', 1.0, 0.5, 500),
+                Animation(widget.props, b'alpha', 0.5, 1.0, 500)
+            )
+
+        def endAnimation(self, widget):
+            from PyAsoka.src.GUI.Animation.Animation import Animation
+            return Animation(widget, b'alpha', widget.alpha, 1.0, 500)
+
+    # Methods ----------------------------------------------------------------------------------------------------------
+    def prepare(self):
         from time import sleep
-        sleep(2.4)
-        print('Loading finished')
-
-    def setOpacity(self, level, duration=None, anim_type=Animation.Type.QUEUE, autorun=True):
-        if duration is not None:
-            animation = Animation(self, b"alpha")
-            animation.setStartValue(self.display)
-            animation.setEndValue(level)
-            animation.setDuration(duration)
-            self._animation_opacity_.add(animation, anim_type)
-            if autorun:
-                self._animation_opacity_.start()
-            return animation
-        else:
-            self.alpha = level
-
-    def setColor(self, color: QColor, value: QColor, duration=None, anim_type=Animation.Type.QUEUE, autorun=True):
-        if duration is not None:
-            animation = Animation(color, b'color')
-            animation.setStartValue(color.color if isinstance(color, Color) else color)
-            animation.setEndValue(value.color if isinstance(color, Color) else value)
-            animation.setDuration(duration)
-            if autorun:
-                self._animations_color_.add(animation, anim_type)
-                self._animations_color_.start()
-            return animation
-        else:
-            color = value
-
-    def __emerging_default__(self):
-        animation = self.show()
-        return animation
-
-    def __emerging_optional__(self, to_pos: QRect, from_point: QPoint):
-        if to_pos is None:
-            to_pos = self.geometry()
-        if from_point is None:
-            size = Screen(0).getSize()
-            from_point = QPoint(size.width() // 2 - 20, size.height() - 20)
-
-        step1 = QRect(from_point, QSize(40, 40))
-        step2 = QRect(from_point.x(), to_pos.y(), 40, 40)
-        step3 = QRect(to_pos.x(), to_pos.y(), 40, 40)
-
-        self.visibleContent(False)
-        self.setGeometry(step1, duration=None)
-        self.setGeometry(step2, duration=200)
-        self.setGeometry(step3, _from=step2, duration=300)
-        self.setGeometry(to_pos, _from=step3, duration=300).ended.bind(lambda: self.visibleContent(True))
-        return self._animations_geometry_
-
-    def emerging(self, *args):
-        if len(args) == 0:
-            animation = self.__emerging_default__()
-        else:
-            animation = self.__emerging_optional__(*args)
-        QWidget.show(self)
-        return animation
-
-    def __vanishing_default__(self):
-        animation = self.hide()
-        return animation
-
-    def __vanishing_optional__(self, to_point: QPoint):
-        if to_point is None:
-            size = Screen(0).getSize()
-            to_point = QPoint(size.width() // 2 - 20, size.height() - 20)
-
-        step1 = QRect(self.pos().x(), to_point.y(), 40, 40)
-        step2 = QRect(to_point, QSize(40, 40))
-
-        self.visibleContent(False)
-        self.setGeometry(self.geometry(), step1, duration=200)
-        animation = self.setGeometry(step1, step2, duration=200)
-        return animation
-
-    def vanishing(self, *args):
-        if len(args) == 0:
-            animation = self.__vanishing_default__()
-        else:
-            animation = self.__vanishing_optional__(*args)
-        animation.ended.bind(self.deleteLater)
-        return animation
-
-    def show(self, duration=250):
-        if duration is not None:
-            self.alpha = 0
-            animation = self.setOpacity(self.display.defaultOpacity, duration, Animation.Type.PARALLEL)
-            super().show()
-            self.activateWindow()
-            return animation
-        else:
-            super().show()
-
-    def hide(self, duration=250):
-        if duration is not None:
-            animation = self.setOpacity(0, duration, Animation.Type.PARALLEL)
-            animation.ended.bind(super().hide)
-            return animation
-        else:
-            super().hide()
-
-    def move(self, _to: QPoint, duration=None, anim_type=Animation.Type.QUEUE, autorun=True):
-        if duration is not None:
-            animation = Animation(self, b'geometry')
-            animation.setStartValue(self.geometry())
-            animation.setEndValue(QRect(_to, self.size()))
-            animation.setDuration(duration)
-            if autorun:
-                self._animations_geometry_.add(animation, anim_type).start()
-            else:
-                self._animations_geometry_.add(animation, anim_type)
-            return animation
-        else:
-            QWidget.move(self, _to)
-
-    def setGeometry(self, _to: QRect, _from: QRect = None, duration=None, anim_type=Animation.Type.QUEUE, autorun=True):
-        if duration is not None:
-            animation = Animation(self, b'geometry')
-            animation.setStartValue(self.geometry() if _from is None else _from)
-            animation.setEndValue(_to)
-            animation.setDuration(duration)
-            if autorun:
-                self._animations_geometry_.add(animation, anim_type).start()
-            else:
-                self._animations_geometry_.add(animation, anim_type)
-            return animation
-        else:
-            QWidget.setGeometry(self, _to)
+        sleep(4.7)
+        # print('Loading finished')
 
     def enterEvent(self, event):
         style = self.style.default
@@ -225,7 +265,7 @@ class Widget(QWidget):
             self.setColor(self.style.current.background, style.background, 200, Animation.Type.PARALLEL)
 
     def resizeEvent(self, event: QResizeEvent) -> None:
-        self.resized(self.geometry())
+        self.resized.emit(self.geometry())
 
     def __get_painter__(self):
         painter = QPainter(self)
@@ -240,170 +280,47 @@ class Widget(QWidget):
             painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceIn)
         return painter
 
-    def layerLoading(self, event: QPaintEvent):
-        self.layerBackground(event)
-
-    def layerBackground(self, event: QPaintEvent):
-        if self.style.current.frame is not None or self.style.current.background is not None:
-            painter = self.__get_painter__()
-            thickness = self.display.frame.thickness
-            angle_size = self.display.frame.anglesRadius
-            angle_side = angle_size * 2
-            indent = int(thickness * 1.5)
-
-            # Готовим перо для отрисовки рамки
-            if self.style.current.frame is not None:
-                painter.setPen(QPen(self.style.current.frame, thickness))
-            else:
-                painter.setPen(QPen(self.style.current.background, thickness))
-
-            # Готовим заливку для фона
-            if self.style.current.background is not None:
-                painter.setBrush(QBrush(self.style.current.background))
-
-            path = QPainterPath()
-            path.moveTo(0, angle_size)
-            if self.display.frame.topLeft:
-                path.arcTo(QRect(0, 0, angle_side, angle_side), 180, -90)
-            else:
-                path.lineTo(0, 0)
-                path.lineTo(angle_size, 0)
-
-            path.lineTo(self.width() - angle_size, 0)
-            if self.display.frame.topRight:
-                path.arcTo(QRect(self.width() - angle_side, 0, angle_side, angle_side), 90, -90)
-            else:
-                path.lineTo(self.width(), 0)
-                path.lineTo(self.width(), angle_size)
-
-            path.lineTo(self.width(), self.height() - angle_size)
-            if self.display.frame.bottomRight:
-                path.arcTo(QRect(self.width() - angle_side, self.height() - angle_side, angle_side, angle_side), 0, -90)
-            else:
-                path.lineTo(self.width(), self.height())
-                path.lineTo(self.width() - angle_side, self.height())
-
-            path.lineTo(angle_size, self.height())
-            if self.display.frame.bottomLeft:
-                path.arcTo(QRect(0, self.height() - angle_side, angle_side, angle_side), 270, -90)
-            else:
-                path.lineTo(0, self.height())
-                path.lineTo(0, self.height() - angle_size)
-
-            path.lineTo(0, angle_size)
-            painter.drawPath(path)
-
-    def layerContent(self, event: QPaintEvent):
-        pass
-
     def paintEvent(self, event: QPaintEvent):
-        self.layers.paint(event)
+        self.layers.paint(self.__get_painter__(), event)
 
     def mousePressEvent(self, event: QMouseEvent):
-        parent = self.parent()
-        if parent is None:
-            self.activateWindow()
-
         self.mouse.pressEvent(event)
         super(Widget, self).mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
-        if self.movable and self.mouse.leftButton.pressed:
-            lastPos = self.mouse.leftButton.pressPosition
-
-            if self.parent() is None:
-                pos = event.globalPos()
-                self.move(pos - lastPos, duration=None)
-
-            else:
-                pos = event.globalPos() - self.parent().pos()
-                new_pos = pos - lastPos
-                if 0 < new_pos.x() < self.parent().width() - self.width() and 0 < new_pos.y() < self.parent().height() - self.height():
-                    self.move(pos - lastPos, duration=None)
-            self._moved_by_mouse_ = True
-
-        else:
-            super(Widget, self).mouseMoveEvent(event)
+        super(Widget, self).mouseMoveEvent(event)
         self.mouse.moveEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent):
-        if self.clickable and not self._moved_by_mouse_:
-            self.clicked(self)
-        self._moved_by_mouse_ = False
-
         self.mouse.releaseEvent(event)
         super(Widget, self).mouseReleaseEvent(event)
 
-    @staticmethod
-    def getStyleSheet(directory: str):
-        file = open(directory, 'r')
-        result = file.read()
-        file.close()
-        return result
-
-    def addTask(self, task, *args, **kwargs):
-        pass
-
-    def test_animation(self):
-        for i in range(3):
-            duration = 800 - 200 * (i + 1)
-            anim1 = Animation(self, b"geometry")
-            anim1.setEndValue(QRect(200, 200, 400, 400))
-            anim1.setDuration(duration)
-            self._animations_geometry_.add(anim1)
-
-            anim2 = Animation(self, b"geometry")
-            anim2.setEndValue(QRect(200, 800, 400, 400))
-            anim2.setDuration(duration)
-            self._animations_geometry_.add(anim2)
-
-            anim3 = Animation(self, b"geometry")
-            anim3.setEndValue(QRect(1200, 800, 400, 400))
-            anim3.setDuration(duration)
-            self._animations_geometry_.add(anim3)
-
-            anim4 = Animation(self, b"geometry")
-            anim4.setEndValue(QRect(600, 400, 400, 400))
-            anim4.setDuration(duration)
-            self._animations_geometry_.add(anim4)
-
-            anim5 = Animation(self, b"geometry")
-            anim5.setEndValue(QRect(200, 200, 1200, 800))
-            anim5.setDuration(duration)
-            self._animations_geometry_.add(anim5)
-
-            anim6 = Animation(self, b"geometry")
-            anim6.setEndValue(QRect(200, 200, 400, 400))
-            anim6.setDuration(duration)
-            self._animations_geometry_.add(anim6)
-        self._animations_geometry_.start()
+    def runGuiTask(self, method: types.MethodType, args=[]):
+        self._run_gui_task_.emit(method, args)
 
     def deleteLater(self):
-        self.destroyed(self)
+        self.destroyed.emit(self)
         super(Widget, self).deleteLater()
 
-    def __get_opacity__(self):
-        self.display.get_opacity()
-
-    def __set_opacity__(self, opacity):
-        self.display.set_opacity(opacity)
-
-    # alpha = Property(float, __get_opacity__, __set_opacity__)
     @Property(float)
     def alpha(self):
-        return self.display.opacity
+        return self.props.alpha
 
     @alpha.getter
     def alpha(self):
-        return self.display.opacity
+        return self.props.alpha
 
     @alpha.setter
     def alpha(self, opacity):
-        self.display.opacity = opacity
+        self.props.alpha = opacity
 
     @property
-    def layers(self):
+    def layers(self) -> LayerManager:
         return self._layers_
+
+    @property
+    def states(self) -> StateManager:
+        return self._states_
 
     @property
     def style(self) -> StyleManager:
@@ -418,8 +335,8 @@ class Widget(QWidget):
         return self._configuration_
 
     @property
-    def display(self):
-        return self._display_
+    def props(self):
+        return self._props_
 
     @staticmethod
     def proportional(value, percentage):

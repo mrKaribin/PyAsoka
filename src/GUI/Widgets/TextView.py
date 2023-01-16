@@ -1,4 +1,4 @@
-from PyAsoka.src.GUI.Widget.Widget import Styles, Style
+from PyAsoka.src.GUI.Style.Styles import Styles, Style
 from PyAsoka.src.GUI.Widgets.ALabelWidget import ALabelWidget
 
 from PySide6.QtWidgets import QLabel
@@ -9,7 +9,7 @@ class TextView(ALabelWidget):
     def __init__(self, text: str = '', style: Style = Styles.widget(), **kwargs):
         super().__init__(QLabel, text=text, style=style, **kwargs)
 
-        self.style.current.changed.bind(self.__update_palette__)
+        self.style.current.changed.connect(self.__update_palette__)
         self.__update_palette__()
 
     def __update_palette__(self):

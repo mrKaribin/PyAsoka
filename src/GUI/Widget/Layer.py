@@ -1,40 +1,47 @@
 from PyAsoka.src.Core.Signal import Signal, SignalType
-from PyAsoka.src.GUI.Animation.Animation import Animation
-from PyAsoka.src.GUI.Animation.AnimationManager import AnimationManager
+from PyAsoka.src.Core.Object import Object, ObjectMeta
+from PySide6.QtGui import QPainter, QPaintEvent
+
+from enum import IntEnum
 
 
-class Layer:
-    def __init__(self, name, func, begin_animation: Animation = None,
-                 animation: Animation | AnimationManager = None, end_animation: Animation = None):
-        self.name = name
-        self.function = func
-        self.beginAnimation = begin_animation
-        self.animation = animation
-        self.endAnimation = end_animation
+class LayerMeta(ObjectMeta):
+    def __new__(mcs, name, bases, attrs, **extra_kwargs):
+        attrs['_level_'] = 1 if 'level' not in extra_kwargs.keys() else extra_kwargs['level']
+        attrs['_alpha_'] = 1.0 if 'alpha' not in extra_kwargs.keys() else extra_kwargs['alpha']
+        return super().__new__(mcs, name, bases, attrs)
 
-        self.enabled = Signal(Layer)
-        self.disabled = Signal(Layer)
+
+class Layer(Object, metaclass=LayerMeta):
+    class Level(IntEnum):
+        BOTTOM = 1
+        MIDDLE = 2
+        TOP = 3
+
+    enabled = Signal(Object)
+    disabled = Signal(Object)
+
+    def __init__(self):
+        super(Layer, self).__init__()
+        self._widget_ = None
+        self.name = ''
+
+    def setWidget(self, widget):
+        self._widget_ = widget
 
     def enable(self):
-        if self.beginAnimation is not None:
-            self.beginAnimation.start()
-            if self.animation is not None:
-                self.beginAnimation.ended.bind(self.animation.start)
-
-        elif self.animation is not None:
-            self.animation.start()
-
-        self.enabled(self)
+        self.enabled.emit(self)
 
     def disable(self):
-        if self.animation is not None:
-            self.animation.stop()
+        self.disabled.emit(self)
 
-        if self.endAnimation is not None:
-            self.endAnimation.ended.bind(lambda: self.disabled(self), SignalType.SingleShotConnection)
-            self.endAnimation.start()
-        else:
-            self.disabled(self)
+    def paint(self, widget, painter: QPainter, event: QPaintEvent):
+        pass
 
-    def paint(self, event):
-        self.function(event)
+    @property
+    def level(self):
+        return self._level_
+
+    @property
+    def alpha(self):
+        return self._alpha_

@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QLineEdit
 
 
 class ALineEdit(ALabelWidget):
-    def __init__(self, text: str = '', style: Style = Styles.widget(), **kwargs):
+    def __init__(self, text: str = '', style: Style = Styles._widget_(), **kwargs):
         super().__init__(QLineEdit, text=text, style=style, keyboard=True, round_size=15, **kwargs)
 
         # class preparation
