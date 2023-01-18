@@ -12,13 +12,11 @@ class PropMeta(ObjectMeta):
 
             attrs['_type_'] = extra_kwargs['type']
             attrs['_value_'] = extra_kwargs['default']
+            attrs['changed'] = Signal(extra_kwargs['type'])
         return super().__new__(mcs, name, bases, attrs)
 
 
 class Prop(Object, metaclass=PropMeta):
-
-    changed = Signal()
-
     def __init__(self, _type=None, initial_state=None, widget=None):
         super().__init__()
 
@@ -37,12 +35,9 @@ class Prop(Object, metaclass=PropMeta):
 
         self._widget_ = widget
 
-    def setWidget(self, widget):
-        self._widget_ = widget
-
     def __setter__(self, inst, value):
         self.setter(self._widget_, value)
-        self.changed.emit()
+        self.changed.emit(value)
 
     def __getter__(self, inst):
         return self.getter(self._widget_)

@@ -1,11 +1,3 @@
-from PySide6.QtGui import QColor, QPainter, QPen, QBrush, QPainterPath
-from PySide6.QtGui import QPaintEvent, QMouseEvent, QResizeEvent
-from PySide6.QtWidgets import QWidget
-from PySide6.QtCore import Qt, Property, QPoint, QRect, QSize
-
-from PyAsoka.src.Core.Signal import Signal
-from PyAsoka.src.GUI.Style.Styles import Style, Color
-from PyAsoka.src.GUI.API.Screen import Screen
 from PyAsoka.src.GUI.Widget.AnimationManager import AnimationManager, Animation
 from PyAsoka.src.GUI.Widget.Configuration import Configuration
 from PyAsoka.src.GUI.Widget.MouseManager import MouseManager
@@ -16,6 +8,16 @@ from PyAsoka.src.GUI.Widget.Layer import Layer
 from PyAsoka.src.GUI.Widget.LayerManager import LayerManager
 from PyAsoka.src.GUI.Widget.State import State
 from PyAsoka.src.GUI.Widget.StateManager import StateManager
+from PyAsoka.src.GUI.Widget.Animate import Animate
+from PyAsoka.src.GUI.Style.Styles import Styles, Style, Color
+from PyAsoka.src.GUI.API.Screen import Screen
+from PyAsoka.src.Core.Signal import Signal
+from PyAsoka.src.Debug.Exceptions import Exceptions
+
+from PySide6.QtGui import QColor, QPainter, QPen, QBrush, QPainterPath
+from PySide6.QtGui import QPaintEvent, QMouseEvent, QResizeEvent, QMovie, QPixmap, QImage
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Qt, Property, QPoint, QRect, QSize
 
 from threading import Timer
 from copy import copy
@@ -76,13 +78,13 @@ class Widget(QWidget, metaclass=WidgetMeta):
     _run_gui_task_ = Signal(types.MethodType, list)
 
     def __init__(self, parent: QWidget = None, movable: bool = False, clickable: bool = False, keyboard: bool = False,
-                 geometry: tuple = None, style: Style = None, animated: bool = True,
+                 style: type(Style) = None,
                  with_super: bool = True):
         if with_super:
             super().__init__(parent)
 
-        if parent is not None:
-            pass
+        if style is None:
+            style = Styles.Window if parent is None else Styles.Widget
 
         def createManager(mng_name, manager_type):
             list_name = f'_{mng_name}_list_'
@@ -94,17 +96,20 @@ class Widget(QWidget, metaclass=WidgetMeta):
             return manager
 
         # public
-        self.animated = animated
+        self.animation = None
 
         # private
         self._layers_ = createManager('layers', LayerManager)
         self._states_ = createManager('states', StateManager)
-        self._mouse_ = MouseManager()
+        self._mouse_ = MouseManager(self)
         self._props_ = self._props_class_(self)
-
-        self.mouse.setWidget(self)
+        self._animations_ = AnimationManager()
+        self._animate_ = Animate(self)
         self._style_ = StyleManager(self, style)
         self._configuration_ = Configuration(self, movable, clickable)
+
+        self._loading_movie_ = QMovie('PyAsoka/media/gif/loading_background2.gif')
+        self._loading_movie_.frameChanged.connect(self.repaint)
 
         # class preparation
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
@@ -118,19 +123,15 @@ class Widget(QWidget, metaclass=WidgetMeta):
         else:
             self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        if False:
-            if geometry is not None:
-                if isinstance(geometry, tuple) or isinstance(geometry, list):
-                    self.setGeometry(QRect(*geometry), duration=None)
-                if isinstance(geometry, QRect):
-                    self.setGeometry(geometry, duration=None)
-
         # Подготовка соединений с сигналами
         def run_gui_task(method, args):
             method(*args)
 
         self._run_gui_task_.connect(run_gui_task)
+        if parent is not None:
+            parent.props._alpha_.changed.connect(lambda value: self.props._alpha_.setter(self, value))
 
+        # Запуск виджета
         def __preparation__():
             self.prepare()
             self.runGuiTask(self.states.loading.disable)
@@ -147,8 +148,8 @@ class Widget(QWidget, metaclass=WidgetMeta):
                 self.value = value
 
         class Frame:
-            thickness = Prop(int, 2)
-            anglesRadius = Prop(int, 20)
+            thickness = Prop(int, 3)
+            anglesRadius = Prop(int, 15)
             topLeft = Prop(int, True)
             topRight = Prop(int, True)
             bottomLeft = Prop(int, True)
@@ -162,88 +163,111 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
     # Layers -----------------------------------------------------------------------------------------------------------
     class Background(Layer, level=Layer.Level.TOP):
-        def paint(self, widget, painter, event):
-            if widget.style.current.frame is not None or widget.style.current.background is not None:
-                painter = widget.__get_painter__()
+        def paint(self, widget, painter, style, props, event):
+            if style.exists('frame') or style.exists('background'):
                 thickness = widget.props.frame.thickness
                 angle_size = widget.props.frame.anglesRadius
                 angle_side = angle_size * 2
-                indent = int(thickness * 1.5)
+                indent = int(thickness * 0.7)
 
                 # Готовим перо для отрисовки рамки
-                if widget.style.current.frame is not None:
-                    frame = widget.style.current.frame
+                if style.exists('frame'):
+                    frame = style.frame
                     painter.setPen(QPen(frame, thickness))
                 else:
-                    background = widget.style.current.background
+                    background = style.background
                     painter.setPen(QPen(background, thickness))
 
                 # Готовим заливку для фона
-                if widget.style.current.background is not None:
-                    painter.setBrush(QBrush(widget.style.current.background))
+                if style.exists('background'):
+                    painter.setBrush(QBrush(style.background))
 
-                # print(self.style.default.background.alpha())
                 path = QPainterPath()
-                path.moveTo(0, angle_size)
+                path.moveTo(indent, angle_size + indent)
                 if widget.props.frame.topLeft:
-                    path.arcTo(QRect(0, 0, angle_side, angle_side), 180, -90)
+                    path.arcTo(QRect(indent, indent, angle_side, angle_side), 180, -90, )
                 else:
-                    path.lineTo(0, 0)
-                    path.lineTo(angle_size, 0)
+                    path.lineTo(indent, indent)
+                    path.lineTo(angle_size + indent, indent)
 
-                path.lineTo(widget.width() - angle_size, 0)
+                path.lineTo(widget.width() - angle_size - indent, indent)
                 if widget.props.frame.topRight:
-                    path.arcTo(QRect(widget.width() - angle_side, 0, angle_side, angle_side), 90, -90)
+                    path.arcTo(QRect(widget.width() - angle_side - indent, indent, angle_side, angle_side), 90, -90)
                 else:
-                    path.lineTo(widget.width(), 0)
-                    path.lineTo(widget.width(), angle_size)
+                    path.lineTo(widget.width() - indent, indent)
+                    path.lineTo(widget.width() - indent, angle_size - indent)
 
-                path.lineTo(widget.width(), widget.height() - angle_size)
+                path.lineTo(widget.width() - indent, widget.height() - angle_size - indent)
                 if widget.props.frame.bottomRight:
-                    path.arcTo(QRect(widget.width() - angle_side, widget.height() - angle_side, angle_side, angle_side),
-                               0, -90)
+                    path.arcTo(QRect(widget.width() - angle_side - indent, widget.height() - angle_side - indent, angle_side, angle_side), 0, -90)
                 else:
-                    path.lineTo(widget.width(), widget.height())
-                    path.lineTo(widget.width() - angle_side, widget.height())
+                    path.lineTo(widget.width() - indent, widget.height() - indent)
+                    path.lineTo(widget.width() - angle_side - indent, widget.height() - indent)
 
-                path.lineTo(angle_size, widget.height())
+                path.lineTo(angle_size + indent, widget.height() - indent)
                 if widget.props.frame.bottomLeft:
-                    path.arcTo(QRect(0, widget.height() - angle_side, angle_side, angle_side), 270, -90)
+                    path.arcTo(QRect(indent, widget.height() - angle_side - indent, angle_side, angle_side), 270, -90)
                 else:
-                    path.lineTo(0, widget.height())
-                    path.lineTo(0, widget.height() - angle_size)
+                    path.lineTo(indent, widget.height() - indent)
+                    path.lineTo(indent, widget.height() - angle_size - indent)
 
-                path.lineTo(0, angle_size)
+                path.lineTo(indent, angle_size + indent)
                 painter.drawPath(path)
+
+    class LoadingBackground(Layer, level=Layer.Level.MIDDLE):
+        def paint(self, widget, painter: QPainter, style, props: Props, event: QPaintEvent):
+            pixmap = widget._loading_movie_.currentPixmap()
+            size = QSize(160 * 3, 120 * 3)
+            pos = QPoint((widget.width() - size.width()) // 2, (widget.height() - size.height()) // 2)
+            painter.setOpacity(self.alpha)
+            painter.drawPixmap(QRect(pos, size), pixmap)
+            painter.setOpacity(1.0)
 
     # States -----------------------------------------------------------------------------------------------------------
     class Loading(State):
-        def animation(self, widget):
-            from PyAsoka.src.GUI.Animation.CycleAnimations import CycleAnimations
-            return CycleAnimations(
-                Animation(widget.props, b'alpha', 1.0, 0.5, 5000),
-                Animation(widget.props, b'alpha', 0.5, 1.0, 5000)
-            )
+        def task(self, widget):
+            widget.layers.loadingBackground.enable()
+            widget._loading_movie_.start()
 
-        def endAnimation(self, widget):
-            from PyAsoka.src.GUI.Animation.Animation import Animation
-            return Animation(widget, b'alpha', widget.alpha, 1.0, 500)
+        def endTask(self, widget):
+            anim = widget.layers.loadingBackground.disappearance()
+            anim.finished.connect(widget._loading_movie_.stop)
+            print('hui')
 
     # Methods ----------------------------------------------------------------------------------------------------------
+
     def prepare(self):
         pass
 
+    def setSize(self, size):
+        if isinstance(size, tuple) and len(size) == 2:
+            self.resize(QSize(*size))
+        elif isinstance(size, QSize):
+            self.resize(size)
+        else:
+            raise Exceptions.UnsupportableType(size)
+
+    def setPosition(self, position):
+        if isinstance(position, tuple) and len(position) == 2:
+            self.move(QPoint(*position))
+        elif isinstance(position, QPoint):
+            self.move(position)
+        else:
+            raise Exceptions.UnsupportableType(position)
+
+    def setGeometry(self, geometry):
+        if isinstance(geometry, tuple) and len(geometry) == 4:
+            super(Widget, self).setGeometry(QRect(*geometry))
+        elif isinstance(geometry, QRect):
+            super(Widget, self).setGeometry(geometry)
+        else:
+            raise Exceptions.UnsupportableType(geometry)
+
     def enterEvent(self, event):
-        style = self.style.default
-        if self.animated and self.parent() is None and style.background is not None and style.background.alpha() < 255:
-            color = Color(self.style.current.background)
-            color.setAlpha(255)
-            self.setColor(self.style.current.background, color, 200, Animation.Type.PARALLEL)
+        pass
 
     def leaveEvent(self, event):
-        style = self.style.default
-        if self.animated and self.parent() is None and style.background is not None and style.background.alpha() < 255:
-            self.setColor(self.style.current.background, style.background, 200, Animation.Type.PARALLEL)
+        self.mouse.cursorPosition = None
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         self.resized.emit(self.geometry())
@@ -255,7 +279,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
         if parent is None:
             painter.setCompositionMode(painter.CompositionMode.CompositionMode_DestinationOver)
         elif issubclass(type(parent), Widget) and (
-                parent.style.current.background is None or parent.style.current.background.alpha() != 255):
+                not parent.style.current.exists('background') or parent.style.current.background.alpha() != 255):
             painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceOver)
         else:
             painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceIn)
@@ -318,6 +342,14 @@ class Widget(QWidget, metaclass=WidgetMeta):
     @property
     def props(self):
         return self._props_
+
+    @property
+    def animations(self):
+        return self._animations_
+
+    @property
+    def animate(self):
+        return self._animate_
 
     @staticmethod
     def proportional(value, percentage):

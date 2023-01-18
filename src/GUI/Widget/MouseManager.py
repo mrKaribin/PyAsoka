@@ -3,8 +3,8 @@ from PySide6.QtGui import QMouseEvent
 
 
 class MouseManager:
-    def __init__(self):
-        self._widget_ = None
+    def __init__(self, widget):
+        self._widget_ = widget
         self.leftButton = Button()
         self.rightButton = Button()
         self._buttons_ = {
@@ -13,9 +13,6 @@ class MouseManager:
         }
         self.cursorPosition = None
         self.dragging = False
-
-    def setWidget(self, widget):
-        self._widget_ = widget
 
     def button(self, button: Qt.MouseButton):
         return self._buttons_[button]

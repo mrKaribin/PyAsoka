@@ -29,4 +29,3 @@ class ColorProperty:
 
     def setter(self, inst, color):
         self.value = color
-        inst.changed.emit()

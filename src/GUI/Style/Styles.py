@@ -29,9 +29,7 @@ class Styles:
 
     # Стандартный виджет для любого уровня вложенности
     class Widget(Style,
-                 background=None,
                  background_line=Colors.BackgroundLine.default(),
-                 frame=None,
                  line=Colors.Line.default(),
                  text=Colors.Text.default()):
         pass

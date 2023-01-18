@@ -1,6 +1,6 @@
 from PyAsoka.src.Core.Object import Object, ObjectMeta
 from PyAsoka.src.Core.Signal import Signal
-from PyAsoka.src.GUI.Widget.Prop import Prop
+from PyAsoka.src.GUI.Widget.Prop import Prop, PropMeta
 from PySide6.QtCore import QObject, Property
 
 
@@ -18,8 +18,6 @@ class PropsMeta(ObjectMeta):
             attr = attrs[key]
             attr_name = key[0].lower() + key[1:]
             if isinstance(attr, Prop) or (isinstance(attr, type) and (issubclass(attr, Prop) or type(attr) == type)):
-                if type(attr) == type:
-                    print(attr)
                 props_list[attr_name] = attr
                 attrs.pop(key)
 
@@ -39,7 +37,7 @@ class PropsMeta(ObjectMeta):
         def setter(prop_name, inst, value):
             obj = getattr(inst, f'_{prop_name}_')
             obj.__setter__(inst, value)
-            obj.changed.emit()
+            # obj.changed.emit()
 
         def getter(prop_name, inst):
             obj = getattr(inst, f'_{prop_name}_')
@@ -48,15 +46,15 @@ class PropsMeta(ObjectMeta):
         for key, prop in props_fields.items():
             attrs[key] = Property(
                 prop.type,
-                lambda inst: getter(key, inst),
-                lambda inst, value: setter(key, inst, value)
+                lambda inst, prop_name=key: getter(prop_name, inst),
+                lambda inst, value, prop_name=key: setter(prop_name, inst, value)
             )
 
         for key, prop in props_static_fields.items():
             attrs[key] = Property(
                 prop._type_,
-                lambda inst: getter(key, inst),
-                lambda inst, value: setter(key, inst, value)
+                lambda inst, prop_name=key: getter(prop_name, inst),
+                lambda inst, value, prop_name=key: setter(prop_name, inst, value)
             )
 
         for key, prop in props_classes.items():
@@ -76,16 +74,18 @@ class PropsMeta(ObjectMeta):
         return super().__new__(mcs, name, bases, attrs)
 
 
-class Props(Object, metaclass=PropsMeta):
+class Props(Object, metaclass=PropsMeta): # ToDo настроить перерисовку виджета при изменении состояния
     def __init__(self, widget):
         super().__init__()
-        self._widget_ = None
+        self._widget_ = widget
 
         for key, prop in self._props_fields_.items():
-            self.__dict__.update({f'_{key}_': type(prop)(prop.type, prop.value, self._widget_)})
+            self.__dict__.update({f'_{key}_': PropMeta(f'{key}Prop', (Prop, ), {}, type=prop.type, default=prop.value)(widget=self._widget_)})
+            self.__dict__[f'_{key}_'].changed.connect(self._widget_.repaint)
 
         for key, prop in self._props_static_fields_.items():
             self.__dict__.update({f'_{key}_': prop(widget=self._widget_)})
+            self.__dict__[f'_{key}_'].changed.connect(self._widget_.repaint)
 
         for key, prop in self._props_classes_.items():
             self.__dict__.update({f'{key}': prop(self._widget_)})

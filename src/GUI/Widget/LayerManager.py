@@ -52,5 +52,5 @@ class LayerManager(Object):
     def paint(self, painter, event):
         active = self._active_.lock()
         for layer in active:
-            layer.paint(self._widget_, painter, event)
+            layer.paint(self._widget_, painter, layer.style, self._widget_.props, event)
         self._active_.unlock()
