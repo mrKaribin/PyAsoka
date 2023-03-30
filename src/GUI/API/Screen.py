@@ -1,9 +1,12 @@
 from PySide6.QtCore import QSize, QPoint
 from PySide6.QtWidgets import QApplication
+from PyAsoka.Asoka import Asoka
+
+import os
 
 
 class Screen:
-    def __init__(self, screen):
+    def __init__(self, screen=0):
         self.index = 0
 
         if isinstance(screen, int):
@@ -29,3 +32,20 @@ class Screen:
 
     def getAvailableGeometry(self):
         return QApplication.screens()[self.index].availableGeometry()
+
+    def enable(self):
+        if Asoka.Device.getOS() == Asoka.Device.OS.WINDOWS:
+            from win32con import HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER
+            from win32gui import SendMessage
+            SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, -1)
+        elif Asoka.Device.getOS() == Asoka.Device.OS.LINUX:
+            os.system('xset -display :0.0 dpms force on')
+
+    def disable(self):
+        if Asoka.Device.getOS() == Asoka.Device.OS.WINDOWS:
+            from win32con import HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER
+            from win32gui import SendMessage
+            SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 2)
+        elif Asoka.Device.getOS() == Asoka.Device.OS.LINUX:
+            os.system('sleep 1 && xset -display :0.0 dpms force off ')
+

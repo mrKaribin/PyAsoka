@@ -20,12 +20,13 @@ class SpeechRecModel:
 
 class SpeechRecognition:
     class Models:
-        PERFORMANCE = os.path.split(os.path.abspath(__file__))[0] + '/vosk-model-small-ru-0.22'
-        QUALITY = os.path.split(os.path.abspath(__file__))[0] + '/vosk-model-ru-0.22'
+        PERFORMANCE = Asoka.Project.Path.asokaModels() + '/vosk-model-small-ru-0.22'
+        QUALITY = Asoka.Project.Path.asokaModels() + '/vosk-model-ru-0.22'
 
     def __init__(self, model: SpeechRecModel = None):
         if model is None:
-            path = self.Models.QUALITY
+            path = self.Models.PERFORMANCE
+            print(path)
             model = SpeechRecModel(path, Asoka.Language.RUSSIAN)
         self.chunk = 8000
         self.rate = 16000

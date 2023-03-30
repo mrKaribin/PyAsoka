@@ -1,5 +1,5 @@
 from PyAsoka.Instruments import Log
-from PyAsoka.src.MVC.Model.Model import Model, DatabaseType
+from PyAsoka.src.MVC.ModelOld.Model import Model, DatabaseType
 
 
 class Tag(Model):

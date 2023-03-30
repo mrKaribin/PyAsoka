@@ -35,8 +35,8 @@ class DbField:
         self.keys[a.types.db.constraints.DEFAULT] = value
         return self
 
-    def get_advt(self, name, datatype, lang=a.types.db.lang.sqlite):
-        l = a.types.db.lang
+    def get_advt(self, name, datatype, lang=a.types.db.type.sqlite):
+        l = a.types.db.type
         if lang == l.sqlite:
             from PyAsoka.src.Database.SqLite import SqLite as db
             result = f'{name} {db.toSqlType(datatype)} '
@@ -211,7 +211,7 @@ def {func_name}(self):
         warning("%s.exist: Некорректные параметры базы данных" % cls.classname)
         return
         
-    from Database.{db_mode.lang} import {db_mode.lang} as db
+    from Database.{db_mode.type} import {db_mode.type} as db
     db.init(self.__mode__.database)
     for table in db.getTables():
         if table.get('name') == self.__mode__.database.table:
@@ -226,7 +226,7 @@ def {func_name}(self):
         warning("%s.{func_name}: обращение к SQL с некорректными параметрами" % (self.classname))
         return
     
-    from Database.{db_mode.lang} import {db_mode.lang} as db
+    from Database.{db_mode.type} import {db_mode.type} as db
     fields = ''
     for field in self.__fields__:
         info = eval('self._%s_' % field)
@@ -252,7 +252,7 @@ def {func_name}(cls, id):
         warning("%s.exist: Некорректные параметры базы данных" % cls.classname)
         return
         
-    from Database.{db_mode.lang} import {db_mode.lang} as Database
+    from Database.{db_mode.type} import {db_mode.type} as Database
     table = cls.__mode__.database.table
     if id < 1:
         return False
@@ -312,7 +312,7 @@ def {func_name}(obj):
     else:
         error('{classname}::{func_name}: Получены некорректные данные')
         return []
-    from Database.{dbmode.lang} import {dbmode.lang} as db
+    from Database.{dbmode.type} import {dbmode.type} as db
         
     query = 'SELECT {fld} FROM {dbmode.table} WHERE {field.name} = %s' % _id
     data = db.query(query)
@@ -343,13 +343,13 @@ def to_sql(cls, value, datatype):
     elif datatype in (t.str, t.bytes):
         return quotes(str(value))
 
-    elif datatype in (t.tuple, t.list, t.dict):
+    elif datatype in (t.tuple, t.list, t._dict_):
         try:
             return f"'{json.dumps(value)}'"
         except Exception:
             warning(f'{cls.classname}:to_sql(): Некорректные данные. '
                     f'Значение типа <{type(value)}> невозможно преобразовать в JSON')
-            return {} if datatype == t.dict else []
+            return {} if datatype == t._dict_ else []
 
     elif datatype == a.types.alist:
         result = {}
@@ -397,7 +397,7 @@ def generate_insert(db_mode):
 @classmethod
 def {func_name}(cls, data:dict):
     # comment(data)
-    from Database.{db_mode.lang} import {db_mode.lang} as db
+    from Database.{db_mode.type} import {db_mode.type} as db
     names = ''
     values = ''
 
@@ -415,7 +415,7 @@ def {func_name}(cls, data:dict):
     query = 'INSERT INTO {db_mode.table} (%s) VALUES (%s);' % (names, values)
     db.init(cls.__mode__.database)
 """
-    if db_mode.lang == a.types.db.lang.sqlite:
+    if db_mode.type == a.types.db.type.sqlite:
         code += f"""
     db.execute(query, True)
     return db.lastRowId
@@ -439,7 +439,7 @@ def generate_update(db_mode):
     code = f"""
 @classmethod
 def {func_name}(cls, data:dict, where:str=None):
-    from Database.{db_mode.lang} import {db_mode.lang} as db
+    from Database.{db_mode.type} import {db_mode.type} as db
     changes = ''
 
     for key in data.keys():
@@ -478,7 +478,7 @@ def generate_select(db_mode):
     code = f"""
 @classmethod
 def {func_name}(cls, data:list=None, where:str=None):
-    from Database.{db_mode.lang} import {db_mode.lang} as db
+    from Database.{db_mode.type} import {db_mode.type} as db
     if data is None:
         fields = '*'
     else:
@@ -526,7 +526,7 @@ def {func_name}(cls, where: str):
     return result
 
 
-def generate_remove(lang=a.types.db.lang.sqlite):
+def generate_remove(lang=a.types.db.type.sqlite):
     pass
 
 

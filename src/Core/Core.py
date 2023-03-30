@@ -28,6 +28,20 @@ class Core:
         self._thread_ = Thread(target=self.run)
         self._thread_.start()
 
+    def initialization(self):
+        if Asoka.Modules.Users.active and self._users_ is None:
+            self._users_ = UsersManager()
+            self._current_user_ = self._users_.create('Демьян')
+
+        speach = Asoka.Modules.Speach
+        if speach.active and self._communication_ is None:
+            name, voice = speach.name, speach.voice
+            if voice is None:
+                voice = SpeechEngine.Voices.IVONA
+
+            user = self._users_.create(name)
+            self._communication_ = CommunicationEngine(user, voice)
+
     def getId(self, obj, name: str = None):
         _id, _name = None, None
 
@@ -48,21 +62,8 @@ class Core:
         return self._communication_
 
     def run(self):
+        self.initialization()
         while True:
-            users = Asoka.Modules._users_
-            if users['state'] and self._users_ is None:
-                self._users_ = UsersManager()
-                self._current_user_ = self._users_.create('Демьян')
-
-            speach = Asoka.Modules._speach_
-            if speach['state'] and self._communication_ is None:
-                name, voice = speach['name'], speach['voice']
-                if voice is None:
-                    voice = SpeechEngine.Voices.IVONA
-
-                user = self._users_.create(name)
-                self._communication_ = CommunicationEngine(user, voice)
-
             time.sleep(Asoka.defaultCycleDelay)
 
 

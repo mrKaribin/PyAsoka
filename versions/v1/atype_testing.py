@@ -1,4 +1,4 @@
-from PyAsoka.src.MVC.Model.Model import Model, DatabaseProfile, DatabaseType
+from PyAsoka.src.MVC.ModelOld.Model import Model, DatabaseProfile, DatabaseType
 
 import random
 

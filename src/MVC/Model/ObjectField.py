@@ -1,125 +1,167 @@
-from PyAsoka.Debug import Exceptions
-from PyAsoka.src.MVC.Model.Field import Field, ReferenceField
+from PyAsoka.src.Debug.Logs import Logs
+from PyAsoka.src.Debug.Exceptions import Exceptions
 
 
 class ObjectField:
-    def __init__(self, obj, field: Field, value):
-        from PyAsoka.MVC import ModelContainer
-        if not isinstance(obj, ModelContainer):
-            raise Exceptions.UnsupportableType(obj)
-
+    def __init__(self, obj, field):
         self.object = obj
         self.column = field.column
-        self.database = self.object.database
-        self.type = field.type
-        self.value = value
         self.autoload = field.autoload
         self.autosave = field.autosave
+        self.loadOnRequest = field.loadOnRequest
+        self.loaded = False
+        self.value = field.defaultValue
+        self.type = field.type
 
-        self.fromSql = field.fromSql
-        # self.object.table.columns.append(self.column)
-
-    def __call__(self):
-        return self.get(self)
-
-    def set(self, obj, value):
-        if isinstance(value, self.type) or value is None:
-            self.value = value
-            if self.autosave and self.object.exist_in_database:
-                self.save()
-            else:
-                self.object.updated = True
-        else:
-            Exceptions.UnsupportableType(value)
-
-    def get(self, obj):
-        if self.autoload and self.object.exist_in_database:
+    def getter(self):
+        if self.autoload or (self.loadOnRequest and not self.loaded):
             self.load()
         return self.value
 
-    def distinct(self):
-        self.database.connect(self.object.table.profile)
-        if (data := self.database.query(f'SELECT DISTINCT {self.column.name} FROM {self.object.table.name};')) is not False:
-            return [row[self.column.name] for row in data]
+    def setter(self, value):
+        if isinstance(value, self.type):
+            self.value = value
+        else:
+            try:
+                self.value = self.type(value)
+            except Exception as e:
+                Exceptions.UnsupportableType(value)
+        self.object.updated = True
 
-    def empty(self):
-        return self.value is None
+        if self.autosave:
+            self.save()
+
+    def decode(self, value):
+        try:
+            self.value = self.type(value)
+        except Exception as e:
+            Logs.warning(f'ObjectField.fromDatabase: '
+                         f'Не удалось привести значение ({type(value)}) к заданному типу ({self.type}): {e}')
+        self.loaded = True
+
+    def encode(self):
+        return self.value
 
     def load(self):
         obj_id = self.object.id
         if obj_id is not None:
-            self.database.connect(self.database.profile)
-            data = self.database.query(f'SELECT {self.column.name} FROM {self.object.table.name} WHERE id=?', [obj_id])
-            self.value = self.fromSql(data[self.column.name])
+            database = self.object.scheme.database
+            database.connect(self.object.scheme.profile)
+            data = database.query(f'SELECT {self.column.name} FROM {self.object.table.name} WHERE id=?', [obj_id])
+            self.decode(data[self.column.name])
 
     def save(self):
         obj_id = self.object.id
         if obj_id is not None:
-            self.database.connect(self.database.profile)
-            self.database.execute(f'UPDATE {self.object.table.name} SET {self.column.name}=? WHERE id=?;', [self.value, obj_id])
+            database = self.object.scheme.database
+            database.connect(self.object.scheme.profile)
+            database.execute(f'UPDATE {self.object.table.name} SET {self.column.name}=? '
+                             f'WHERE id=?;', [self.encode(), obj_id])
 
 
-class ObjectReference(ObjectField):
-    def __init__(self, obj, field: ReferenceField, value, value_id):
-        super().__init__(obj, field, value)
-        if value is not None and value_id is None:
-            value_id = value.id
-        self.id = value_id
-        self.ref_class = field.ref_class
-        self.ref_field = field.ref_field
+class ObjectOneToOne:
+    def __init__(self, obj, reference):
+        self.object = obj
+        self.column = reference.column
+        self.name = reference.name
+        self.model = reference.model
+        self.value = None
+        self.type = int
+        self.id = None
+        self.value = reference.defaultValue
+        self.autoload = reference.autoload
+        self.autosave = reference.autosave
 
-    def set(self, obj, value):
-        super().set(obj, value)
+    def idGetter(self):
+        return self.id
 
+    def idSetter(self, value):
+        self.id = value
+
+    def valueGetter(self):
+        self.value = self.model(id=self.id).load()
+        return self.value
+
+    def valueSetter(self, obj):
+        self.id = obj.id
+        self.value = obj
+        obj.save()
+
+    def decode(self, value):
         if value is not None:
-            self.id = value.id
+            self.id = int(value)
         else:
             self.id = None
 
-        if self.autosave and self.object.exist_in_database:
-            self.saveId()
-        else:
-            self.object.updated = True
-
-    def get(self, obj):
-        if self.autoload and self.object.exist_in_database:
-            self.load()
-        if self.value is None and self.id is not None:
-            self.value = self.ref_class.containerType(id=self.id)
-            self.value.load()
-        return self.value
-
-    def setId(self, obj, value_id):
-        self.id = value_id
-        if self.autosave and self.object.exist_in_database:
-            self.saveId()
-        else:
-            self.object.updated = True
-
-    def getId(self, obj):
-        if self.autoload and self.object.exist_in_database:
-            self.loadId()
+    def encode(self):
         return self.id
 
-    def saveId(self):
-        obj_id = self.object.id
-        if obj_id is not None:
-            self.database.connect(self.database.profile)
-            self.database.query(f'UPDATE {self.object.table.name} SET {self.column.name}=? WHERE id=?;', [self.id, obj_id])
 
-    def loadId(self):
-        obj_id = self.object.id
-        if obj_id is not None:
-            self.database.connect(self.database.profile)
-            data = self.database.query(f'SELECT {self.column.name} FROM {self.object.table.name} WHERE id=?', [obj_id])
-            self.id = int(data[self.column.name])
+class ObjectOneToMany:
+    def __init__(self, obj, field):
+        self.object = obj
+        self.model = field.model
+        self.column = field.column
 
-    def save(self):
-        self.saveId()
-        if self.value is not None:
-            self.value.save()
+    def getter(self):
+        scheme = self.model.scheme
+        table = scheme.table
+        database = scheme.database
 
-    def load(self):
-        if self.id is not None:
-            self.value = self.ref_class.containerType(id=self.id)
-            self.value.load()
+        database.connect(scheme.profile)
+        data = database.query(f'SELECT * FROM {table.name} WHERE {self.column.name}=?;', [self.object.id])
+        result = []
+        if data is not False:
+            for row in data:
+                obj = self.model()
+                obj.loadFromDBDict(row)
+                result.append(obj)
+        return result
+
+
+class ObjectManyToMany:
+    def __init__(self, obj, field):
+        self.object = obj
+        self.model = field.model
+        self.scheme = field.scheme
+        self.column = field.column
+        self.refColumn = field.refColumn
+
+    def getter(self):
+        scheme = self.scheme
+        table = scheme.table
+        database = scheme.database
+
+        database.connect(scheme.profile)
+        data = database.query(f'SELECT * FROM {table.name} WHERE {self.column.name}=?;', [self.object.id])
+        if len(data) == 0:
+            return []
+
+        args = ''
+        values = []
+        for i in range(len(data)):
+            if i == 0:
+                args += 'id=? '
+            else:
+                args += 'OR id=? '
+            values.append(data[i][self.refColumn.name])
+
+        data = database.query(f'SELECT * FROM {self.model.scheme.table.name} WHERE {args};', values)
+        result = []
+        if data is not False:
+            for row in data:
+                obj = self.model()
+                obj.loadFromDBDict(row)
+                result.append(obj)
+        return result
+
+    def add(self, obj):
+        scheme = self.scheme
+        table = scheme.table
+        database = scheme.database
+
+        obj.save()
+
+        database.connect(scheme.profile)
+        database.execute(f'INSERT INTO {table.name}({self.column.name}, {self.refColumn.name}) VALUES(?, ?);',
+                         [self.object.id, obj.id])

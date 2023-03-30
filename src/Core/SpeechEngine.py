@@ -1,4 +1,4 @@
-from PyAsoka.src.Core.Signal import Signal
+from PyAsoka.src.Core.DynamicSignal import DynamicSignal as Signal
 from threading import Thread
 
 import random
@@ -95,7 +95,9 @@ class SpeechEngine:
         self._rate_ = percent
 
     def say(self, phrase: Phrase):
-        print('step3')
+        if isinstance(phrase, str):
+            phrase = Phrase(phrase)
+
         if self.current is not None:
             condition1 = Phrase.Priority.LOW == self.current.priority < phrase.priority
             condition2 = self.current.priority < phrase.priority == Phrase.Priority.EXTREME
@@ -103,7 +105,6 @@ class SpeechEngine:
                 self.stop()
 
         self.phrases.append(phrase)
-        print('step4')
         return phrase
 
     def stop(self):

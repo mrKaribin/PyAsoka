@@ -1,7 +1,85 @@
-from enum import Enum
+import os.path
+import platform
+
+from PyAsoka.src.Instruments.Databases import Databases, DatabaseType
+
+from enum import Enum, IntEnum, auto
 
 
 class Asoka:
+    class Project:
+        class Mode(IntEnum):
+            RELEASE = 1
+            TESTS = 2
+            DEBUG = 3
+
+        class Type(IntEnum):
+            SERVER = 1
+            LOCAL_SERVER = 2
+            CLIENT = 3
+            DEVICE = 4
+
+        mode = Mode.RELEASE
+        type = Type.CLIENT
+
+        class Path:
+            HOME = os.getcwd()
+            ASOKA = '/PyAsoka'
+            ASOKA_MEDIA = '/PyAsoka/media'
+            ASOKA_MODELS = '/PyAsoka/models'
+
+            @staticmethod
+            def asoka():
+                Path = Asoka.Project.Path
+                return Path.HOME + Path.ASOKA
+
+            @staticmethod
+            def asokaModels():
+                Path = Asoka.Project.Path
+                return Path.HOME + Path.ASOKA_MODELS
+
+            @staticmethod
+            def asokaMedia():
+                Path = Asoka.Project.Path
+                return Path.HOME + Path.ASOKA_MEDIA
+
+    class Device:
+        class Type(IntEnum):
+            SERVICE_COMPUTER = 1
+            PERSONAL_COMPUTER = 2
+            PHONE = 3
+            SMART_DEVICE = 4
+            CUSTOM = 5
+
+        class OS(IntEnum):
+            UNKNOWN = 1
+            WINDOWS = 2
+            LINUX = 3
+
+        @staticmethod
+        def getLocalIP():
+            from socket import gethostbyname, gethostname
+            return gethostbyname(gethostname())
+
+        @staticmethod
+        def getGlobalIP():
+            from stun import get_ip_info
+            data = get_ip_info()
+            return data[1] if len(data) == 3 else None
+
+        @staticmethod
+        def getOS():
+            system = platform.system()
+            if system == 'Windows':
+                return Asoka.Device.OS.WINDOWS
+            elif system == 'Linux':
+                return Asoka.Device.OS.LINUX
+            else:
+                return Asoka.Device.OS.UNKNOWN
+
+        name = platform.node()
+        type = Type.PERSONAL_COMPUTER
+
 
     class Language(Enum):
         RUSSIAN = 'RUS'
@@ -24,35 +102,54 @@ class Asoka:
     defaultCycleDelay = 0.05
 
     class Modules:
-        _users_ = {'state': False}
-        _speach_ = {'state': False}
+        class Users:
+            active = False
 
-        @staticmethod
-        def enableUsers():
-            Asoka.Modules._users_['state'] = True
+            @staticmethod
+            def enable():
+                Asoka.Modules.Users.active = True
 
-        @staticmethod
-        def enableSpeach(name, voice=None):
-            Asoka.Modules.enableUsers()
-            Asoka.Modules._speach_['name'] = name
-            Asoka.Modules._speach_['voice'] = voice
-            Asoka.Modules._speach_['state'] = True
+        class Speach:
+            active = False
+            voice = ''
+            name = ''
+
+            @staticmethod
+            def enable(name, voice=None):
+                Asoka.Modules.Speach.active = True
+                Asoka.Modules.Speach.name = name
+                Asoka.Modules.Speach.voice = voice
+
+    DatabaseType = DatabaseType
+
+    databases = Databases()
 
     @staticmethod
     def initialization():
-        from PyAsoka.src.Core.Core import Core
-        from PyAsoka.src.GUI.Application import Application
+        if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
+            from PyAsoka.src.Core.Core import Core
+            from PyAsoka.src.GUI.Application import Application
 
-        app = Application()
-        core = Core()
+            app = Application()
+            core = Core()
 
-        return core, app
+            return core, app
+        else:
+            from PyAsoka.src.Server.Core import Core
+
+            core = Core()
+
+            return core
 
     @staticmethod
     def core():
-        from PyAsoka.src.Core.Core import core
-        return core()
+        if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
+            from PyAsoka.src.Core.Core import core
+            return core()
 
     @staticmethod
     def app():
         pass
+
+
+Asoka.databases.add(DatabaseType.SQLITE, 'asoka.db')

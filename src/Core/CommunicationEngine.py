@@ -37,8 +37,19 @@ class CommunicationEngine:
         self.thread = Thread(target=self.run)
         self.thread.start()
 
+    @property
+    def user(self):
+        return self._user_
+
+    @property
+    def active(self):
+        return self._active_
+
+    @property
+    def isListening(self):
+        return self._listening_
+
     def say(self, arg):
-        print('step2')
         if isinstance(arg, Phrase):
             phrase = arg
             phrase.user = self._user_
@@ -48,11 +59,8 @@ class CommunicationEngine:
             Exceptions.UnsupportableType(arg)
 
         self.speech.say(phrase)
-        print('step4.1')
         self.phrases.append(phrase)
-        print('step4.2')
         phrase.started.bind(self.speaking)
-        print('step4.3')
 
     def run(self):
         from PyAsoka.src.Linguistics import APhraseModelParser as Model
@@ -69,22 +77,16 @@ class CommunicationEngine:
                 continue
 
             if not self._listening_ and hello_model == phrase:
-                print('step1')
                 self.say('Привет, чем займемся?')
-                print('step5')
                 self.listening_start()
-                print('step6')
                 continue
 
             if self._listening_:
                 self.phrases.append(Phrase(text))
 
                 if bye_model == phrase:
-                    print('step1')
                     self.say('Если понадоблюсь, только позовите')
-                    print('step5')
                     self.listening_stop()
-                    print('step6')
 
                 if False:
                     for action in self.actions:

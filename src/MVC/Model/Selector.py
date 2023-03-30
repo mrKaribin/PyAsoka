@@ -1,14 +1,15 @@
 from PyAsoka.Debug import Logs
-from PyAsoka.src.MVC.Model.Field import ReferenceField
+from PyAsoka.src.MVC.Model.ObjectReference import ObjectReference
 
 
 class Selector:
     def __init__(self, _type):
         self.type = _type
-        self.database = _type.conf.database
-        self.table = _type.conf.table
-        self.private = _type.fields
-        self.references = _type.references
+        self.database = _type.scheme.database
+        self.table = _type.scheme.table
+        self.fields = _type.scheme.fields
+        self.simpleFields = _type.scheme.simpleFields
+        self.references = _type.scheme.references
         self._where_ = {}
         self._limit_ = None
         self._offset_ = None
@@ -28,16 +29,18 @@ class Selector:
 
         return self
 
-    def fields(self):
-        return {**self.private, **self.references}
-
     def clear(self):
         self._where_ = {}
         self._limit_ = None
         self._offset_ = None
 
     def __add_compare__(self, key, arg, _type):
-        field = self.fields()[key]
+        field = None
+        if key in self.simpleFields.keys():
+            field = self.simpleFields[key]
+        elif key[-2:] == 'Id' and key[:-2] in self.references.keys():
+            field = self.references[key[:-2]]
+
         if field is not None:
             self._where_[key] = [_type, arg]
         else:
@@ -49,9 +52,9 @@ class Selector:
 
             for key, data in self._where_.items():
                 compare, value = data
-                where += f'{key}{compare}?, '
+                where += f'{key}{compare}? AND '
                 values.append(value)
-            where = where[:len(where) - 2]
+            where = where[:len(where) - 5]
 
             return where, values
         else:
@@ -78,34 +81,63 @@ class Selector:
     def create(self, **kwargs):
         cols, vals, params = '', '', []
         for key, value in kwargs.items():
-            field = self.fields()[key]
-            if field is not None:
-                cols += key + ', '
-                vals += f'?, '
-                params.append(value)
+            if key in self.simpleFields.keys():
+                field = self.simpleFields[key]
+            elif key[-2:] == 'Id' and key[:-2] in self.references.keys():
+                field = self.references[key[:-2]]
+            else:
+                continue
+
+            cols += key + ', '
+            vals += f'?, '
+            params.append(value)
         cols, vals = cols[:len(cols) - 2], vals[:len(vals) - 2]
         self.database.connect(self.table.profile)
         if self.database.execute(f'INSERT INTO {self.table.name} ({cols}) VALUES ({vals});', list(params)):
             self.clear()
             _id = self.database.getLastAutoincrement(self.table.name)
-            return self.type.containerType(id=_id, **kwargs)
+            return self.type(id=_id, **kwargs)
             # return self.filter(id=_id).get()
         else:
             return False
 
     def get(self, *args):
         data = self.getDict(*args)
-        args = {}
+        objects = []
         if data:
             for row in data:
+                obj = self.type()
                 for key, arg in row.items():
-                    field = self.fields()[key]
-                    if isinstance(field, ReferenceField):
-                        args[key] = int(arg)
-                    else:
-                        args[key] = field.fromSql(arg)
-            objects = self.type.containerType(**args)
+                    field = None
+                    if key in self.simpleFields.keys():
+                        field = obj.scheme.simpleFields[key]
+                    elif key[-2:] == 'Id' and key[:-2] in self.references.keys():
+                        field = obj.scheme.references[key[:-2]]
+
+                    field.decode(arg)
+                objects.append(obj)
             return objects
+        else:
+            return None
+
+    def first(self, *args):
+        data = self.getDict(*args)
+        if data:
+            row = data[0]
+            obj = self.type()
+            for key, arg in row.items():
+                if key in self.simpleFields.keys():
+                    field = obj.scheme.simpleFields[key]
+                elif key[-2:] == 'Id' and key[:-2] in self.references.keys():
+                    field = obj.scheme.references[key[:-2]]
+                else:
+                    continue
+
+                if isinstance(field, ObjectReference):
+                    field.decode(int(arg))
+                else:
+                    field.decode(arg)
+            return obj
         else:
             return None
 
@@ -115,7 +147,7 @@ class Selector:
 
         if len(args) == 0:
             keys, all_keys = '', True
-            for field in self.fields().values():
+            for field in self.fields.values():
                 # if field.autoload:  ToDo
                 keys += field.column.name + ', '
                 # else:
@@ -127,7 +159,7 @@ class Selector:
         else:
             keys = ''
             for key in args:
-                fld = self.fields()[key]
+                fld = self.fields[key]
                 if fld is not None:
                     keys += fld.column.name + ', '
             if len(keys) > 0:
@@ -143,7 +175,7 @@ class Selector:
         changes = ''
         change_vals = []
         for key, arg in kwargs.items():
-            fld = self.fields()[key]
+            fld = self.fields[key]
             if fld is not None:
                 changes += f'{key}=?, '
                 change_vals.append(arg)
