@@ -1,14 +1,14 @@
 from PyAsoka.src.Network.Socket.Socket import Socket
 from PyAsoka.src.Network.Socket.Connection import Connection
 from PyAsoka.src.Network.DeviceCard import DeviceCard
-from PyAsoka.src.Core.Signal import Signal
+# from PyAsoka.src.Core.Signal import Signal
 from PyAsoka.src.Debug.Logs import Logs
 
 from threading import Thread
 
 
 class ServerSocket(Socket):
-    accepted = Signal()
+    # accepted = Signal()
 
     def __init__(self, host, port, queue_size=10):
         super().__init__()
