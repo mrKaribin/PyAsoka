@@ -11,6 +11,7 @@ class ClientSocket(Socket):
     def __init__(self, host, port):
         super().__init__()
         self._target_address_ = (host, port)
+        Logs.message(f'Попытка соединения с {host}:{port}')
         self.connect(host, port)
 
         self.readThread = Thread(target=self.run)
