@@ -126,6 +126,7 @@ class Asoka:
 
     @staticmethod
     def initialization(*args):
+        print('point1')
         if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
             from PyAsoka.src.Core.Core import Core
             from PyAsoka.src.GUI.Application import Application
@@ -138,7 +139,6 @@ class Asoka:
             from PyAsoka.src.Server.Core import Core
 
             host, port = args
-            print('point1')
             core = Core(host, port)
 
             return core
