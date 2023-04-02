@@ -125,7 +125,7 @@ class Asoka:
     databases = Databases()
 
     @staticmethod
-    def initialization(**kwargs):
+    def initialization(*args):
         if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
             from PyAsoka.src.Core.Core import Core
             from PyAsoka.src.GUI.Application import Application
@@ -137,7 +137,7 @@ class Asoka:
         else:
             from PyAsoka.src.Server.Core import Core
 
-            host, port = kwargs
+            host, port = args
             core = Core(host, port)
 
             return core
