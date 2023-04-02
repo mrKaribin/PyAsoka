@@ -1,5 +1,6 @@
-from PySide6.QtCore import QSize, QPoint
-from PySide6.QtWidgets import QApplication
+from PySide2.QtCore import QSize, QPoint
+from PySide2.QtWidgets import QApplication
+from PyAsoka.src.Debug.Logs import Logs
 from PyAsoka.Asoka import Asoka
 
 import os
@@ -35,9 +36,12 @@ class Screen:
 
     def enable(self):
         if Asoka.Device.getOS() == Asoka.Device.OS.WINDOWS:
-            from win32con import HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER
+            from win32con import HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, MOUSEEVENTF_MOVE
             from win32gui import SendMessage
+            from win32api import mouse_event
             SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, -1)
+            mouse_event(MOUSEEVENTF_MOVE, 0, 0)
+            Logs.message('Display enabled')
         elif Asoka.Device.getOS() == Asoka.Device.OS.LINUX:
             os.system('xset -display :0.0 dpms force on')
 
@@ -46,6 +50,7 @@ class Screen:
             from win32con import HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER
             from win32gui import SendMessage
             SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 2)
+            Logs.message('Display disabled')
         elif Asoka.Device.getOS() == Asoka.Device.OS.LINUX:
             os.system('sleep 1 && xset -display :0.0 dpms force off ')
 

@@ -1,4 +1,4 @@
-from PySide6.QtCore import Property as QProperty
+from PySide2.QtCore import Property as QProperty
 
 
 class Property:

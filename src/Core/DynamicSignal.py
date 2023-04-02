@@ -1,5 +1,5 @@
-from PySide6.QtCore import QObject
-from PySide6.QtCore import Signal as QSignal, Qt
+from PySide2.QtCore import QObject
+from PySide2.QtCore import Signal as QSignal, Qt
 
 counter = 0
 SignalType = Qt.ConnectionType

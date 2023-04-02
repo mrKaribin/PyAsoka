@@ -62,7 +62,7 @@ class ModelContainer(object):
                 if issubclass(type(field.value), ModelContainer):
                     field.value.save()
 
-        obj = self.model.objects().create(**args)
+        obj = self.model.selector().create(**args)
         if obj:
             self.id = obj.id
             self.exist_in_database = True
@@ -82,14 +82,14 @@ class ModelContainer(object):
                 args[field.column.name] = field.id
                 if issubclass(type(field.value), ModelContainer):
                     field.value.save()
-        self.model.objects().filter(id=self.id).set(**args)
+        self.model.selector().filter(id=self.id).set(**args)
         self.exist_in_database = True
         self.updated = False
         return self
 
     def exists(self):
         if not self.exist_in_database:
-            self.exist_in_database = self.model.objects().filter(id=self.id).exists()
+            self.exist_in_database = self.model.selector().filter(id=self.id).exists()
         return self.exist_in_database
 
     def save(self):
@@ -101,7 +101,7 @@ class ModelContainer(object):
         return self
 
     def load(self):
-        data = self.model.objects().filter(id=self.id).getDict()
+        data = self.model.selector().filter(id=self.id).getDict()
         if data:
             data = data[0]
             for key, value in data.items():
@@ -111,5 +111,5 @@ class ModelContainer(object):
         return self
 
     def delete(self):
-        self.model.objects().filter(id=self.id).delete()
+        self.model.selector().filter(id=self.id).delete()
         return self

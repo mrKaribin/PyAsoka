@@ -96,22 +96,22 @@ class ModelTester(UnitTester):
         personNames = ['Борис', 'Андрей', 'Владимир']
         shopNames = ['Вкусвилл', 'Лента']
 
-        shop = Shop.objects.filter(name='Вкусвилл').first()
+        shop = Shop.selector.filter(name='Вкусвилл').first()
         persons = shop.peopleList()
         for i in range(len(persons)):
             if persons[i].name != personNames[i]:
                 cond1 = False
         self.breakPoint(cond1)
 
-        talker = People.objects.filter(name='Владимир').first()
+        talker = People.selector.filter(name='Владимир').first()
         shops = talker.shopList()
         for i in range(len(shops)):
             if shops[i].name != shopNames[i]:
                 cond2 = False
         self.breakPoint(cond2)
 
-        People.objects.delete()
-        Shop.objects.delete()
+        People.selector.delete()
+        Shop.selector.delete()
 
 
 Asoka.databases.add(Asoka.DatabaseType.SQLITE, 'tests.db')

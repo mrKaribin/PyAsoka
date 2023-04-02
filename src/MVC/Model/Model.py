@@ -73,7 +73,7 @@ class ModelMeta(ObjectMeta):
 class ModelPrototype(Object, metaclass=ModelMeta):
     @classmethod
     @property
-    def objects(cls) -> Selector:
+    def selector(cls) -> Selector:
         return Selector(cls)
 
 
@@ -152,7 +152,7 @@ class Model(ModelPrototype):
                 if isinstance(field.value, Model):
                     field.value.save()
 
-        obj = self.objects.create(**args)
+        obj = self.selector.create(**args)
         if obj:
             self.id = obj.id
             self.exist_in_database = True
@@ -173,14 +173,14 @@ class Model(ModelPrototype):
                 if issubclass(type(field.value), Model):
                     field.value.save()
 
-        self.objects.filter(id=self.id).set(**args)
+        self.selector.filter(id=self.id).set(**args)
         self.exist_in_database = True
         self.updated = False
         return self
 
     def exists(self):
         if not self.exist_in_database:
-            self.exist_in_database = self.objects.filter(id=self.id).exists()
+            self.exist_in_database = self.selector.filter(id=self.id).exists()
         return self.exist_in_database
 
     def save(self):
@@ -192,7 +192,7 @@ class Model(ModelPrototype):
         return self
 
     def load(self):
-        data = self.objects.filter(id=self.id).getDict()
+        data = self.selector.filter(id=self.id).getDict()
         if data:
             data = data[0]
             for key, value in data.items():
@@ -215,5 +215,5 @@ class Model(ModelPrototype):
         self.updated = False
 
     def delete(self):
-        self.objects.filter(id=self.id).delete()
+        self.selector.filter(id=self.id).delete()
         return self
