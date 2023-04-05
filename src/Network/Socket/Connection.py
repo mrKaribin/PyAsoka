@@ -26,6 +26,10 @@ class Connection(Socket):
     def address(self):
         return self._ip_, self._port_
 
+    @property
+    def card(self):
+        return self._card_
+
     def close(self):
         self.connection.close()
 

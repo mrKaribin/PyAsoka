@@ -11,7 +11,7 @@ class DeviceCard:
         self.localIp = local_ip
         self.globalIp = global_ip
 
-    def toJson(self):
+    def toDict(self):
         return {
             'name': self.name,
             'type': self.type,
@@ -21,7 +21,7 @@ class DeviceCard:
         }
 
     @staticmethod
-    def fromJson(data):
+    def fromDict(data):
         return DeviceCard(
             data.get('name'),
             data.get('type'),

@@ -35,7 +35,7 @@ class AFunctionAction(AActionPrototype):
 
     def delete(self):
         from PyAsoka.Core.ACore import AProcess, ProcessMessage, Headers
-        self.event.disconnect()
+        self.event.disconnectClient()
         process = AProcess.current_process
         if process.name != 'CoreProcess':
             process.core.channel.send(ProcessMessage(Headers.ACTION_REMOVE, self.event.id))

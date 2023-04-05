@@ -2,6 +2,7 @@ import os.path
 import platform
 
 from PyAsoka.src.Instruments.Databases import Databases, DatabaseType
+from PyAsoka.src.Asoka.Account import Account
 
 from enum import Enum, IntEnum, auto
 
@@ -21,6 +22,7 @@ class Asoka:
 
         mode = Mode.RELEASE
         type = Type.CLIENT
+        secret = 'asoka_secret_code'
 
         class Path:
             HOME = os.getcwd()
@@ -80,6 +82,7 @@ class Asoka:
         name = platform.node()
         type = Type.PERSONAL_COMPUTER
 
+    Account = Account()
 
     class Language(Enum):
         RUSSIAN = 'RUS'
@@ -146,6 +149,9 @@ class Asoka:
     def core():
         if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
             from PyAsoka.src.Core.Core import core
+            return core()
+        else:
+            from PyAsoka.src.Server.Core import core
             return core()
 
     @staticmethod

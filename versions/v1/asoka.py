@@ -133,4 +133,4 @@ def disconnect(event, connector):
     if process.name != 'CoreProcess':
         process.core.channel.send(ProcessMessage(Headers.EVENT_DISCONNECT, (event_id, connector_id)))
     else:
-        process.disconnect(event_id, connector_id)
+        process.disconnectClient(event_id, connector_id)

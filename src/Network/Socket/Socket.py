@@ -1,4 +1,5 @@
 from PyAsoka.src.Network.Socket.Message import SocketMessage
+from PyAsoka.Asoka import Asoka
 
 import socket
 
@@ -7,6 +8,7 @@ class Socket:
     def __init__(self):
         self._socket_ = socket.socket()
         self._server_ = None
+        self._secret_ = None
 
     @property
     def socket(self):
@@ -19,6 +21,13 @@ class Socket:
     @property
     def bound(self):
         return self._server_ is not None
+
+    @property
+    def secret(self):
+        return self._secret_
+
+    def setSecret(self, secret):
+        self._secret_ = secret
 
     def bind(self, host='', port='12550'):
         self._server_ = (host, port)
@@ -34,13 +43,27 @@ class Socket:
         return self._socket_.accept()
 
     def send(self, header: str, json: dict):
-        self.socket.sendall(SocketMessage(header, json).encode())
+        self.socket.sendall(SocketMessage(header, json).encode(self.getSecret()))
+
+    def getSecret(self):
+        return Asoka.Project.secret if self.secret is None else self.secret
+
+    def createKey(self):
+        from random import randint
+        key = ''
+        for i in range(16):
+            key += '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ'[randint(0, 35)]
+        return key
 
     @staticmethod
-    def readFromConnection(connection):
-        from PyAsoka.src.Network.Socket.Connection import Connection
-        if isinstance(connection, Connection):
-            connection = connection.connection
+    def readFromConnection(connection, key=None):
+        if isinstance(connection, Socket):
+            if key is None:
+                key = connection.getSecret()
+            connection = connection.socket
+        else:
+            if key is None:
+                key = Asoka.Project.secret
 
         try:
             data = connection.recv(4)
@@ -51,10 +74,11 @@ class Socket:
                     total = int.from_bytes(data[:2], 'big') + int.from_bytes(data[2:], 'big')
                     while len(data) < total + 4:
                         data += connection.recv(1024)
-                    return SocketMessage.decode(data)
+                    return SocketMessage.decode(data, key)
                 else:
                     return None
             else:
                 return False
         except Exception as e:
+            # print(e)
             return False
