@@ -89,7 +89,7 @@ class ServerSocket(Socket):
         clientKey = message.json['key']
         connection = Connection(con, address, DeviceCard.fromDict(message.json['deviceCard']))
         connection.send('Authorized', {'deviceCard': DeviceCard.fromThisDevice().toDict(), 'key': myKey})
-        connection.setSecret(myKey + clientKey)
+        # connection.setSecret(myKey + clientKey)
         Logs.message(f'Новое соединение: {address}. Всего {len(self.connections) + 1} клиентов')
         self.connections.append(connection)
 

@@ -6,6 +6,8 @@ from PyAsoka.src.Linguistics.Phrase import Phrase
 
 
 class APhraseModel:
+    DEBUG = False
+
     class Type(Enum):
         LINEAR = auto()
         NON_LINEAR = auto()
@@ -40,7 +42,8 @@ class APhraseModel:
                     if i + shift < len(phrase.words):
                         if isinstance(self.components[i], AWordModel):
                             condition = self.components[i] == phrase.words[i + shift]
-                            print(f'Comparing {self.components[i].word} and {phrase.words[i + shift]}: {condition}')
+                            if APhraseModel.DEBUG:
+                                print(f'Comparing {self.components[i].word} and {phrase.words[i + shift]}: {condition}')
                             if condition:
                                 if self.components[i].key:
                                     self.keys[self.components[i].key_number] = self.components[i].key_value
@@ -58,7 +61,8 @@ class APhraseModel:
 
                             fragment = Phrase(phrase.words[i + shift: i + shift + interval])
                             condition = self.components[i] == fragment
-                            print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
+                            if APhraseModel.DEBUG:
+                                print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **self.components[i].keys}
                                 self.coincidences = [*self.coincidences, *self.components[i].coincidences]
@@ -76,7 +80,8 @@ class APhraseModel:
                     for i in range(len(phrase.words)):
                         if isinstance(component, AWordModel):
                             condition = component == phrase.words[i]
-                            print(f'Comparing {component.word} and {phrase.words[i]}: {condition}')
+                            if APhraseModel.DEBUG:
+                                print(f'Comparing {component.word} and {phrase.words[i]}: {condition}')
                             if condition:
                                 if component.key:
                                     self.keys[component.key_number] = component.key_value
@@ -94,7 +99,8 @@ class APhraseModel:
                                 return False
 
                             condition = component == fragment
-                            print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
+                            if APhraseModel.DEBUG:
+                                print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **component.keys}
                                 self.coincidences = [*self.coincidences, *component.coincidences]
@@ -112,7 +118,8 @@ class APhraseModel:
                     if isinstance(component, AWordModel):
                         for word in phrase.words:
                             condition = component == word
-                            print(f'Comparing {component.word} and {word}: {condition}')
+                            if APhraseModel.DEBUG:
+                                print(f'Comparing {component.word} and {word}: {condition}')
                             if condition:
                                 if component.key:
                                     self.keys[component.key_number] = component.key_value
@@ -130,7 +137,8 @@ class APhraseModel:
                                 return False
 
                             condition = component == fragment
-                            print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
+                            if APhraseModel.DEBUG:
+                                print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **component.keys}
                                 self.coincidences = [*self.coincidences, *component.coincidences]

@@ -5,10 +5,10 @@ from pathlib import Path
 
 class File:
     def __init__(self, path: str):
-        self.path = ''
-        self.name = ''
-        self.stem = ''
-        self.suffix = ''
+        self.path = ''          # Полный путь
+        self.name = ''          # Имя + расширение
+        self.stem = ''          # Имя
+        self.suffix = ''        # Расширение
         self.change(path)
 
     def __str__(self):

@@ -1,4 +1,4 @@
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, Qt, Slot
 from PyAsoka.src.Core.Property import Property, PropertyImpl
 from PyAsoka.src.Core.Signal import Signal
 
@@ -19,5 +19,7 @@ class ObjectMeta(type(QObject)):
 
 
 class Object(QObject, metaclass=ObjectMeta):
+    ConnectionType = Qt.ConnectionType
+
     def __init__(self):
         super(Object, self).__init__()

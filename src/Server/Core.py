@@ -5,7 +5,7 @@ class Core:
     current = None
 
     def __init__(self, host, port):
-        self.current = self
+        Core.current = self
         self._server_ = ServerSocket(host, port)
 
     @property

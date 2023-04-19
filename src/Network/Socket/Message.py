@@ -1,3 +1,5 @@
+from PyAsoka.Asoka import Asoka
+
 import json as JSON
 import jwt
 
@@ -6,20 +8,22 @@ class SocketMessage:
     def __init__(self, header, json=None):
         self._header_ = header
         self._json_ = json
-        # self._data_ = data
 
     @property
     def header(self):
         return self._header_
 
     @property
-    def json(self):
+    def json(self) -> dict:
         return self._json_
+
+    def isRequest(self):
+        return self.json.get('request') is not None
 
     def encode(self, key):
         header_data = self._header_.encode('utf-8')
         header_size = len(header_data)
-        json_data = self.encrypt(self._json_, key).encode('utf-8')
+        json_data = Asoka.encrypt(JSON.dumps(self._json_).encode('utf-8'))
         json_size = len(json_data)
 
         data = b''
@@ -37,7 +41,7 @@ class SocketMessage:
         header_end = 8 + header_size
         header = data[8:header_end].decode('utf-8')
         json_end = header_end + json_size
-        json = SocketMessage.decrypt(data[header_end:json_end].decode('utf-8'), key)
+        json = JSON.loads(Asoka.decrypt(str(data[header_end:json_end], 'utf-8')))
         return SocketMessage(header, json)
 
     @staticmethod

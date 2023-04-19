@@ -42,7 +42,7 @@ class AMatrixMenu(AWidget):
     def paintEvent(self, event: QPaintEvent):
         self.update_cursor()
         painter = self.__get_painter__()
-        indent = self.scene.indent.x() // 3
+        indent = self.scene._indent_.x() // 3
         position = QPoint(self.cursor_position.x() - indent, self.cursor_position.y() - indent)
         size = QSize(self.scene.block_size.width() + indent * 2, self.scene.block_size.height() + indent * 2)
         painter.setPen(QPen(self.colors.frame, 2))
@@ -60,8 +60,8 @@ class AMatrixMenu(AWidget):
             self.current_position.setX(x)
             self.current_position.setY(y)
             self.current = element
-            wgt_pos = QPoint(self.scene.indent.x() + self.current_position.x() * (self.scene.block_size.width() + self.scene.indent.x()),
-                             self.scene.indent.y() + self.current_position.y() * (self.scene.block_size.height() + self.scene.indent.y()))
+            wgt_pos = QPoint(self.scene._indent_.x() + self.current_position.x() * (self.scene.block_size.width() + self.scene._indent_.x()),
+                             self.scene._indent_.y() + self.current_position.y() * (self.scene.block_size.height() + self.scene._indent_.y()))
             delta = QPoint(self.cursor_position.x() - (wgt_pos.x() + self.scene.pos().x()),
                            self.cursor_position.y() - (wgt_pos.y() + self.scene.pos().y()))
             position = QPoint(self.scene.pos().x() + delta.x(), self.scene.pos().y() + delta.y())

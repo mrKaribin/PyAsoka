@@ -52,3 +52,9 @@ class StyleManager:
     def current(self):
         return WidgetStyleMeta('WidgetStyle', (), {}, style=self._style_, alpha=self._widget_.alpha)()
 
+    def getColor(self, name) -> Color:
+        return self.current._colors_.get(name).value
+
+    def getDefaultColor(self, name) -> Color:
+        return self._style_._colors_default_.get(name).value
+

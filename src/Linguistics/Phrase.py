@@ -7,7 +7,6 @@ class Phrase:
             words = []
 
         self.words = words
-        self.all = []
 
     def __add__(self, other: Word):
         self.words.append(other)

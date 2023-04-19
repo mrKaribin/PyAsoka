@@ -29,8 +29,8 @@ class MouseManager:
 
     def releaseEvent(self, event: QMouseEvent):
         widget = self._widget_
-        if widget.conf.clickable and not widget.mouse.dragging:
-            widget.clicked.emit(self)
+        if widget.clickable and not widget.mouse.dragging:
+            widget.clicked.emit(widget)
         widget.mouse.dragging = False
 
         button = self.button(event.button())
@@ -39,7 +39,7 @@ class MouseManager:
 
     def moveEvent(self, event: QMouseEvent):
         widget = self._widget_
-        if widget.conf.movable and widget.mouse.leftButton.pressed:
+        if widget.movable and widget.mouse.leftButton.pressed:
             lastPos = widget.mouse.leftButton.pressPosition
 
             if widget.parent() is None:

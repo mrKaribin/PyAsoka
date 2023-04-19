@@ -1,4 +1,5 @@
 from PyAsoka.src.Network.Socket.Socket import Socket
+from PyAsoka.src.Network.Socket.Message import SocketMessage
 
 from enum import IntEnum
 
@@ -29,6 +30,15 @@ class Connection(Socket):
     @property
     def card(self):
         return self._card_
+
+    def reply(self, message: SocketMessage, data: dict = None):
+        if data is None:
+            data = {}
+
+        if message.isRequest():
+            data['request'] = message.json['request']
+            header = message.json['request']['header']
+            self.send(header, data)
 
     def close(self):
         self.connection.close()

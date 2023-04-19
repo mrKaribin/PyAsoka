@@ -1,49 +1,23 @@
-import os.path
-import platform
-
-from PyAsoka.src.Instruments.Databases import Databases, DatabaseType
+from PyAsoka.src.Asoka.Databases import Databases, DatabaseType
 from PyAsoka.src.Asoka.Account import Account
+from PyAsoka.src.Asoka.Project import Project
+from PyAsoka.src.Asoka.Variables import Variables
+from PyAsoka.src.Asoka.Generate import Generate
 
-from enum import Enum, IntEnum, auto
+from PySide6.QtCore import Qt
+from cryptography.fernet import Fernet
+from enum import Enum, IntEnum
+
+import platform
 
 
 class Asoka:
-    class Project:
-        class Mode(IntEnum):
-            RELEASE = 1
-            TESTS = 2
-            DEBUG = 3
+    Alignment = Qt.AlignmentFlag
+    ConnectionType = Qt.ConnectionType
+    TextFlag = Qt.TextFlag
+    Key = Qt.Key
 
-        class Type(IntEnum):
-            SERVER = 1
-            LOCAL_SERVER = 2
-            CLIENT = 3
-            DEVICE = 4
-
-        mode = Mode.RELEASE
-        type = Type.CLIENT
-        secret = 'asoka_secret_code'
-
-        class Path:
-            HOME = os.getcwd()
-            ASOKA = '/PyAsoka'
-            ASOKA_MEDIA = '/PyAsoka/media'
-            ASOKA_MODELS = '/PyAsoka/models'
-
-            @staticmethod
-            def asoka():
-                Path = Asoka.Project.Path
-                return Path.HOME + Path.ASOKA
-
-            @staticmethod
-            def asokaModels():
-                Path = Asoka.Project.Path
-                return Path.HOME + Path.ASOKA_MODELS
-
-            @staticmethod
-            def asokaMedia():
-                Path = Asoka.Project.Path
-                return Path.HOME + Path.ASOKA_MEDIA
+    DatabaseType = DatabaseType
 
     class Device:
         class Type(IntEnum):
@@ -82,8 +56,6 @@ class Asoka:
         name = platform.node()
         type = Type.PERSONAL_COMPUTER
 
-    Account = Account()
-
     class Language(Enum):
         RUSSIAN = 'RUS'
         ENGLISH = 'ENG'
@@ -100,9 +72,6 @@ class Asoka:
 
         def incorrect(self):
             return not self._ok_
-
-    defaultPassword = 'topsecretpassword'
-    defaultCycleDelay = 0.05
 
     class Modules:
         class Users:
@@ -123,24 +92,31 @@ class Asoka:
                 Asoka.Modules.Speach.name = name
                 Asoka.Modules.Speach.voice = voice
 
-    DatabaseType = DatabaseType
+    Databases = Databases()
+    Variables = Variables
+    Generate = Generate
+    Account = Account()
+    Project = Project
 
-    databases = Databases()
+    defaultPassword = 'topsecretpassword'
+    defaultCycleDelay = 0.05
 
     @staticmethod
-    def initialization(*args):
+    def initialization(**args):
         if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
             from PyAsoka.src.Core.Core import Core
             from PyAsoka.src.GUI.Application import Application
 
             app = Application()
-            core = Core()
+            core = Core(modules=args.get('core'))
 
             return core, app
         else:
             from PyAsoka.src.Server.Core import Core
 
-            host, port = args
+            host, port = args.get('host'), args.get('port')
+            if host is None:
+                host = ''
             core = Core(host, port)
 
             return core
@@ -158,5 +134,15 @@ class Asoka:
     def app():
         pass
 
+    @staticmethod
+    def encrypt(data):
+        cipher = Fernet(Asoka.Project.secret)
+        return cipher.encrypt(data)
 
-Asoka.databases.add(DatabaseType.SQLITE, 'asoka.db')
+    @staticmethod
+    def decrypt(data):
+        cipher = Fernet(Asoka.Project.secret)
+        return cipher.decrypt(data)
+
+
+Asoka.Databases.add(DatabaseType.SQLITE, 'asoka.db')

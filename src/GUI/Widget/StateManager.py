@@ -25,5 +25,6 @@ class StateManager(Object):
 
     def __state_disabled__(self, layer):
         active = self._active_.lock()
-        active.pop(active.index(layer))
+        if layer in active:
+            active.remove(layer)  # pop(active.index(layer))
         self._active_.unlock()

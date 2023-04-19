@@ -3,7 +3,7 @@ from PyAsoka.Asoka import Asoka
 
 from PyAsoka.src.MVC.Model.ModelScheme import ModelScheme
 from PyAsoka.src.MVC.Model.Field import Field, SimpleField, Reference, OneToOne, ManyToOne, OneToMany, ManyToMany, \
-    ManyToManyField, IntField
+    ManyToManyField, IntField, BoolField, StrField, FloatField, BinaryField
 from PyAsoka.src.MVC.Model.ObjectField import ObjectField, ObjectOneToOne, ObjectOneToMany, ObjectManyToMany
 from PyAsoka.src.MVC.Model.ObjectReference import ObjectReference
 from PyAsoka.src.MVC.Model.Selector import Selector
@@ -14,7 +14,7 @@ class ModelMeta(ObjectMeta):
     models = {}
 
     def __new__(mcs, name, bases, attrs: dict, profile=None, table_name=None):
-        profile = profile if profile is not None else Asoka.databases.asoka
+        profile = profile if profile is not None else Asoka.Databases.asoka
         tableName = table_name if table_name is not None else name
         scheme = ModelScheme(profile, tableName)
         fields = {}
@@ -78,6 +78,11 @@ class ModelPrototype(Object, metaclass=ModelMeta):
 
 
 class Model(ModelPrototype):
+    IntField = IntField
+    BoolField = BoolField
+    FloatField = FloatField
+    StrField = StrField
+    BinaryField = BinaryField
 
     def __init__(self, **kwargs):
         super().__init__()

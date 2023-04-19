@@ -100,8 +100,8 @@ def generate_init(classname, fields, structure, names, functions):
     func_name = '__init__'
     params = ''
     for fld in fields:
-        datatype = f': {fld.datatype}' if fld.datatype in a.types.compile else ''
-        default = f"eval('{fld.datatype}()')" if fld.datatype in a.types.compile else 'None'
+        datatype = f': {fld.type}' if fld.type in a.types.compile else ''
+        default = f"eval('{fld.type}()')" if fld.type in a.types.compile else 'None'
         params += f', {fld.name}' + datatype + ' = ' + default
     code = f"""
 def {func_name}(self{params}):
@@ -149,7 +149,7 @@ def generate_getter(fld):
     field_name = f'__{fld.name}__' if True in fld.access else fld.name
     return {func_name: f"""
 def {func_name}(self{', load=False' if fld.dbfield != False else ''}):
-    return {f'copy(self.{field_name})' if fld.datatype in a.types.composite else f'self.{field_name}'}
+    return {f'copy(self.{field_name})' if fld.type in a.types.composite else f'self.{field_name}'}
 """}
 
 
@@ -157,12 +157,12 @@ def generate_setter(fld, classname):
     fnc_name = f'set_{fld.name}'
     field_name = f'__{fld.name}__' if True in fld.access else fld.name
 
-    if fld.datatype != a.types.runnable and fld.datatype in a.types.all:
-        condition = f'isinstance(value, {fld.datatype})'
-    elif fld.datatype == a.types.runnable:
+    if fld.type != a.types.runnable and fld.type in a.types.all:
+        condition = f'isinstance(value, {fld.type})'
+    elif fld.type == a.types.runnable:
         condition = f'callable(value)'
-    elif fld.datatype in [classname] + list(AType.inheritors.keys()):
-        condition = f'isinstance(value, AType) and value.classname == "{fld.datatype}"'
+    elif fld.type in [classname] + list(AType.inheritors.keys()):
+        condition = f'isinstance(value, AType) and value.classname == "{fld.type}"'
     else:
         condition = f'True'
 

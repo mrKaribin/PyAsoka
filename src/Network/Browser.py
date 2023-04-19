@@ -1,7 +1,10 @@
 from PyAsoka.src.Debug.Logs import Logs
+from PyAsoka.Asoka import Asoka
 
 from enum import IntEnum, auto
 from selenium import webdriver
+
+import os
 
 
 class Browser:
@@ -33,6 +36,7 @@ class Browser:
     @staticmethod
     def edgeDriver():
         Logs.message('Initialized Edge driver')
+        options = webdriver.EdgeOptions()
         return webdriver.Edge()
 
     @staticmethod
@@ -49,7 +53,11 @@ class Browser:
         return webdriver.Opera(options=options)
 
     def __init__(self, browser_name: Name):
+        home = os.getcwd()
+        print(Asoka.Project.Path.Asoka.Drivers())
+        os.chdir(Asoka.Project.Path.Asoka.Drivers())
         self._driver_ = self.getDriver(browser_name)
+        os.chdir(home)
         self._tabs_ = []
         self._current_tab_ = None
 

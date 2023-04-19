@@ -1,43 +1,55 @@
-from PyAsoka.src.GUI.Style.Styles import Styles, Style
-from PyAsoka.src.GUI.API.API import API
-from PyAsoka.src.GUI.Widgets.ALabelWidget import ALabelWidget
-from PyAsoka.src.Core.Signal import Signal
+from PyAsoka.src.GUI.Widget.Widget import Widget, QPainter, Props, QPaintEvent, QRect
+from PyAsoka.src.GUI.Widgets.IconView import IconView
+from PyAsoka.src.GUI.Widgets.TextWidget import TextWidget, QFontMetrics
+from PyAsoka.src.GUI.Widget.State import State
+from PyAsoka.src.GUI.Widget.Layer import Layer
+from PyAsoka.src.GUI.Style.Styles import Styles
+from PyAsoka.Asoka import Asoka
 
-from PySide6.QtWidgets import QLineEdit
+from enum import IntEnum
 
 
-class LineEdit(ALabelWidget):
+class LineEdit(TextWidget):
+    class Type(IntEnum):
+        DEFAULT = 1
+        PASSWORD = 2
 
-    text_changed = Signal(str)
-    enter_pressed = Signal(str)
+    def __init__(self, type: Type = Type.DEFAULT, height: int = 40, label: str = '', **kwargs):
+        kwargs['style'] = Styles.Input
+        if type == LineEdit.Type.PASSWORD:
+            visualization = LineEdit.Visualization.SECRET
+        else:
+            visualization = LineEdit.Visualization.DEFAULT
 
-    def __init__(self, text: str = '', style: Style = Styles.Widget(), **kwargs):
-        super().__init__(QLineEdit, text=text, style=style, keyboard=True, **kwargs)
-        # self.display.angleRoundingSize = 15
+        super().__init__(flags=Asoka.Alignment.AlignLeft | Asoka.TextFlag.TextSingleLine,
+                         visualization=visualization,
+                         label=label,
+                         editable=True, **kwargs)
+        self._type_ = type
+        self.setFixedHeight(height)
+        self.text.font.setPixelSize(int(self.height() * 0.40))
+        self.text.indent.top = (self.height() - QFontMetrics(self.text.font).height()) // 2
+        # self.text.font.setPointSize(self.height() // 3)
 
-        # class preparation
-        # self.colors.changed.bind(self.__update_palette__)
-        self.__update_palette__()
-        self.setMaximumHeight(self.getTextSize() * 2 + 20)
+        if type == self.Type.PASSWORD:
+            self.text.visualization = self.Visualization.SECRET
+            self.modifier = IconView(Asoka.Project.Path.Asoka.Media.Icons() + '\\lock.png', parent=self, clickable=True)
+            self.resized.connect(self.modifierFix)
+            self.modifier.clicked.connect(self.modifierClicked)
 
-        self._label_.textChanged.connect(self.__textChanged__)
-        API.Keyboard.pressed.bind(self.__keyboard_listener__)
+    @property
+    def type(self):
+        return self._type_
 
-    def setTextSize(self, size: int):
-        super().setTextSize(size)
-        self.setMaximumHeight(size * 2 + 20)
+    def modifierFix(self):
+        size = self.height() / 3 * 2
+        indent = (self.height() - size) // 2
+        self.modifier.setGeometry((self.width() - size - indent, indent, size, size))
 
-    def getText(self):
-        return self._label_.text()
-
-    def __update_palette__(self):
-        self._label_.setStyleSheet(f'background-color: rgba(0, 0, 0, 0);'
-                                   f'color: {self.style.current.text.toStyleSheet() if self.style.current.text is not None else "black"};'
-                                   f'border-style: outset;')
-
-    def __textChanged__(self, text):
-        self.text_changed.emit(self.getText())
-
-    def __keyboard_listener__(self, key):
-        if self.isActiveWindow() and key == API.Keyboard.Key.enter:
-            self.enter_pressed.emit(self.getText())
+    def modifierClicked(self):
+        if self.type == self.Type.PASSWORD:
+            if self.text.visualization == self.Visualization.DEFAULT:
+                self.text.visualization = self.Visualization.SECRET
+            else:
+                self.text.visualization = self.Visualization.DEFAULT
+        self.repaint()

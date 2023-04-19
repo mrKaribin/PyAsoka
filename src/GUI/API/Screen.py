@@ -1,5 +1,5 @@
-from PySide2.QtCore import QSize, QPoint
-from PySide2.QtWidgets import QApplication
+from PySide6.QtCore import QSize, QPoint
+from PySide6.QtWidgets import QApplication
 from PyAsoka.src.Debug.Logs import Logs
 from PyAsoka.Asoka import Asoka
 

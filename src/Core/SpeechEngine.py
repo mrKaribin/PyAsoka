@@ -1,4 +1,5 @@
-from PyAsoka.src.Core.DynamicSignal import DynamicSignal as Signal
+from PyAsoka.src.Core.Object import Object, Signal
+from PyAsoka.Asoka import Asoka
 from threading import Thread
 
 import random
@@ -8,7 +9,6 @@ import pythoncom
 
 
 class Phrase:
-
     class Priority:
         LOW = 1
         NORMAL = 2
@@ -19,9 +19,6 @@ class Phrase:
         self.user = user
         self.text = text
         self.priority = priority
-
-        self.started = Signal(Phrase)
-        self.ended = Signal(Phrase)
 
 
 class PhraseManager:
@@ -67,7 +64,9 @@ class PhraseManager:
         return len(self._low_) + len(self._normal_) + len(self._high_) + len(self._extreme_)
 
 
-class SpeechEngine:
+class SpeechEngine(Object):
+    speaking = Signal(Phrase)
+
     Priority = Phrase.Priority
 
     class Voices:
@@ -76,6 +75,7 @@ class SpeechEngine:
         KATYA = 'VE_Russian_Katya_22kHz'
 
     def __init__(self, name=Voices.IVONA):
+        super().__init__()
         self._voice_name_ = name
         self._rate_ = 100
         self._cancel_ = False
@@ -129,26 +129,27 @@ class SpeechEngine:
                 if self.phrases.size():
                     phrase = self.phrases.pop()
                     self.current = phrase
-                    print(phrase.text)
-                    engine.say(phrase.text, f'Phrase{random.randint(0, 1000)}')
+                    # print('Speaking: ', phrase.text)
+                    engine.say(phrase.text)  #, f'Phrase{random.randint(0, 1000)}')
                     engine.runAndWait()
-                time.sleep(0.1)
 
                 if self.phrases.size() and self.phrases.next().priority < Phrase.Priority.HIGH:
-                    time.sleep(2)
+                    pass
 
                 if self._cancel_:
                     self._cancel_ = False
                     self.current = None
                     break
 
+                time.sleep(Asoka.defaultCycleDelay)
+
             self.engine = None
             del [engine]
-            time.sleep(0.2)
+            time.sleep(Asoka.defaultCycleDelay)
 
     def __on_start__(self, name):
         # print('start ' + name)
-        self.current.started(self.current)
+        self.speaking.emit(self.current)
 
     def __on_word__(self, name, location, length):
         # print('word', name, location, length)
@@ -159,7 +160,7 @@ class SpeechEngine:
     def __on_end__(self, name, completed):
         # print('end ' + name, completed)
         if completed:
-            self.current.ended(self.current)
+            pass
         else:
             self.phrases.repeat(self.current)
         self.current = None

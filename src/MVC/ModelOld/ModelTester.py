@@ -8,9 +8,9 @@ class ModelTester(UnitTester):
 
     def test1(self):
         Logs.message('Models simple test', True)
-        Asoka.databases.add(Asoka.DatabaseType.SQLITE, 'tests.db')
+        Asoka.Databases.add(Asoka.DatabaseType.SQLITE, 'tests.db')
 
-        class Person(model.Model, profile=Asoka.databases.tests):
+        class Person(model.Model, profile=Asoka.Databases.tests):
             name = model.StrField().NOT_NULL()
             age = model.IntField().NOT_NULL()
             sex = model.BoolField().NOT_NULL()
@@ -37,11 +37,11 @@ class ModelTester(UnitTester):
     def test2(self):
         Logs.message('Models references test', True)
 
-        class Chat(model.Model, profile=Asoka.databases.tests):
+        class Chat(model.Model, profile=Asoka.Databases.tests):
             name = model.StrField()
             info = model.StrField()
 
-        class Talker(model.Model, profile=Asoka.databases.tests):
+        class Talker(model.Model, profile=Asoka.Databases.tests):
             name = model.StrField()
             priority = model.IntField()
             chat = model.ManyToOne(Chat)
@@ -67,11 +67,11 @@ class ModelTester(UnitTester):
     def test3(self):
         Logs.message('Models ManyToMany test', True)
 
-        class Shop(model.Model, profile=Asoka.databases.tests):
+        class Shop(model.Model, profile=Asoka.Databases.tests):
             name = model.StrField()
             rating = model.FloatField()
 
-        class People(model.Model, profile=Asoka.databases.tests):
+        class People(model.Model, profile=Asoka.Databases.tests):
             name = model.StrField()
             frequency = model.IntField()
             shop = model.ManyToMany(Shop)
@@ -114,4 +114,4 @@ class ModelTester(UnitTester):
         Shop.selector.delete()
 
 
-Asoka.databases.add(Asoka.DatabaseType.SQLITE, 'tests.db')
+Asoka.Databases.add(Asoka.DatabaseType.SQLITE, 'tests.db')

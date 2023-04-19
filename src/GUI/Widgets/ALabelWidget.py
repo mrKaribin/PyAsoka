@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 
 
 class ALabelWidget(Widget):
-    def __init__(self, label_type, text: str = '', text_size: int = 10,
+    def __init__(self, label_type, text: str = '', text_size: int = 10, text_bold: bool = False,
                  alignment: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignLeft, **kwargs):
         super().__init__(**kwargs)
 
@@ -18,6 +18,7 @@ class ALabelWidget(Widget):
         from PySide6.QtWidgets import QLabel
         self.setText(text)
         self.setTextSize(text_size)
+        self.setTextBold(text_bold)
         self.setAlignment(alignment)
         self.setMinimumSize(self.adjustSize())
 
@@ -53,7 +54,7 @@ class ALabelWidget(Widget):
         self._label_.setFont(font)
 
     def getText(self):
-        return self._label_.getText()
+        return self._label_.text()
 
     def getTextSize(self):
         return self._label_.font().pointSize()

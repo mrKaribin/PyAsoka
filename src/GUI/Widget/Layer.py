@@ -45,14 +45,19 @@ class Layer(Object, metaclass=LayerMeta):
         self.alphaChanged.connect(widget.repaint)
         self.animation = None
 
-    def enable(self):
+    def enable(self, duration=0):
+        if duration is None or duration == 0:
+            self.alpha = 1.0
+        else:
+            self.animation = Animation(self, b'alpha', 0.0, 1.0, 500)
+            self.animation.start()
         self.enabled.emit(self)
 
     def disable(self):
         self.disabled.emit(self)
 
     def disappearance(self):
-        animation = Animation(self, b'alpha', self.alpha, 0.0, 500)
+        animation = Animation(self, b'alpha', self.alpha, 0.0, 300)
         animation.finished.connect(self.disable)
         self.animation = animation
         animation.start()

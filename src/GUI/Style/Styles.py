@@ -11,6 +11,29 @@ class Styles:
                  text=Colors.Text.default()):
         pass
 
+    # Стандартный виджет для любого уровня вложенности
+    class Widget(Style,
+                 background_line=Colors.BackgroundLine.default(),
+                 line=Colors.Line.default(),
+                 text=Colors.Text.default()):
+        pass
+
+    class Button(Style,
+                 background=Colors.Background.active(),
+                 background_line=Colors.BackgroundLine.default(),
+                 frame=Colors.Frame.dark(),
+                 line=Colors.Line.default(),
+                 text=Colors.Text.default()):
+        pass
+
+    class Input(Style,
+                background=Colors.Background.default(),
+                background_line=Colors.BackgroundLine.default(),
+                frame=Colors.Frame.default(),
+                line=Colors.Line.default(),
+                text=Colors.Text.default()):
+        pass
+
     @staticmethod
     def toolWindow():  # Полупрозрачные окна для работы в режиме оверлея
         return Style(frame=Color(90, 90, 90, 220),
@@ -26,13 +49,6 @@ class Styles:
                      frame=Colors.Frame.focus(),
                      line=Colors.Line.default(),
                      text=Colors.Text.default())
-
-    # Стандартный виджет для любого уровня вложенности
-    class Widget(Style,
-                 background_line=Colors.BackgroundLine.default(),
-                 line=Colors.Line.default(),
-                 text=Colors.Text.default()):
-        pass
 
     @staticmethod
     def button():  # Стандартный виджет для любого уровня вложенности

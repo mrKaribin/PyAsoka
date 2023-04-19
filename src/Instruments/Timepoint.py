@@ -3,6 +3,8 @@ from PyAsoka.src.Debug.Logs import Logs
 from datetime import datetime, timedelta
 from enum import Enum, auto
 
+import json as JSON
+
 
 class Timepoint:
 
@@ -67,9 +69,6 @@ class Timepoint:
     def __str__(self):
         return f'{self.day():02}.{self.month():02}.{self.year():04} ' \
                f'{self.hour():02}:{self.minute():02}:{self.second():02} UTC {self._timezone_}'
-
-    def encode(self):
-        return f'{self.day()}.{self.month()}.{self.year()}.{self.hour()}.{self.minute()}.{self.second()}.{self._timezone_}'
 
     def year(self, _format: Format = Format.SIMPLE):
         if self._year_ == -1:
@@ -160,13 +159,28 @@ class Timepoint:
     def toTimedelta(self):
         return self.toDatetime() - datetime(1, 1, 1)
 
-    @staticmethod
-    def decode(string: str):
-        args = string.split('.')
-        if len(args) > 6:
-            return Timepoint(int(args[2]), int(args[1]), int(args[0]),
-                             int(args[3]), int(args[4]), int(args[5]), int(args[6]))
+    def toDict(self):
+        return {
+            'day': self.day(),
+            'month': self.month(),
+            'year': self.year(),
+            'hour': self.hour(),
+            'minute': self.minute(),
+            'second': self.second(),
+            'timezone': self._timezone_
+        }
 
+    @staticmethod
+    def fromDict(data: dict):
+        return Timepoint(
+            data['year'],
+            data['month'],
+            data['day'],
+            data['hour'],
+            data['minute'],
+            data['second'],
+            data['timezone']
+        )
 
     @staticmethod
     def now():

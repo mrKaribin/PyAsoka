@@ -3,7 +3,8 @@ from PyAsoka.src.Linguistics.Word import Word
 from PyAsoka.Asoka import Asoka
 from vosk import Model, KaldiRecognizer
 
-import os
+from threading import Thread
+
 import pyaudio
 import pymorphy2
 import json
@@ -20,8 +21,8 @@ class SpeechRecModel:
 
 class SpeechRecognition:
     class Models:
-        PERFORMANCE = Asoka.Project.Path.asokaModels() + '/vosk-model-small-ru-0.22'
-        QUALITY = Asoka.Project.Path.asokaModels() + '/vosk-model-ru-0.22'
+        PERFORMANCE = Asoka.Project.Path.Asoka.Models() + '/vosk-model-small-ru-0.22'
+        QUALITY = Asoka.Project.Path.Asoka.Models() + '/vosk-model-ru-0.42'
 
     def __init__(self, model: SpeechRecModel = None):
         if model is None:
@@ -34,7 +35,14 @@ class SpeechRecognition:
         self.rec = KaldiRecognizer(self.model(), self.rate)
         self.stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=1,
                                              rate=self.rate, input=True, frames_per_buffer=8000)
+        self.analyzer = None
+        self.ready = False
+        self.loaderThread = Thread(target=self.loadAnalyzer)
+        self.loaderThread.start()
+
+    def loadAnalyzer(self):
         self.analyzer = pymorphy2.MorphAnalyzer()
+        self.ready = True
 
     def listen(self):
         while True:
@@ -44,8 +52,9 @@ class SpeechRecognition:
                 answer = json.loads(self.rec.Result())
                 if answer["text"]:
                     phrase = self.parsePhrase(answer['text'])
-                    print(phrase)
+                    # print('Recognized: ', phrase.text())
                     return phrase
+                self.rec = KaldiRecognizer(self.model(), self.rate)
 
     def parsePhrase(self, text: str):
         phrase = Phrase()

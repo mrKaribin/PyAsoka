@@ -79,6 +79,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
     def __init__(self, parent: QWidget = None, movable: bool = False, clickable: bool = False, keyboard: bool = False,
                  style: type(Style) = None,
+                 size: tuple | QSize = None, position: tuple | QPoint = None, geometry: tuple | QRect = None,
                  with_super: bool = True):
         if with_super:
             super().__init__(parent)
@@ -106,7 +107,8 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self._animations_ = AnimationManager()
         self._animate_ = Animate(self)
         self._style_ = StyleManager(self, style)
-        self._configuration_ = Configuration(self, movable, clickable)
+        self._movable_ = movable
+        self._clickable_ = clickable
 
         self._loading_movie_ = QMovie('PyAsoka/media/gif/loading_background2.gif')
         self._loading_movie_.frameChanged.connect(self.repaint)
@@ -115,13 +117,21 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         if self.parent() is None:
-            self.setWindowFlag(Qt.WindowType.BypassWindowManagerHint)
-            self.setWindowFlag(Qt.WindowType.WindowOverridesSystemGestures)
+            self.setWindowFlag(Qt.WindowType.ToolTip)
+            # self.setWindowFlag(Qt.WindowType.BypassWindowManagerHint)
+            # self.setWindowFlag(Qt.WindowType.WindowOverridesSystemGestures)
 
         if keyboard:
             self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         else:
             self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        if size is not None:
+            self.setSize(size)
+        if position is not None:
+            self.setPosition(position)
+        if geometry is not None:
+            self.setGeometry(geometry)
 
         # Подготовка соединений с сигналами
         def run_gui_task(method, args):
@@ -130,13 +140,14 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self._run_gui_task_.connect(run_gui_task)
         if parent is not None:
             parent.props._alpha_.changed.connect(lambda value: self.props._alpha_.setter(self, value))
+        # self.props._alpha_.changed.connect(self.repaint)
 
         # Запуск виджета
         def __preparation__():
             self.prepare()
             self.runGuiTask(self.states.loading.disable)
 
-        self.layers.background.enable()
+        self.layers.background.enable(duration=None)
         self.states.loading.enable()
         self._initialization_timer_ = Timer(0.05, __preparation__)
         self._initialization_timer_.start()
@@ -150,10 +161,10 @@ class Widget(QWidget, metaclass=WidgetMeta):
         class Frame:
             thickness = Prop(int, 3)
             anglesRadius = Prop(int, 15)
-            topLeft = Prop(int, True)
-            topRight = Prop(int, True)
-            bottomLeft = Prop(int, True)
-            bottomRight = Prop(int, True)
+            topLeft = Prop(bool, True)
+            topRight = Prop(bool, True)
+            bottomLeft = Prop(bool, True)
+            bottomRight = Prop(bool, True)
 
             def setRoundedAngles(self, top_left: bool, top_right: bool, bottom_left: bool, bottom_right: bool):
                 self.topLeft = top_left
@@ -162,7 +173,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
                 self.bottomRight = bottom_right
 
     # Layers -----------------------------------------------------------------------------------------------------------
-    class Background(Layer, level=Layer.Level.TOP):
+    class Background(Layer, level=Layer.Level.BOTTOM):
         def paint(self, widget, painter, style, props, event):
             if style.exists('frame') or style.exists('background'):
                 thickness = widget.props.frame.thickness
@@ -219,6 +230,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
             pixmap = widget._loading_movie_.currentPixmap()
             size = QSize(160 * 3, 120 * 3)
             pos = QPoint((widget.width() - size.width()) // 2, (widget.height() - size.height()) // 2)
+            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceOver)
             painter.setOpacity(self.alpha)
             painter.drawPixmap(QRect(pos, size), pixmap)
             painter.setOpacity(1.0)
@@ -232,7 +244,6 @@ class Widget(QWidget, metaclass=WidgetMeta):
         def endTask(self, widget):
             anim = widget.layers.loadingBackground.disappearance()
             anim.finished.connect(widget._loading_movie_.stop)
-            print('hui')
 
     # Methods ----------------------------------------------------------------------------------------------------------
 
@@ -262,6 +273,14 @@ class Widget(QWidget, metaclass=WidgetMeta):
             super(Widget, self).setGeometry(geometry)
         else:
             raise Exceptions.UnsupportableType(geometry)
+
+    def appearance(self, duration=1000):
+        self.show()
+        self.animate.opacity(1.0, 0.0, duration)
+
+    def disappearance(self, duration=1000):
+        anim = self.animate.opacity(0.0, duration=duration)
+        anim.finished.connect(self.hide)
 
     def enterEvent(self, event):
         pass
@@ -336,20 +355,42 @@ class Widget(QWidget, metaclass=WidgetMeta):
         return self._mouse_
 
     @property
-    def conf(self):
-        return self._configuration_
+    def movable(self):
+        return self._movable_
+
+    @movable.setter
+    def movable(self, value):
+        if isinstance(value, bool):
+            self._movable_ = value
+        else:
+            Exceptions.UnsupportableType(value)
+
+    @property
+    def clickable(self):
+        return self._clickable_
+
+    @clickable.setter
+    def clickable(self, value):
+        if isinstance(value, bool):
+            self._clickable_ = value
+        else:
+            Exceptions.UnsupportableType(value)
 
     @property
     def props(self):
         return self._props_
 
     @property
-    def animations(self):
+    def animations(self) -> AnimationManager:
         return self._animations_
 
     @property
-    def animate(self):
+    def animate(self) -> Animate:
         return self._animate_
+
+    @property
+    def painter(self) -> QPainter:
+        return self.__get_painter__()
 
     @staticmethod
     def proportional(value, percentage):

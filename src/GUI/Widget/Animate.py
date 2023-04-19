@@ -1,4 +1,5 @@
 from PyAsoka.src.GUI.Widget.AnimationManager import Animation
+from PyAsoka.src.GUI.Style.Color import Color, QColor
 from PyAsoka.src.Debug.Exceptions import Exceptions
 from PySide6.QtCore import QPoint, QRect, QSize
 
@@ -6,6 +7,10 @@ from PySide6.QtCore import QPoint, QRect, QSize
 class Animate:
     def __init__(self, widget):
         self._widget_ = widget
+
+    @property
+    def widget(self):
+        return self._widget_
 
     def size(self, end_size: tuple | QSize, start_size: tuple | QSize = None, duration: int = 1000):
         if start_size is None:
@@ -31,7 +36,7 @@ class Animate:
         self._widget_.animations.start(animation)
         return animation
 
-    def position(self, end_position: tuple | QPoint, start_position: tuple | QPoint, duration: int = 1000):
+    def position(self, end_position: tuple | QPoint, start_position: tuple | QPoint = None, duration: int = 1000):
         if start_position is None:
             start_position = self._widget_.position()
 
@@ -53,7 +58,7 @@ class Animate:
         self._widget_.animations.start(animation)
         return animation
 
-    def geometry(self, end_position: tuple | QPoint, start_position: tuple | QPoint, duration: int = 1000):
+    def geometry(self, end_position: tuple | QRect, start_position: tuple | QRect = None, duration: int = 1000):
         if start_position is None:
             start_position = self._widget_.geometry()
 
@@ -73,4 +78,48 @@ class Animate:
 
         animation = Animation(self._widget_, b'geometry', start_position, end_position, duration)
         self._widget_.animations.start(animation)
+        return animation
+
+    def color(self, color_name: str, end_color: tuple | Color | QColor, start_color: tuple | Color | QColor = None, duration = 1000):
+        if start_color is None:
+            start_color = self.widget.style.getColor(color_name)
+
+        if isinstance(start_color, tuple) and 3 <= len(start_color) <= 4:
+            start_color = QColor(*end_color)
+        elif isinstance(start_color, QColor):
+            pass
+        else:
+            raise Exceptions.UnsupportableType(start_color)
+
+        if isinstance(end_color, tuple) and 3 <= len(end_color) <= 4:
+            end_color = QColor(*end_color)
+        elif isinstance(end_color, QColor):
+            pass
+        else:
+            raise Exceptions.UnsupportableType(end_color)
+
+        animation = Animation(self.widget.style(), bytes(color_name, 'utf-8'), start_color, end_color, duration)
+        self.widget.animations.start(animation)
+        return animation
+
+    def opacity(self, end_value: float, start_value: float = None, duration: int = 1000):
+        if start_value is None:
+            start_value = self.widget.alpha
+
+        if isinstance(start_value, int):
+            start_value = float(start_value)
+        elif isinstance(start_value, float):
+            pass
+        else:
+            raise Exceptions.UnsupportableType(start_value)
+
+        if isinstance(end_value, int):
+            end_value = float(start_value)
+        elif isinstance(end_value, float):
+            pass
+        else:
+            raise Exceptions.UnsupportableType(start_value)
+
+        animation = Animation(self.widget.props, b'alpha', start_value, end_value, duration)
+        self.widget.animations.start(animation)
         return animation

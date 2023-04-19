@@ -24,7 +24,7 @@ class AMedia:
         if self._widget_ is None:
             self._widget_ = AVideo(parent=parent)
             self._player_.setVideoOutput(self._widget_._video_)
-            self._widget_.scrolled.bind(self.scrollVideo)
+            self._widget_.scrolled.connect(self.scrollVideo)
             self._widget_.volume_changed.bind(self.setVolume)
             self._widget_.played.bind(self.play)
             self._widget_.paused.bind(self.pause)

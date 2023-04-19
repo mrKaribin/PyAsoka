@@ -4,8 +4,7 @@ import mediapipe as mp
 
 from enum import Enum, auto
 from PyAsoka.src.Geometry.Point import Point as Point
-from PyAsoka.src.Core.Signal import Signal
-from PySide6.QtCore import QObject
+from PyAsoka.src.Core.Object import Object, Signal
 
 
 class Finger:
@@ -128,11 +127,17 @@ class HandData:
             self.points.insert(idx, landmark)
 
 
-class Hand(QObject, HandData):
+class Hand(Object, HandData):
     mpHands = mp.solutions.hands
     mpDraw = mp.solutions.drawing_utils
     detector = mpHands.Hands()
     # moved = QSignal([float, float])
+
+    moved = Signal(float, float)
+    scrolled = Signal(float, float)
+    clicked = Signal(Point)
+    pressed = Signal(Point)
+    released = Signal(Point)
 
     class State(Enum):
         UNDEFINED = auto()
@@ -161,12 +166,6 @@ class Hand(QObject, HandData):
         self.cursor_updated = False
         self.cursor_delta = None
         self.last_cursor_position = None
-
-        self.moved = Signal(float, float)
-        self.scrolled = Signal(float, float)
-        self.clicked = Signal(Point)
-        self.pressed = Signal(Point)
-        self.released = Signal(Point)
 
     def update(self, hand: HandData):
         landmarks = hand.landmarks
@@ -232,9 +231,10 @@ class Hand(QObject, HandData):
         self.cursor_updated = False
         st = Finger.State
         dist_1_2 = Finger.__distance__(self.finger1.tip, self.finger2.tip)
-        # print(f"Dist: {dist_1_2}")
+        # print(f"States: {self.finger1.state}, {self.finger2.state}, {self.finger3.state}, {self.finger4.state}, {self.finger5.state}")
+        # print('Angles: ', self.angle, self.z_angle)
 
-        if 50 < self.angle < 130 and 90 < self.z_angle < 120:
+        if 50 < self.angle < 130:  #and 90 < self.z_angle < 120:
 
             if last_state != self.State.PRESSED and \
                     self.finger1.state == st.STRAIGHT and \
@@ -245,7 +245,7 @@ class Hand(QObject, HandData):
                 self.state = Hand.State.CURSOR
                 self.update_cursor_position()
                 if self.cursor_delta is not None:
-                    self.moved(self.cursor_delta.x, self.cursor_delta.y)
+                    self.moved.emit(self.cursor_delta.x, self.cursor_delta.y)
 
             if dist_1_2 < 0.08 and \
                     self.finger3.state == st.COMPRESSED and \
@@ -257,16 +257,16 @@ class Hand(QObject, HandData):
                     self.last_cursor_position = self.finger3.base
                 self.cursor_updated = True
                 if self.pressed_count >= 10 and self.last_cursor_position is not None:  # +79117120956
-                    self.pressed(self.last_cursor_position)
+                    self.pressed.emit(self.last_cursor_position)
                     self.update_cursor_position()
                     if self.cursor_delta is not None:
-                        self.moved(self.cursor_delta.x, self.cursor_delta.y)
+                        self.moved.emit(self.cursor_delta.x, self.cursor_delta.y)
 
             else:
                 if 0 < self.pressed_count < 10 and self.last_cursor_position is not None:
-                    self.clicked(self.last_cursor_position)
+                    self.clicked.emit(self.last_cursor_position)
                 elif self.pressed_count >= 10:
-                    self.released(self.last_cursor_position)
+                    self.released.emit(self.last_cursor_position)
                 self.pressed_count = 0
 
             if self.finger2.state == st.STRAIGHT and \
@@ -276,7 +276,7 @@ class Hand(QObject, HandData):
                 self.state = Hand.State.SCROLL
                 self.update_cursor_position()
                 if self.cursor_delta is not None:
-                    self.scrolled(self.cursor_delta.x, self.cursor_delta.y)
+                    self.scrolled.emit(self.cursor_delta.x, self.cursor_delta.y)
 
             if self.finger1.state == st.STRAIGHT and \
                     self.finger2.state == st.COMPRESSED and \

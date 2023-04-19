@@ -55,6 +55,10 @@ class Socket:
             key += '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ'[randint(0, 35)]
         return key
 
+    def close(self):
+        self.socket.close()
+        self._socket_ = socket.socket()
+
     @staticmethod
     def readFromConnection(connection, key=None):
         if isinstance(connection, Socket):

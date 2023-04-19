@@ -1,4 +1,4 @@
-from PyAsoka.src.Core.Core import Core
+from PyAsoka.src.Core.Core import Core, core
 from PyAsoka.src.Core.CommunicationEngine import CommunicationEngine
 from PyAsoka.src.Core.SpeechEngine import SpeechEngine
 from PyAsoka.src.Core.SpeechRecognition import SpeechRecognition

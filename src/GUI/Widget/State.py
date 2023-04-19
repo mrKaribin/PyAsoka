@@ -3,6 +3,7 @@ from PyAsoka.src.Core.Signal import Signal, SignalType
 from PyAsoka.src.GUI.Animation.Animation import Animation
 from PyAsoka.src.GUI.Animation.SequentialAnimations import SequentialAnimations
 from PyAsoka.src.GUI.Animation.ParallelAnimations import ParallelAnimations
+from PyAsoka.src.Debug.Exceptions import Exceptions
 from threading import Thread
 
 
@@ -21,12 +22,18 @@ class State(Object, metaclass=StateMeta):
         super().__init__()
         self._widget_ = widget
         self.name = ''
+        self._enabled_ = False
         self._begin_animation_ = None
         self._animation_ = None
         self._end_animation_ = None
         self._task_thread_ = None
 
+    @property
+    def isEnabled(self):
+        return self._enabled_
+
     def enable(self):
+        self._enabled_ = True
         self.enabled.emit(self)
 
         if self.haveBeginAnimation():
@@ -42,9 +49,13 @@ class State(Object, metaclass=StateMeta):
             self.startAsynchTask().start()
 
         if self.haveTask():
-            self.task(self._widget_)
+            if self.haveBeginAnimation():
+                begin_animation.finished.connect(self.startTask)
+            else:
+                self.task(self._widget_)
 
     def disable(self):
+        self._enabled_ = False
         if self.haveEndTask():
             self.endTask(self._widget_)
 
@@ -55,6 +66,19 @@ class State(Object, metaclass=StateMeta):
             self.startEndAnimation()
         else:
             self.disabled.emit(self)
+
+    def enableAfter(self, state):
+        if isinstance(state, State):
+            state.disabled.connect(self.enable)
+        else:
+            Exceptions.UnsupportableType(state)
+
+    def changeTo(self, state):
+        if isinstance(state, State) and self.isEnabled:
+            self.disabled.connect(state.enable, self.ConnectionType.SingleShotConnection)
+            self.disable()
+        else:
+            Exceptions.UnsupportableType(state)
 
     def startBeginAnimation(self):
         animation = self.beginAnimation(self._widget_)
@@ -79,6 +103,9 @@ class State(Object, metaclass=StateMeta):
         thread = Thread(self.asynchTask, args=(self._widget_, ))
         self._task_thread_ = thread
         return thread
+
+    def startTask(self):
+        self.task(self._widget_)
 
     def haveBeginAnimation(self):
         return not self.__class__.beginAnimation == State.beginAnimation
