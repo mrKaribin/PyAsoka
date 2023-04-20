@@ -2,15 +2,17 @@ from PyAsoka.src.GUI.Animation.Animation import Animation
 from PyAsoka.src.GUI.Animation.SequentialAnimations import SequentialAnimations
 from PyAsoka.src.GUI.Widgets.TextView import TextView
 from PyAsoka.src.GUI.Style.Styles import Styles, Colors, Color
+from PyAsoka.Asoka import Asoka
 
 
 class Button(TextView):
-    def __init__(self, text, **kwargs):
-        super().__init__(text, clickable=True, style=Styles.Button, **kwargs)
+    def __init__(self, text: str, **kwargs):
+        super().__init__(text.upper(), clickable=True, style=Styles.Button, **kwargs)
         self._click_animation_ = None
         self._frame_animation_ = None
         self.setTextBold(True)
         self.clicked.connect(self.click_animation)
+        self._label_.setAlignment(Asoka.Alignment.AlignCenter)
 
     def click_animation(self):
         if self._click_animation_ is not None:

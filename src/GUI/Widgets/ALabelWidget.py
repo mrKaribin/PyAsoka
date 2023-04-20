@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 
 
 class ALabelWidget(Widget):
-    def __init__(self, label_type, text: str = '', text_size: int = 10, text_bold: bool = False,
+    def __init__(self, label_type, text: str = '', text_size: int = 8, text_bold: bool = False,
                  alignment: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignLeft, **kwargs):
         super().__init__(**kwargs)
 

@@ -132,7 +132,8 @@ class Asoka:
 
     @staticmethod
     def app():
-        pass
+        from PyAsoka.src.GUI.Application import app
+        return app()
 
     @staticmethod
     def encrypt(data):

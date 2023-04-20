@@ -139,7 +139,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
         self._run_gui_task_.connect(run_gui_task)
         if parent is not None:
-            parent.props._alpha_.changed.connect(lambda value: self.props._alpha_.setter(self, value))
+            parent.props._alpha_.changed.connect(lambda value: self.props._alpha_.__setter__(self, value))
         # self.props._alpha_.changed.connect(self.repaint)
 
         # Запуск виджета
@@ -238,7 +238,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
     # States -----------------------------------------------------------------------------------------------------------
     class Loading(State):
         def task(self, widget):
-            widget.layers.loadingBackground.enable()
+            widget.layers.loadingBackground.enable(duration=300)
             widget._loading_movie_.start()
 
         def endTask(self, widget):
@@ -278,9 +278,11 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self.show()
         self.animate.opacity(1.0, 0.0, duration)
 
-    def disappearance(self, duration=1000):
+    def disappearance(self, duration=1000, with_delete=False):
         anim = self.animate.opacity(0.0, duration=duration)
         anim.finished.connect(self.hide)
+        if with_delete is True:
+            anim.finished.connect(self.deleteLater)
 
     def enterEvent(self, event):
         pass
