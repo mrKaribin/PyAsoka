@@ -12,9 +12,9 @@ class Animate:
     def widget(self):
         return self._widget_
 
-    def size(self, end_size: tuple | QSize, start_size: tuple | QSize = None, duration: int = 1000):
+    def size(self, end_size: tuple | QSize, start_size: tuple | QSize = None, duration: int = 1000, silent=False):
         if start_size is None:
-            start_size = self._widget_.size()
+            start_size = self._widget_.size
 
         if isinstance(start_size, tuple) and len(start_size) == 2:
             start_size = QSize(*start_size)
@@ -30,15 +30,19 @@ class Animate:
         else:
             raise Exceptions.UnsupportableType(end_size)
 
-        start_geom = QRect(self._widget_.position(), start_size)
-        end_geom = QRect(self._widget_.position(), end_size)
+        start_geom = QRect(self._widget_.position, start_size)
+        end_geom = QRect(self._widget_.position, end_size)
         animation = Animation(self._widget_, b'geometry', start_geom, end_geom, duration)
+        if silent:
+            self.widget._formal_geometry_ = end_geom
+        else:
+            self.widget.formalSize = end_geom.size()
         self._widget_.animations.start(animation)
         return animation
 
-    def position(self, end_position: tuple | QPoint, start_position: tuple | QPoint = None, duration: int = 1000):
+    def position(self, end_position: tuple | QPoint, start_position: tuple | QPoint = None, duration: int = 1000, silent=False):
         if start_position is None:
-            start_position = self._widget_.position()
+            start_position = self._widget_.position
 
         if isinstance(start_position, tuple) and len(start_position) == 2:
             start_position = QSize(*start_position)
@@ -55,12 +59,16 @@ class Animate:
             raise Exceptions.UnsupportableType(end_position)
 
         animation = Animation(self._widget_, b'pos', start_position, end_position, duration)
+        if silent:
+            self.widget._formal_geometry_ = QRect(end_position, self.widget.formalGeometry.size())
+        else:
+            self.widget.formalPosition = end_position
         self._widget_.animations.start(animation)
         return animation
 
-    def geometry(self, end_position: tuple | QRect, start_position: tuple | QRect = None, duration: int = 1000):
+    def geometry(self, end_position: tuple | QRect, start_position: tuple | QRect = None, duration: int = 1000, silent=False):
         if start_position is None:
-            start_position = self._widget_.geometry()
+            start_position = self._widget_.geometry
 
         if isinstance(start_position, tuple) and len(start_position) == 4:
             start_position = QRect(*start_position)
@@ -77,6 +85,10 @@ class Animate:
             raise Exceptions.UnsupportableType(end_position)
 
         animation = Animation(self._widget_, b'geometry', start_position, end_position, duration)
+        if silent:
+            self.widget._formal_geometry_ = end_position
+        else:
+            self.widget.formalGeometry = end_position
         self._widget_.animations.start(animation)
         return animation
 

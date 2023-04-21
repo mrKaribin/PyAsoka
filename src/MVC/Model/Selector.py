@@ -52,7 +52,7 @@ class Selector:
 
             for key, data in self._where_.items():
                 compare, value = data
-                where += f'{key}{compare}? AND '
+                where += f'{key} {compare} ? AND '
                 values.append(value)
             where = where[:len(where) - 5]
 
@@ -148,10 +148,10 @@ class Selector:
         if len(args) == 0:
             keys, all_keys = '', True
             for field in self.fields.values():
-                # if field.autoload:  ToDo
-                keys += field.column.name + ', '
-                # else:
-                #    all_keys = False
+                if not field.loadOnRequest:  # ToDo
+                    keys += field.column.name + ', '
+                else:
+                    all_keys = False
             if all_keys:
                 keys = '*'
             elif len(keys) > 0:

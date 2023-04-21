@@ -13,6 +13,7 @@ from PyAsoka.src.GUI.Style.Styles import Styles, Style, Color
 from PyAsoka.src.GUI.API.Screen import Screen
 from PyAsoka.src.Core.Signal import Signal
 from PyAsoka.src.Debug.Exceptions import Exceptions
+from PyAsoka.Asoka import Asoka
 
 from PySide6.QtGui import QColor, QPainter, QPen, QBrush, QPainterPath
 from PySide6.QtGui import QPaintEvent, QMouseEvent, QResizeEvent, QMovie, QPixmap, QImage
@@ -74,6 +75,8 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
     clicked = Signal(QWidget)
     resized = Signal(QRect)
+    formalPositionChanged = Signal(QRect)
+    formalSizeChanged = Signal(QRect)
     destroyed = Signal(QWidget)
     _run_gui_task_ = Signal(types.MethodType, list)
 
@@ -100,6 +103,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self.animation = None
 
         # private
+        # managers
         self._layers_ = createManager('layers', LayerManager)
         self._states_ = createManager('states', StateManager)
         self._mouse_ = MouseManager(self)
@@ -107,6 +111,13 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self._animations_ = AnimationManager()
         self._animate_ = Animate(self)
         self._style_ = StyleManager(self, style)
+        # visualization
+        self._formal_geometry_ = QRect()
+        self._alignment_ = Asoka.Alignment.AlignLeft
+        self._stretch_x_ = False
+        self._stretch_y_ = False
+        self._aspect_ratio_ = False
+        # behavior
         self._movable_ = movable
         self._clickable_ = clickable
 
@@ -117,7 +128,9 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         if self.parent() is None:
-            self.setWindowFlag(Qt.WindowType.ToolTip)
+            self.setWindowFlag(Qt.WindowType.Tool)
+            self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
+            # self.setWindowFlag(Qt.WindowType.ToolTip)
             # self.setWindowFlag(Qt.WindowType.BypassWindowManagerHint)
             # self.setWindowFlag(Qt.WindowType.WindowOverridesSystemGestures)
 
@@ -127,11 +140,11 @@ class Widget(QWidget, metaclass=WidgetMeta):
             self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         if size is not None:
-            self.setSize(size)
+            self.size = size
         if position is not None:
-            self.setPosition(position)
+            self.position = position
         if geometry is not None:
-            self.setGeometry(geometry)
+            self.geometry = geometry
 
         # Подготовка соединений с сигналами
         def run_gui_task(method, args):
@@ -148,9 +161,10 @@ class Widget(QWidget, metaclass=WidgetMeta):
             self.runGuiTask(self.states.loading.disable)
 
         self.layers.background.enable(duration=None)
-        self.states.loading.enable()
-        self._initialization_timer_ = Timer(0.05, __preparation__)
-        self._initialization_timer_.start()
+        if self.__class__.prepare != Widget.prepare:
+            self.states.loading.enable()
+            self._initialization_timer_ = Timer(0.05, __preparation__)
+            self._initialization_timer_.start()
 
     # Properties -------------------------------------------------------------------------------------------------------
     class Props:
@@ -245,88 +259,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
             anim = widget.layers.loadingBackground.disappearance()
             anim.finished.connect(widget._loading_movie_.stop)
 
-    # Methods ----------------------------------------------------------------------------------------------------------
-
-    def prepare(self):
-        pass
-
-    def setSize(self, size):
-        if isinstance(size, tuple) and len(size) == 2:
-            self.resize(QSize(*size))
-        elif isinstance(size, QSize):
-            self.resize(size)
-        else:
-            raise Exceptions.UnsupportableType(size)
-
-    def setPosition(self, position):
-        if isinstance(position, tuple) and len(position) == 2:
-            self.move(QPoint(*position))
-        elif isinstance(position, QPoint):
-            self.move(position)
-        else:
-            raise Exceptions.UnsupportableType(position)
-
-    def setGeometry(self, geometry):
-        if isinstance(geometry, tuple) and len(geometry) == 4:
-            super(Widget, self).setGeometry(QRect(*geometry))
-        elif isinstance(geometry, QRect):
-            super(Widget, self).setGeometry(geometry)
-        else:
-            raise Exceptions.UnsupportableType(geometry)
-
-    def appearance(self, duration=1000):
-        self.show()
-        self.animate.opacity(1.0, 0.0, duration)
-
-    def disappearance(self, duration=1000, with_delete=False):
-        anim = self.animate.opacity(0.0, duration=duration)
-        anim.finished.connect(self.hide)
-        if with_delete is True:
-            anim.finished.connect(self.deleteLater)
-
-    def enterEvent(self, event):
-        pass
-
-    def leaveEvent(self, event):
-        self.mouse.cursorPosition = None
-
-    def resizeEvent(self, event: QResizeEvent) -> None:
-        self.resized.emit(self.geometry())
-
-    def __get_painter__(self):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        parent = self.parent()
-        if parent is None:
-            painter.setCompositionMode(painter.CompositionMode.CompositionMode_DestinationOver)
-        elif issubclass(type(parent), Widget) and (
-                not parent.style.current.exists('background') or parent.style.current.background.alpha() != 255):
-            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceOver)
-        else:
-            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceIn)
-        return painter
-
-    def paintEvent(self, event: QPaintEvent):
-        self.layers.paint(self.__get_painter__(), event)
-
-    def mousePressEvent(self, event: QMouseEvent):
-        self.mouse.pressEvent(event)
-        super(Widget, self).mousePressEvent(event)
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        super(Widget, self).mouseMoveEvent(event)
-        self.mouse.moveEvent(event)
-
-    def mouseReleaseEvent(self, event: QMouseEvent):
-        self.mouse.releaseEvent(event)
-        super(Widget, self).mouseReleaseEvent(event)
-
-    def runGuiTask(self, method: types.MethodType, args=[]):
-        self._run_gui_task_.emit(method, args)
-
-    def deleteLater(self):
-        self.destroyed.emit(self)
-        super(Widget, self).deleteLater()
+    # Properties -------------------------------------------------------------------------------------------------------
 
     @Property(float)
     def alpha(self):
@@ -355,6 +288,145 @@ class Widget(QWidget, metaclass=WidgetMeta):
     @property
     def mouse(self):
         return self._mouse_
+
+    @property
+    def size(self):
+        return QWidget.size(self)
+
+    @size.setter
+    def size(self, size):
+        if isinstance(size, tuple) and len(size) == 2:
+            self.resize(QSize(*size))
+        elif isinstance(size, QSize):
+            self.resize(size)
+        else:
+            raise Exceptions.UnsupportableType(size)
+        self.formalSize = QWidget.size(self)
+
+    @property
+    def position(self):
+        return self.pos()
+
+    @position.setter
+    def position(self, position):
+        if isinstance(position, tuple) and len(position) == 2:
+            self.move(QPoint(*position))
+        elif isinstance(position, QPoint):
+            self.move(position)
+        else:
+            raise Exceptions.UnsupportableType(position)
+        self.formalPosition = self.pos()
+
+    @property
+    def geometry(self):
+        return QWidget.geometry(self)
+
+    @geometry.setter
+    def geometry(self, geometry):
+        if isinstance(geometry, tuple) and len(geometry) == 4:
+            super(Widget, self).setGeometry(QRect(*geometry))
+        elif isinstance(geometry, QRect):
+            super(Widget, self).setGeometry(geometry)
+        else:
+            raise Exceptions.UnsupportableType(geometry)
+        self.formalGeometry = QWidget.geometry(self)
+
+    @property
+    def minSize(self):
+        return self.minimumSize()
+
+    @property
+    def maxSize(self):
+        return self.maximumSize()
+
+    @property
+    def formalPosition(self):
+        return self._formal_geometry_
+
+    @formalPosition.setter
+    def formalPosition(self, value):
+        if isinstance(value, tuple) and len(value) == 2:
+            self.formalGeometry = QRect(QPoint(*value), self.formalGeometry.size())
+        elif isinstance(value, QPoint):
+            self.formalGeometry = value
+        else:
+            raise Exceptions.UnsupportableType(value)
+        self.formalPositionChanged.emit(self.formalGeometry.topLeft())
+
+    @property
+    def formalSize(self):
+        return self.formalGeometry.size()
+
+    @formalSize.setter
+    def formalSize(self, value):
+        if isinstance(value, tuple) and len(value) == 2:
+            self.formalGeometry = QRect(self.formalGeometry.topLeft(), QSize(*value))
+        elif isinstance(value, QSize):
+            self.formalGeometry = QRect(self.formalGeometry.topLeft(), value)
+        else:
+            raise Exceptions.UnsupportableType(value)
+        self.formalSizeChanged.emit(self.formalGeometry.size())
+
+    @property
+    def formalGeometry(self):
+        return self._formal_geometry_
+
+    @formalGeometry.setter
+    def formalGeometry(self, value):
+        if isinstance(value, QRect):
+            self._formal_geometry_ = value
+        elif isinstance(value, tuple) and len(value) == 4:
+            self._formal_geometry_ = QRect(*value)
+        else:
+            raise Exceptions.UnsupportableType(value)
+        self.formalSizeChanged.emit(self._formal_geometry_.size())
+        self.formalPositionChanged.emit(self._formal_geometry_.topLeft())
+
+    @property
+    def alignment(self):
+        return self._alignment_
+
+    @alignment.setter
+    def alignment(self, value: Asoka.Alignment):
+        if isinstance(value, Asoka.Alignment):
+            self._alignment_ = value
+        else:
+            raise Exceptions.UnsupportableType(value)
+
+    @property
+    def stretchX(self):
+        return self._stretch_x_
+
+    @stretchX.setter
+    def stretchX(self, value):
+        if isinstance(value, (bool, int)):
+            self._stretch_x_ = value
+        else:
+            raise Exceptions.UnsupportableType(value)
+
+    @property
+    def stretchY(self):
+        return self._stretch_y_
+
+    @stretchY.setter
+    def stretchY(self, value):
+        if isinstance(value, (bool, int)):
+            self._stretch_y_ = value
+        else:
+            raise Exceptions.UnsupportableType(value)
+
+    @property
+    def aspectRatio(self):
+        return self._aspect_ratio_
+
+    @aspectRatio.setter
+    def aspectRatio(self, value):
+        if isinstance(value, bool):
+            self._aspect_ratio_ = value
+        elif isinstance(value, tuple) and len(value) == 2:
+            self._aspect_ratio_ = value
+        else:
+            raise Exceptions.UnsupportableType(value)
 
     @property
     def movable(self):
@@ -393,6 +465,68 @@ class Widget(QWidget, metaclass=WidgetMeta):
     @property
     def painter(self) -> QPainter:
         return self.__get_painter__()
+
+    def prepare(self):
+        pass
+
+    # Methods ----------------------------------------------------------------------------------------------------------
+
+    def appearance(self, duration=1000):
+        self.alpha = 0.0
+        self.show()
+        anim = self.animate.opacity(1.0, 0.0, duration)
+        return anim
+
+    def disappearance(self, duration=1000, with_delete=False):
+        anim = self.animate.opacity(0.0, duration=duration)
+        anim.finished.connect(self.hide)
+        if with_delete is True:
+            anim.finished.connect(self.deleteLater)
+        return anim
+
+    def enterEvent(self, event):
+        pass
+
+    def leaveEvent(self, event):
+        self.mouse.cursorPosition = None
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        self.resized.emit(self.geometry)
+
+    def __get_painter__(self):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        parent = self.parent()
+        if parent is None:
+            painter.setCompositionMode(painter.CompositionMode.CompositionMode_DestinationOver)
+        elif issubclass(type(parent), Widget) and (
+                not parent.style.current.exists('background') or parent.style.current.background.alpha() != 255):
+            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceOver)
+        else:
+            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceIn)
+        return painter
+
+    def paintEvent(self, event: QPaintEvent):
+        self.layers.paint(self.__get_painter__(), event)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        self.mouse.pressEvent(event)
+        super(Widget, self).mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        super(Widget, self).mouseMoveEvent(event)
+        self.mouse.moveEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        self.mouse.releaseEvent(event)
+        super(Widget, self).mouseReleaseEvent(event)
+
+    def runGuiTask(self, method, args=[]):
+        self._run_gui_task_.emit(method, args)
+
+    def deleteLater(self):
+        self.destroyed.emit(self)
+        super(Widget, self).deleteLater()
 
     @staticmethod
     def proportional(value, percentage):

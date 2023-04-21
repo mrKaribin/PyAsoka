@@ -71,6 +71,7 @@ class ModelMeta(ObjectMeta):
 
 
 class ModelPrototype(Object, metaclass=ModelMeta):
+
     @classmethod
     @property
     def selector(cls) -> Selector:

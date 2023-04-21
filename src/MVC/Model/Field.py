@@ -62,10 +62,12 @@ class SimpleField(Field):
 
     def LOAD_ON_REQUEST(self, value=True):
         self.loadOnRequest = value
+        return self
 
     def UPDATEABILITY(self, load, save):
         self.autoload = load
         self.autosave = save
+        return self
 
 
 class IntField(SimpleField):

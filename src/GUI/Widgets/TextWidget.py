@@ -1,5 +1,5 @@
 from PyAsoka.src.Debug.Exceptions import Exceptions
-from PyAsoka.src.GUI.Widget.Widget import Widget, QPainter, Props, QPaintEvent, QRect, QSize, QPoint, Color
+from PyAsoka.src.GUI.Widget.Widget import Widget, QPainter, Props, QPaintEvent, QRect, QSize, QPoint, Color, Signal
 from PyAsoka.src.GUI.Widgets.IconView import IconView
 from PyAsoka.src.GUI.Widget.State import State
 from PyAsoka.src.GUI.Widget.Layer import Layer
@@ -177,6 +177,7 @@ class TextProperties:
                  flags=Asoka.Alignment.AlignLeft | Asoka.TextFlag.TextSingleLine,
                  font: Font = Font("Times", 10, Font.Weight.Normal, False),
                  visualization: Visualization = Visualization.DEFAULT,
+                 single_line: bool = False,
                  indent: tuple = (10, 10, 10, 10)):
         self._widget_ = widget
         self._paragraphs_ = [['']]
@@ -186,6 +187,7 @@ class TextProperties:
         self._indent_ = Indent(*indent)
         self._cursor_ = TextCursor(self)
         self._visualization_ = visualization
+        self._single_line_ = single_line
         self._word_wrap_ = False
         self._shift_ = QSize(0, 0)
 
@@ -277,6 +279,10 @@ class TextProperties:
         return self._indent_
 
     @property
+    def singleLine(self):
+        return self._single_line_
+
+    @property
     def wordWrap(self):
         return self._word_wrap_
 
@@ -290,6 +296,9 @@ class TextProperties:
     @property
     def shift(self):
         return self._shift_
+
+    def isEmpty(self):
+        return self.paragraphs == [['']]
 
     def updateGeometry(self, string):
         metric = QFontMetrics(self.font)
@@ -314,14 +323,17 @@ class TextWidget(Widget):
     TextWeight = Font.Weight
     Visualization = TextProperties.Visualization
 
+    enterEvent = Signal(str)
+
     def __init__(self, label: str = '',
                  flags=Asoka.Alignment.AlignLeft,
                  font: Font = Font("Times", 10, Font.Weight.Normal, False),
                  visualization: TextProperties.Visualization = TextProperties.Visualization.DEFAULT,
                  indent: tuple = (10, 10, 10, 10),
-                 editable: bool = False, **kwargs):
+                 editable: bool = False,
+                 single_line: bool = False, **kwargs):
         super().__init__(**kwargs)
-        self._text_ = TextProperties(self, label, flags, font, visualization, indent)
+        self._text_ = TextProperties(self, label, flags, font, visualization, single_line, indent)
         self._editable_ = False
 
         self.layers.textArea.enable()
@@ -352,12 +364,14 @@ class TextWidget(Widget):
         text = self.text
         cursor = text.cursor
         if event.text() != '':
+            print(event.key(), Asoka.Key.Key_Enter, event.key() == Asoka.Key.Key_Enter)
             if event.key() == Asoka.Key.Key_Backspace:
                 self.text.cursor.backspace()
             elif event.key() == Asoka.Key.Key_Tab:
                 pass
-            elif event.key() == Asoka.Key.Key_Enter:
-                pass
+            elif event.key() == 16777220:
+                if self.text.singleLine:
+                    self.enterEvent.emit(self.text.string)
             elif event.key() == Asoka.Key.Key_Delete:
                 if not cursor.isMax():
                     cursor.delete()
@@ -383,8 +397,9 @@ class TextWidget(Widget):
             metric = QFontMetrics(font)
             # string = text.format()
             label = text.label
+            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceOver)
 
-            if widget.text.paragraphs != [['']]:
+            if not text.isEmpty():
                 y = widget.text.indent.top
                 for paragraph in widget.text.format():
                     for line in paragraph:
@@ -403,9 +418,14 @@ class TextWidget(Widget):
                 painter.setFont(font)
                 painter.drawText(rect, text._flags_, label)
 
-            if widget.text.paragraphs != [['']] and widget.editable and widget.hasFocus():
+            if widget.editable and widget.hasFocus():
                 painter.setPen(Color(255, 255, 0, 255))
-                fragment = text.format()[cursor.position.paragraph][cursor.position.line][:cursor.position.symbol]
-                met = metric.boundingRect(fragment)
-                posX, height = text.indent.left + met.width() + 1, met.height()
+                if not text.isEmpty():
+                    fragment = text.format()[cursor.position.paragraph][cursor.position.line][:cursor.position.symbol]
+                    met = metric.boundingRect(fragment)
+                    posX, height = text.indent.left + met.width() + 1, met.height()
+                else:
+                    fragment = 'text'
+                    met = metric.boundingRect(fragment)
+                    posX, height = text.indent.left + 1, met.height()
                 painter.drawLine(posX, text.indent.top, posX, text.indent.top + height)

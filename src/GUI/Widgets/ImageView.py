@@ -1,4 +1,4 @@
-from PyAsoka.src.GUI.Widget.Widget import Widget, QPaintEvent, Styles, QPainter, QColor, QRect, QPoint, Qt
+from PyAsoka.src.GUI.Widget.Widget import Widget, QPaintEvent, Styles, QPainter, QColor, QRect, QPoint, Qt, Color, QPen
 
 from PySide6.QtWidgets import QLabel
 from PySide6.QtGui import QPixmap, QResizeEvent, QPainterPath

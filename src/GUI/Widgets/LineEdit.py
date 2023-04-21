@@ -24,6 +24,7 @@ class LineEdit(TextWidget):
         super().__init__(flags=Asoka.Alignment.AlignLeft | Asoka.TextFlag.TextSingleLine,
                          visualization=visualization,
                          label=label,
+                         single_line=True,
                          editable=True, **kwargs)
         self._type_ = type
         self.setFixedHeight(height)
@@ -44,7 +45,7 @@ class LineEdit(TextWidget):
     def modifierFix(self):
         size = self.height() / 3 * 2
         indent = (self.height() - size) // 2
-        self.modifier.setGeometry((self.width() - size - indent, indent, size, size))
+        self.modifier.geometry = (self.width() - size - indent, indent, size, size)
 
     def modifierClicked(self):
         if self.type == self.Type.PASSWORD:
