@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QRect
 from PySide6.QtGui import QMouseEvent
 
 
@@ -31,6 +31,8 @@ class MouseManager:
         widget = self._widget_
         if widget.clickable and not widget.mouse.dragging:
             widget.clicked.emit(widget)
+        if widget.movable and widget.mouse.dragging:
+            widget.formalPosition = widget.position
         widget.mouse.dragging = False
 
         button = self.button(event.button())
@@ -44,13 +46,17 @@ class MouseManager:
 
             if widget.parent() is None:
                 pos = event.globalPos()
-                widget.move(pos - lastPos)
+                newPos = pos - lastPos
+                widget.move(newPos)
+                widget._formal_geometry_ = QRect(newPos, widget.formalSize)
 
             else:
                 pos = event.globalPos() - widget.parent().pos()
                 new_pos = pos - lastPos
                 if 0 < new_pos.x() < widget.parent().width() - widget.width() and 0 < new_pos.y() < widget.parent().height() - widget.height():
-                    widget.move(pos - lastPos)
+                    newPos = pos - lastPos
+                    widget.move(newPos)
+                    widget._formal_geometry_ = QRect(newPos, widget.formalSize)
             widget.mouse.dragging = True
         self.cursorPosition = event.pos()
 

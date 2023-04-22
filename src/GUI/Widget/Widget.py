@@ -80,6 +80,66 @@ class Widget(QWidget, metaclass=WidgetMeta):
     destroyed = Signal(QWidget)
     _run_gui_task_ = Signal(types.MethodType, list)
 
+    class Stretch:
+        def __init__(self, x, y):
+            if isinstance(x, (bool, int)) and isinstance(y, (bool, int)):
+                self._x_ = x
+                self._y_ = y
+            else:
+                raise Exceptions.UnsupportableType(x, y)
+
+        @property
+        def x(self):
+            return self._x_
+
+        @x.setter
+        def x(self, value):
+            if isinstance(value, (bool, int)):
+                self._x_ = value
+            else:
+                raise Exceptions.UnsupportableType(value)
+
+        @property
+        def y(self):
+            return self._y_
+
+        @y.setter
+        def y(self, value):
+            if isinstance(value, (bool, int)):
+                self._y_ = value
+            else:
+                raise Exceptions.UnsupportableType(value)
+
+    class Constrict:
+        def __init__(self, x, y):
+            if isinstance(x, bool) and isinstance(y, bool):
+                self._x_ = x
+                self._y_ = y
+            else:
+                raise Exceptions.UnsupportableType(x, y)
+
+        @property
+        def x(self):
+            return self._x_
+
+        @x.setter
+        def x(self, value):
+            if isinstance(value, bool):
+                self._x_ = value
+            else:
+                raise Exceptions.UnsupportableType(value)
+
+        @property
+        def y(self):
+            return self._y_
+
+        @y.setter
+        def y(self, value):
+            if isinstance(value, bool):
+                self._y_ = value
+            else:
+                raise Exceptions.UnsupportableType(value)
+
     def __init__(self, parent: QWidget = None, movable: bool = False, clickable: bool = False, keyboard: bool = False,
                  style: type(Style) = None,
                  size: tuple | QSize = None, position: tuple | QPoint = None, geometry: tuple | QRect = None,
@@ -114,9 +174,10 @@ class Widget(QWidget, metaclass=WidgetMeta):
         # visualization
         self._formal_geometry_ = QRect()
         self._alignment_ = Asoka.Alignment.AlignLeft
-        self._stretch_x_ = False
-        self._stretch_y_ = False
+        self._stretch_ = Widget.Stretch(False, False)
+        self._constrict_ = Widget.Constrict(False, False)
         self._aspect_ratio_ = False
+        self._layout_ = None
         # behavior
         self._movable_ = movable
         self._clickable_ = clickable
@@ -341,14 +402,14 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
     @property
     def formalPosition(self):
-        return self._formal_geometry_
+        return self.formalGeometry.topLeft()
 
     @formalPosition.setter
     def formalPosition(self, value):
         if isinstance(value, tuple) and len(value) == 2:
             self.formalGeometry = QRect(QPoint(*value), self.formalGeometry.size())
         elif isinstance(value, QPoint):
-            self.formalGeometry = value
+            self.formalGeometry = QRect(value, self.formalGeometry.size())
         else:
             raise Exceptions.UnsupportableType(value)
         self.formalPositionChanged.emit(self.formalGeometry.topLeft())
@@ -394,26 +455,12 @@ class Widget(QWidget, metaclass=WidgetMeta):
             raise Exceptions.UnsupportableType(value)
 
     @property
-    def stretchX(self):
-        return self._stretch_x_
-
-    @stretchX.setter
-    def stretchX(self, value):
-        if isinstance(value, (bool, int)):
-            self._stretch_x_ = value
-        else:
-            raise Exceptions.UnsupportableType(value)
+    def stretch(self):
+        return self._stretch_
 
     @property
-    def stretchY(self):
-        return self._stretch_y_
-
-    @stretchY.setter
-    def stretchY(self, value):
-        if isinstance(value, (bool, int)):
-            self._stretch_y_ = value
-        else:
-            raise Exceptions.UnsupportableType(value)
+    def constrict(self):
+        return self._constrict_
 
     @property
     def aspectRatio(self):
@@ -427,6 +474,19 @@ class Widget(QWidget, metaclass=WidgetMeta):
             self._aspect_ratio_ = value
         else:
             raise Exceptions.UnsupportableType(value)
+
+    @property
+    def layout(self):
+        return self._layout_
+
+    @layout.setter
+    def layout(self, layout):
+        from PyAsoka.src.GUI.Layouts.Layout import Layout
+        if isinstance(layout, Layout):
+            self._layout_ = layout
+        else:
+            raise Exceptions.UnsupportableType(layout)
+
 
     @property
     def movable(self):
@@ -471,6 +531,19 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
     # Methods ----------------------------------------------------------------------------------------------------------
 
+    def __get_painter__(self):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        parent = self.parent()
+        if parent is None:
+            painter.setCompositionMode(painter.CompositionMode.CompositionMode_DestinationOver)
+        elif issubclass(type(parent), Widget) and (
+                not parent.style.current.exists('background') or parent.style.current.background.alpha() != 255):
+            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceOver)
+        else:
+            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceIn)
+        return painter
+
     def appearance(self, duration=1000):
         self.alpha = 0.0
         self.show()
@@ -484,6 +557,15 @@ class Widget(QWidget, metaclass=WidgetMeta):
             anim.finished.connect(self.deleteLater)
         return anim
 
+    def runGuiTask(self, method, args=[]):
+        self._run_gui_task_.emit(method, args)
+
+    def deleteLater(self):
+        self.destroyed.emit(self)
+        super(Widget, self).deleteLater()
+
+    # Events ----------------------------------------------------------------------------------------------------------
+
     def enterEvent(self, event):
         pass
 
@@ -492,19 +574,6 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         self.resized.emit(self.geometry)
-
-    def __get_painter__(self):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        parent = self.parent()
-        if parent is None:
-            painter.setCompositionMode(painter.CompositionMode.CompositionMode_DestinationOver)
-        elif issubclass(type(parent), Widget) and (
-                not parent.style.current.exists('background') or parent.style.current.background.alpha() != 255):
-            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceOver)
-        else:
-            painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceIn)
-        return painter
 
     def paintEvent(self, event: QPaintEvent):
         self.layers.paint(self.__get_painter__(), event)
@@ -520,13 +589,6 @@ class Widget(QWidget, metaclass=WidgetMeta):
     def mouseReleaseEvent(self, event: QMouseEvent):
         self.mouse.releaseEvent(event)
         super(Widget, self).mouseReleaseEvent(event)
-
-    def runGuiTask(self, method, args=[]):
-        self._run_gui_task_.emit(method, args)
-
-    def deleteLater(self):
-        self.destroyed.emit(self)
-        super(Widget, self).deleteLater()
 
     @staticmethod
     def proportional(value, percentage):

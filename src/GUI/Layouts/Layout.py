@@ -18,9 +18,12 @@ class Layout(Object):
         self._layouts_ = []
         self._margin_ = 10
         self._spacing_ = 10
-        self._size_ = QSize()
-        self._minimum_size_ = QSize()
-        self._maximum_size_ = QSize()
+        self._constrict_ = Widget.Constrict(False, False)
+        self._content_size_ = QSize()
+        self._minimum_size_ = None
+        self._maximum_size_ = None
+        self._minimum_content_size_ = QSize()
+        self._maximum_content_size_ = QSize()
 
         self.widget.formalSizeChanged.connect(self.__widget_size_changed__)
 
@@ -80,21 +83,18 @@ class Layout(Object):
             raise Exceptions.UnsupportableType(value)
 
     @property
-    def size(self):
-        return self._size_
-
-    @size.setter
-    def size(self, value):
-        if isinstance(value, tuple) and len(value) == 2:
-            self._size_ = QSize(*value)
-        elif isinstance(value, QSize):
-            self._size_ = value
+    def constrict(self):
+        if self.widget is None:
+            return self._constrict_
         else:
-            raise Exceptions.UnsupportableType(value)
+            return self.widget.constrict
 
     @property
     def minSize(self):
-        return self._minimum_size_
+        if self._minimum_size_ is None:
+            return self._minimum_content_size_
+        else:
+            return self._minimum_size_
 
     @minSize.setter
     def minSize(self, value):
@@ -107,7 +107,10 @@ class Layout(Object):
 
     @property
     def maxSize(self):
-        return self._maximum_size_
+        if self._maximum_size_ is None:
+            return self._maximum_content_size_
+        else:
+            return self._maximum_size_
 
     @maxSize.setter
     def maxSize(self, value):
@@ -115,6 +118,45 @@ class Layout(Object):
             self._maximum_size_ = QSize(*value)
         elif isinstance(value, QSize):
             self._maximum_size_ = value
+        else:
+            raise Exceptions.UnsupportableType(value)
+
+    @property
+    def contentSize(self):
+        return self._content_size_
+
+    @contentSize.setter
+    def contentSize(self, value):
+        if isinstance(value, tuple) and len(value) == 2:
+            self._content_size_ = QSize(*value)
+        elif isinstance(value, QSize):
+            self._content_size_ = value
+        else:
+            raise Exceptions.UnsupportableType(value)
+
+    @property
+    def minContentSize(self):
+        return self._minimum_content_size_
+
+    @minContentSize.setter
+    def minContentSize(self, value):
+        if isinstance(value, tuple) and len(value) == 2:
+            self._minimum_content_size_ = QSize(*value)
+        elif isinstance(value, QSize):
+            self._minimum_content_size_ = value
+        else:
+            raise Exceptions.UnsupportableType(value)
+
+    @property
+    def maxContentSize(self):
+        return self._maximum_content_size_
+
+    @maxContentSize.setter
+    def maxContentSize(self, value):
+        if isinstance(value, tuple) and len(value) == 2:
+            self._maximum_content_size_ = QSize(*value)
+        elif isinstance(value, QSize):
+            self._maximum_content_size_ = value
         else:
             raise Exceptions.UnsupportableType(value)
 
