@@ -22,6 +22,8 @@ from PyAsoka.src.GUI.Widgets.LineEdit import LineEdit
 from PyAsoka.src.GUI.Widgets.ImageView import ImageView
 from PyAsoka.src.GUI.Widgets.Button import Button
 
+from PyAsoka.src.GUI.Layouts.LinearLayout import LinearLayout
+
 from PySide6.QtCore import QRect, QSize, QPoint
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout
 

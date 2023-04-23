@@ -1,17 +1,8 @@
-from PyAsoka.src.GUI.Layouts.Layout import Layout, Widget, QSize, QRect
+from PyAsoka.src.GUI.Layouts.Layout import Layout, Widget, QSize, QRect, QPoint, Size, Point
 from PyAsoka.src.Debug.Exceptions import Exceptions
 from PyAsoka.Asoka import Asoka
 
 from enum import Enum, auto
-
-
-class Size:
-    def __init__(self, width=0, height=0):
-        self.width = width
-        self.height = height
-
-    def toQSize(self):
-        return QSize(self.width, self.height)
 
 
 class LinearLayout(Layout):
@@ -19,14 +10,18 @@ class LinearLayout(Layout):
         HORIZONTAL = auto()
         VERTICAL = auto()
 
-    def __init__(self, type: Type, parent=None):
+    def __init__(self, type: Type, parent):
         super().__init__(parent)
         self._type_ = type
-        self._stretch_ = QSize()
+        self._sections_ = QPoint()
 
     @property
     def type(self):
         return self._type_
+
+    @property
+    def sections(self) -> QPoint:
+        return self._sections_
 
     def getRects(self):
         isHorizontal = self.type == LinearLayout.Type.HORIZONTAL
@@ -35,15 +30,13 @@ class LinearLayout(Layout):
         self.updateSizes()
         available = self.availableSize
         freeSpace = Size(0, 0)
+        additionalSize = Size()
         newSize = QSize(available.width(), available.height())
         rects = {}
         x = self.margin
         y = self.margin
 
         # Рассчет занятого пространства базового виджета и потребности в его масштабировании
-        print('Content size: ', self.contentSize)
-        print('Available size: ', self.availableSize)
-        print('')
         if self.contentSize.width() > available.width():
             if self.contentSize.width() <= self.maxSize.width():
                 newSize.setWidth(self.contentSize.width())
@@ -55,6 +48,7 @@ class LinearLayout(Layout):
                 newSize.setWidth(self.contentSize.width())
             else:
                 freeSpace.width = available.width() - self.contentSize.width()
+                additionalSize.width = freeSpace.width // self.sections.x()
 
         if self.contentSize.height() > available.height():
             if self.contentSize.height() <= self.maxSize.height():
@@ -67,12 +61,19 @@ class LinearLayout(Layout):
                 newSize.setHeight(self.contentSize.height())
             else:
                 freeSpace.height = available.height() - self.contentSize.height()
+                additionalSize.height = freeSpace.height // self.sections.y()
 
         if available.width() != newSize.width() or available.height() != newSize.height():
             if self.widget is not None:
                 rects[self.widget] = QRect(self.widget.formalPosition, newSize)
             else:
-                self.formalGeometry = newSize
+                self.formalSize = newSize
+
+        print('Widget:', self.widget, 'stretch:', (self.stretch.x, self.stretch.y))
+        print('Content size: ', self.contentSize)
+        print('Available size: ', self.availableSize)
+        print('New size: ', newSize)
+        print('')
 
         # Рассчет координат дочерних виджетов
         for item in self.items:
@@ -81,9 +82,11 @@ class LinearLayout(Layout):
                     width, height = item.formalSize.width(), item.formalSize.height()
                     if item.stretch.y:
                         height = available.height() - self.margin * 2
-                        if item.aspectRatio:
+                        if isinstance(item, Widget) and item.aspectRatio:
                             arx, ary = item.aspectRatio
                             width = int(height / ary * arx)
+                    if item.stretch.x:
+                        width = item.formalSize.width() + additionalSize.width
 
                     if item.alignment == Alignment.AlignLeft:
                         rects[item] = QRect(x, y, width, height)
@@ -95,9 +98,11 @@ class LinearLayout(Layout):
                     width, height = item.formalSize.width(), item.formalSize.height()
                     if item.stretch.x:
                         width = available.width() - self.margin * 2
-                        if item.aspectRatio:
+                        if isinstance(item, Widget) and item.aspectRatio:
                             arx, ary = item.aspectRatio
                             height = int(width / arx * ary)
+                    if item.stretch.y:
+                        height = item.formalSize.height() + additionalSize.height
 
                     if item.alignment == Alignment.AlignLeft:
                         rects[item] = QRect(x, y, width, height)
@@ -105,6 +110,11 @@ class LinearLayout(Layout):
                         rects[item] = QRect((available.width() - width) // 2, y, width, height)
                     y += item.formalSize.height()
                     y += self.spacing
+            if isinstance(item, Layout.Spacing):
+                if isHorizontal:
+                    x += additionalSize.width
+                if isVertical:
+                    y += additionalSize.height
 
         return rects
 
@@ -115,7 +125,7 @@ class LinearLayout(Layout):
         totalSize = Size(self.margin * 2, self.margin * 2)
         totalMinimumSize = Size(self.margin * 2, self.margin * 2)
         totalMaximumSize = Size(self.margin * 2, self.margin * 2)
-        stretch = Size()
+        stretch = Point()
 
         # for layout in self.layouts():
         #     layout.updateSizes()
@@ -129,6 +139,8 @@ class LinearLayout(Layout):
                     totalMinimumSize.height = max(totalMinimumSize.height, item.minSize.height())
                     totalMaximumSize.width += item.maxSize.width() + self.spacing
                     totalMaximumSize.height = max(totalMaximumSize.height, item.maxSize.height())
+                    if item.stretch.x:
+                        stretch.x += int(item.stretch.x)
 
                 if isVertical:
                     totalSize.height += item.formalSize.height() + self.spacing
@@ -137,6 +149,12 @@ class LinearLayout(Layout):
                     totalMinimumSize.width = max(totalMinimumSize.width, item.minSize.width())
                     totalMaximumSize.height += item.maxSize.height() + self.spacing
                     totalMaximumSize.width = max(totalMaximumSize.width, item.maxSize.width())
+                    if item.stretch.y:
+                        stretch.y += int(item.stretch.y)
+
+            elif isinstance(item, Layout.Spacing):
+                stretch.x += item.x
+                stretch.y += item.y
 
         if isHorizontal:
             totalSize.width -= self.spacing
@@ -155,5 +173,5 @@ class LinearLayout(Layout):
         self.contentSize = totalSize.toQSize()
         self.minContentSize = totalMinimumSize.toQSize()
         self.maxContentSize = totalMaximumSize.toQSize()
-        self._stretch_ = stretch
+        self._sections_ = stretch.toQPoint()
         return totalSize, totalMinimumSize, totalMaximumSize, stretch

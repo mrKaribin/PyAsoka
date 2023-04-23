@@ -175,10 +175,13 @@ class TextProperties:
     def __init__(self, widget: Widget,
                  label: str = '',
                  flags=Asoka.Alignment.AlignLeft | Asoka.TextFlag.TextSingleLine,
-                 font: Font = Font("Times", 10, Font.Weight.Normal, False),
+                 font: Font = None,
                  visualization: Visualization = Visualization.DEFAULT,
                  single_line: bool = False,
                  indent: tuple = (10, 10, 10, 10)):
+        if font is None:
+            font = Font("Times", 10, Font.Weight.Normal, False)
+
         self._widget_ = widget
         self._paragraphs_ = [['']]
         self._label_ = label
@@ -327,17 +330,30 @@ class TextWidget(Widget):
 
     def __init__(self, label: str = '',
                  flags=Asoka.Alignment.AlignLeft,
-                 font: Font = Font("Times", 10, Font.Weight.Normal, False),
+                 font: Font = None,
                  visualization: TextProperties.Visualization = TextProperties.Visualization.DEFAULT,
                  indent: tuple = (10, 10, 10, 10),
                  editable: bool = False,
-                 single_line: bool = False, **kwargs):
+                 single_line: bool = False,
+                 text_bold: bool = None,
+                 text_size: int = None, **kwargs):
+        if font is None:
+            font = Font("Times", 10, Font.Weight.Normal, False)
+
+        if 'min_size' not in kwargs.keys():
+            kwargs['min_size'] = (100, 35)
+
         super().__init__(**kwargs)
         self._text_ = TextProperties(self, label, flags, font, visualization, single_line, indent)
-        self._editable_ = False
+        if text_bold is not None:
+            self.text.font.setBold(text_bold)
+        if text_size is not None:
+            self.text.font.setPointSize(text_size)
+        self._editable_ = editable
+        self.clickable = True
+        self.clicked.connect(self.setFocus)
 
         self.layers.textArea.enable()
-        self.editable = editable
 
     @property
     def text(self):
@@ -364,7 +380,7 @@ class TextWidget(Widget):
         text = self.text
         cursor = text.cursor
         if event.text() != '':
-            print(event.key(), Asoka.Key.Key_Enter, event.key() == Asoka.Key.Key_Enter)
+            # print(event.key(), Asoka.Key.Key_Enter, event.key() == Asoka.Key.Key_Enter)
             if event.key() == Asoka.Key.Key_Backspace:
                 self.text.cursor.backspace()
             elif event.key() == Asoka.Key.Key_Tab:
@@ -376,8 +392,6 @@ class TextWidget(Widget):
                 if not cursor.isMax():
                     cursor.delete()
             else:
-                # text._string_ = text.string[:cursor.position] + event.text() + text.string[cursor.position:]
-                # cursor.position += 1
                 cursor.insert(event.text())
         else:
             if event.key() == Asoka.Key.Key_Left:
@@ -411,11 +425,12 @@ class TextWidget(Widget):
                         painter.drawText(rect, text._flags_, line)
                         y += widget.text.indent.top // 2
                     y += widget.text.indent.top // 2
-            else:
+            elif label != '':
                 painter.setPen(Color(255, 255, 255, 80))
                 met = metric.boundingRect(label)
                 rect = QRect(text.indent.left, text.indent.top, met.width(), met.height())
                 painter.setFont(font)
+                # print(rect, text._flags_, label)
                 painter.drawText(rect, text._flags_, label)
 
             if widget.editable and widget.hasFocus():

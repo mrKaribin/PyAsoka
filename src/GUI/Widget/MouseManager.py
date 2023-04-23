@@ -19,7 +19,7 @@ class MouseManager:
 
     def pressEvent(self, event: QMouseEvent):
         widget = self._widget_
-        parent = widget.parent()
+        parent = widget.parent
         if parent is None:
             widget.activateWindow()
 
@@ -44,16 +44,16 @@ class MouseManager:
         if widget.movable and widget.mouse.leftButton.pressed:
             lastPos = widget.mouse.leftButton.pressPosition
 
-            if widget.parent() is None:
+            if widget.parent is None:
                 pos = event.globalPos()
                 newPos = pos - lastPos
                 widget.move(newPos)
                 widget._formal_geometry_ = QRect(newPos, widget.formalSize)
 
             else:
-                pos = event.globalPos() - widget.parent().pos()
+                pos = event.globalPos() - widget.parent.pos()
                 new_pos = pos - lastPos
-                if 0 < new_pos.x() < widget.parent().width() - widget.width() and 0 < new_pos.y() < widget.parent().height() - widget.height():
+                if 0 < new_pos.x() < widget.parent.width() - widget.width() and 0 < new_pos.y() < widget.parent.height() - widget.height():
                     newPos = pos - lastPos
                     widget.move(newPos)
                     widget._formal_geometry_ = QRect(newPos, widget.formalSize)

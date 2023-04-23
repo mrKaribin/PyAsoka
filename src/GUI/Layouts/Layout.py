@@ -1,23 +1,65 @@
 from PyAsoka.src.Core.Object import Object, Signal
 from PyAsoka.src.GUI.Widget.Widget import Widget, QRect, QPoint, QSize
 from PyAsoka.src.Debug.Exceptions import Exceptions
+from PyAsoka.Asoka import Asoka
+
+
+class Size:
+    def __init__(self, width=0, height=0):
+        self.width = width
+        self.height = height
+
+    def toQSize(self):
+        return QSize(self.width, self.height)
+
+
+class Point:
+    def __init__(self, x=0, y=0):
+        self.x = x
+        self.y = y
+
+    def toQPoint(self):
+        return QPoint(self.x, self.y)
 
 
 class Layout(Object):
     formalPositionChanged = Signal(QRect)
     formalSizeChanged = Signal(QRect)
 
-    def __init__(self, parent, base_widget=None):
+    class Spacing:
+        def __init__(self, x: int = 1, y: int = 1):
+            if isinstance(x, int) and isinstance(y, int):
+                self._x_ = x
+                self._y_ = y
+            else:
+                raise Exceptions.UnsupportableType(x, y)
+
+        @property
+        def x(self):
+            return self._x_
+
+        @property
+        def y(self):
+            return self._y_
+
+    def __init__(self, parent):
         super().__init__()
-        self.setParent(parent)
         if isinstance(parent, Widget):
             base_widget = parent
+        elif isinstance(parent, Layout):
+            base_widget = parent.baseWidget
+        else:
+            raise Exceptions.UnsupportableType(parent)
+
+        self.setParent(parent)
         self._base_widget_ = base_widget
         self._formal_geometry_ = QRect()
         self._items_ = []
         self._layouts_ = []
         self._margin_ = 10
         self._spacing_ = 10
+        self._alignment_ = Asoka.Alignment.AlignLeft
+        self._stretch_ = Widget.Stretch(False, False)
         self._constrict_ = Widget.Constrict(False, False)
         self._content_size_ = QSize()
         self._minimum_size_ = None
@@ -25,7 +67,7 @@ class Layout(Object):
         self._minimum_content_size_ = QSize()
         self._maximum_content_size_ = QSize()
 
-        self.widget.formalSizeChanged.connect(self.__widget_size_changed__)
+        self.parent().formalSizeChanged.connect(self.__widget_size_changed__)
 
     @property
     def widget(self):
@@ -83,11 +125,29 @@ class Layout(Object):
             raise Exceptions.UnsupportableType(value)
 
     @property
+    def alignment(self):
+        return self._alignment_
+
+    @alignment.setter
+    def alignment(self, value: Asoka.Alignment):
+        if isinstance(value, Asoka.Alignment):
+            self._alignment_ = value
+        else:
+            raise Exceptions.UnsupportableType(value)
+
+    @property
     def constrict(self):
         if self.widget is None:
             return self._constrict_
         else:
             return self.widget.constrict
+
+    @property
+    def stretch(self):
+        if self.widget is None:
+            return self._stretch_
+        else:
+            return self.widget.stretch
 
     @property
     def minSize(self):
@@ -162,7 +222,7 @@ class Layout(Object):
 
     @property
     def formalPosition(self):
-        return self._formal_geometry_
+        return self.formalGeometry.topLeft()
 
     @formalPosition.setter
     def formalPosition(self, value):
@@ -213,7 +273,7 @@ class Layout(Object):
     def addWidget(self, widget: Widget):
         if isinstance(widget, Widget):
             self.items.append(widget)
-            widget.setParent(self.widget)
+            widget.parent = self.baseWidget
             widget.formalSizeChanged.connect(self.__item_size_changed__)
         else:
             raise Exceptions.UnsupportableType(widget)
@@ -230,14 +290,14 @@ class Layout(Object):
         if isinstance(layout, Layout):
             self.items.append(layout)
             self.layouts.append(layout)
-            if self.baseWidget is not None:
-                layout.baseWidget = self.baseWidget
-            else:
-                raise Exception('Базовый виджет не определен для этого компоновщика')
-            layout.setParent(self.baseWidget)
+            layout.setParent(self)
             layout.formalSizeChanged.connect(self.__item_size_changed__)
+            layout.margin = 0
         else:
             raise Exceptions.UnsupportableType(layout)
+
+    def addSpacing(self, x: int = 1, y: int = 1):
+        self.items.append(Layout.Spacing(x, y))
 
     def __widget_size_changed__(self):
         self.update()
@@ -249,20 +309,45 @@ class Layout(Object):
         self.updateItems()
 
     def init(self):
+        for layout in self.layouts:
+            layout.init()
+
         rects = self.getRects()
+        if self.widget is None:
+            rects = self.adaptRects(rects)
+
         for item, rect in rects.items():
             item.geometry = rect
 
     def updateItems(self):
         rects = self.getRects()
+        if self.widget is None:
+            rects = self.adaptRects(rects)
+
         for item, rect in rects.items():
             if isinstance(item, Widget):
                 item.animate.geometry(rect, duration=300, silent=True)
             elif isinstance(item, Layout):
                 item.formalGeometry = rect
+                item.update()
 
     def updateSizes(self):
         pass
+
+    def adaptRects(self, rects: dict):
+        globalPos = QPoint(0, 0)
+        current = self
+        while True:
+            if current.widget is None:
+                globalPos += current.formalPosition
+                current = current.parent()
+            else:
+                break
+
+        if globalPos.x() != 0 or globalPos.y() != 0:
+            for item, rect in rects.items():
+                rects[item] = QRect(rect.topLeft() + globalPos, rect.size())
+        return rects
 
     def getRects(self) -> dict:
         pass

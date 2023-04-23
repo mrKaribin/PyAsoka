@@ -7,12 +7,11 @@ from PyAsoka.Asoka import Asoka
 
 class Button(TextView):
     def __init__(self, text: str, **kwargs):
-        super().__init__(text.upper(), clickable=True, style=Styles.Button, **kwargs)
+        super().__init__(text.upper(), text_bold=True, clickable=True, style=Styles.Button, **kwargs)
         self._click_animation_ = None
         self._frame_animation_ = None
-        self.setTextBold(True)
+        self.text.font.setBold(True)
         self.clicked.connect(self.click_animation)
-        self._label_.setAlignment(Asoka.Alignment.AlignCenter)
 
     def click_animation(self):
         if self._click_animation_ is not None:

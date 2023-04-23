@@ -140,12 +140,35 @@ class Widget(QWidget, metaclass=WidgetMeta):
             else:
                 raise Exceptions.UnsupportableType(value)
 
+    class AspectRatio:
+        def __init__(self, x=None, y=None):
+            if isinstance(x, bool) and isinstance(y, bool):
+                self._x_ = x
+                self._y_ = y
+                self._state_ = True
+            else:
+                self._x_ = None
+                self._y_ = None
+                self._state_ = False
+
+        def __bool__(self):
+            return self._state_
+
+        @property
+        def x(self):
+            return self._x_
+
+        @property
+        def y(self):
+            return self._y_
+
     def __init__(self, parent: QWidget = None, movable: bool = False, clickable: bool = False, keyboard: bool = False,
                  style: type(Style) = None,
                  size: tuple | QSize = None, position: tuple | QPoint = None, geometry: tuple | QRect = None,
-                 with_super: bool = True):
-        if with_super:
-            super().__init__(parent)
+                 min_size: tuple | QSize = None, max_size: tuple | None = None,
+                 alignment: Asoka.Alignment = Asoka.Alignment.AlignLeft, stretch: tuple = (False, False),
+                 constrict: tuple = (False, False), aspect_ratio: tuple | None = False):
+        super().__init__(parent)
 
         if style is None:
             style = Styles.Window if parent is None else Styles.Widget
@@ -176,7 +199,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self._alignment_ = Asoka.Alignment.AlignLeft
         self._stretch_ = Widget.Stretch(False, False)
         self._constrict_ = Widget.Constrict(False, False)
-        self._aspect_ratio_ = False
+        self._aspect_ratio_ = Widget.AspectRatio()
         self._layout_ = None
         # behavior
         self._movable_ = movable
@@ -186,9 +209,10 @@ class Widget(QWidget, metaclass=WidgetMeta):
         self._loading_movie_.frameChanged.connect(self.repaint)
 
         # class preparation
+        self.parent = parent
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-        if self.parent() is None:
+        if self.parent is None:
             self.setWindowFlag(Qt.WindowType.Tool)
             self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
             # self.setWindowFlag(Qt.WindowType.ToolTip)
@@ -206,15 +230,24 @@ class Widget(QWidget, metaclass=WidgetMeta):
             self.position = position
         if geometry is not None:
             self.geometry = geometry
+        if min_size is not None:
+            self.minSize = min_size
+        if max_size is not None:
+            self.maxSize = max_size
+        if isinstance(stretch, tuple) and len(stretch) == 2:
+            self.stretch.x = stretch[0]
+            self.stretch.y = stretch[1]
+        if isinstance(constrict, tuple) and len(constrict) == 2:
+            self.constrict.x = constrict[0]
+            self.constrict.y = constrict[1]
+        self.alignment = alignment
+        self.aspectRatio = aspect_ratio
 
         # Подготовка соединений с сигналами
         def run_gui_task(method, args):
             method(*args)
 
         self._run_gui_task_.connect(run_gui_task)
-        if parent is not None:
-            parent.props._alpha_.changed.connect(lambda value: self.props._alpha_.__setter__(self, value))
-        # self.props._alpha_.changed.connect(self.repaint)
 
         # Запуск виджета
         def __preparation__():
@@ -326,6 +359,20 @@ class Widget(QWidget, metaclass=WidgetMeta):
     def alpha(self):
         return self.props.alpha
 
+    @property
+    def parent(self):
+        return QWidget.parent(self)
+
+    @parent.setter
+    def parent(self, parent):
+        if isinstance(parent, Widget):
+            self.setParent(parent)
+            parent.props._alpha_.changed.connect(lambda value: self.props._alpha_.__setter__(self, value))
+        elif parent is None:
+            self.setParent(parent)
+        else:
+            raise Exceptions.UnsupportableType(parent)
+
     @alpha.getter
     def alpha(self):
         return self.props.alpha
@@ -396,9 +443,27 @@ class Widget(QWidget, metaclass=WidgetMeta):
     def minSize(self):
         return self.minimumSize()
 
+    @minSize.setter
+    def minSize(self, value):
+        if isinstance(value, tuple) and len(value) == 2:
+            self.setMinimumSize(QSize(*value))
+        elif isinstance(value, QSize):
+            self.setMinimumSize(value)
+        else:
+            raise Exceptions.UnsupportableType(value)
+
     @property
     def maxSize(self):
         return self.maximumSize()
+
+    @maxSize.setter
+    def maxSize(self, value):
+        if isinstance(value, tuple) and len(value) == 2:
+            self.setMaximumSize(QSize(*value))
+        elif isinstance(value, QSize):
+            self.setMaximumSize(value)
+        else:
+            raise Exceptions.UnsupportableType(value)
 
     @property
     def formalPosition(self):
@@ -468,10 +533,10 @@ class Widget(QWidget, metaclass=WidgetMeta):
 
     @aspectRatio.setter
     def aspectRatio(self, value):
-        if isinstance(value, bool):
-            self._aspect_ratio_ = value
+        if value is False:
+            self._aspect_ratio_ = Widget.AspectRatio()
         elif isinstance(value, tuple) and len(value) == 2:
-            self._aspect_ratio_ = value
+            self._aspect_ratio_ = Widget.AspectRatio(*value)
         else:
             raise Exceptions.UnsupportableType(value)
 
@@ -534,7 +599,7 @@ class Widget(QWidget, metaclass=WidgetMeta):
     def __get_painter__(self):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        parent = self.parent()
+        parent = self.parent
         if parent is None:
             painter.setCompositionMode(painter.CompositionMode.CompositionMode_DestinationOver)
         elif issubclass(type(parent), Widget) and (

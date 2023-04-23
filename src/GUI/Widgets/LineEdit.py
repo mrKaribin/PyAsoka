@@ -14,22 +14,21 @@ class LineEdit(TextWidget):
         DEFAULT = 1
         PASSWORD = 2
 
-    def __init__(self, type: Type = Type.DEFAULT, height: int = 40, label: str = '', **kwargs):
+    def __init__(self, type: Type = Type.DEFAULT, label: str = '', **kwargs):
         kwargs['style'] = Styles.Input
+        if 'stretch' not in kwargs.keys():
+            kwargs['stretch'] = (True, False)
+        if 'min_size' not in kwargs.keys():
+            kwargs['min_size'] = (100, 35)
+
         if type == LineEdit.Type.PASSWORD:
             visualization = LineEdit.Visualization.SECRET
         else:
             visualization = LineEdit.Visualization.DEFAULT
 
         super().__init__(flags=Asoka.Alignment.AlignLeft | Asoka.TextFlag.TextSingleLine,
-                         visualization=visualization,
-                         label=label,
-                         single_line=True,
-                         editable=True, **kwargs)
+                         visualization=visualization, label=label, single_line=True, editable=True, **kwargs)
         self._type_ = type
-        self.setFixedHeight(height)
-        self.text.font.setPixelSize(int(self.height() * 0.40))
-        self.text.indent.top = (self.height() - QFontMetrics(self.text.font).height()) // 2
         # self.text.font.setPointSize(self.height() // 3)
 
         if type == self.Type.PASSWORD:
@@ -38,9 +37,15 @@ class LineEdit(TextWidget):
             self.resized.connect(self.modifierFix)
             self.modifier.clicked.connect(self.modifierClicked)
 
+        self.resized.connect(self.updateTextProperties)
+
     @property
     def type(self):
         return self._type_
+
+    def updateTextProperties(self):
+        self.text.font.setPixelSize(int(self.height() * 0.40))
+        self.text.indent.top = (self.height() - QFontMetrics(self.text.font).height()) // 2
 
     def modifierFix(self):
         size = self.height() / 3 * 2
