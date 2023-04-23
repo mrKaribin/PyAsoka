@@ -23,6 +23,10 @@ class Project:
         HOME = os.getcwd()
         MEDIA = '\\media'
 
+        @staticmethod
+        def Home():
+            return Project.Path.HOME
+
         class Asoka:
             PATH = '\\PyAsoka'
             MEDIA = '\\media'
