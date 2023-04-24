@@ -19,6 +19,6 @@ class ConnectorsMultiprocessManager:
 
     def find(self, id):
         for connection in self.all:
-            if connection.id == id:
+            if connection._id_ == id:
                 return connection
         return None

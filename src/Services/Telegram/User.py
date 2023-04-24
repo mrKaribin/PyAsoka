@@ -33,3 +33,8 @@ class User:
 
     def isBot(self):
         return self._user_.is_bot
+
+    def toDict(self):
+        return {
+
+        }

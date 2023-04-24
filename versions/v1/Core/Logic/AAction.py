@@ -29,16 +29,16 @@ class AFunctionAction(AActionPrototype):
 
         process = AProcess.current_process
         if process.name != 'CoreProcess':
-            process.core.channel.send(ProcessMessage(Headers.ACTION_ADD, (self.model, self.type, self.event.id)))
+            process.core.channel.send(ProcessMessage(Headers.ACTION_ADD, (self.model, self.type, self.event._id_)))
         else:
-            process.add_action(self.model, self.event.id, _type)
+            process.add_action(self.model, self.event._id_, _type)
 
     def delete(self):
         from PyAsoka.Core.ACore import AProcess, ProcessMessage, Headers
         self.event.disconnectClient()
         process = AProcess.current_process
         if process.name != 'CoreProcess':
-            process.core.channel.send(ProcessMessage(Headers.ACTION_REMOVE, self.event.id))
+            process.core.channel.send(ProcessMessage(Headers.ACTION_REMOVE, self.event._id_))
         else:
             process.remove_action(self.model)
 

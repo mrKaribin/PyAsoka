@@ -23,8 +23,9 @@ class Listener(Object):
 
 
 class ServerSocket(Socket):
-    def __init__(self, host, port, queue_size=10):
+    def __init__(self, host, port, queue_size=10, auth_header='Authorization'):
         super().__init__()
+        self.authHeader = auth_header
         self.connections = []
         self.users = {}
         self.listeners = {}
@@ -48,7 +49,7 @@ class ServerSocket(Socket):
 
             try:
                 message = self.readFromConnection(connection)
-                if not isinstance(message, bool) and message.header == 'Authorization':
+                if not isinstance(message, bool) and message.header == self.authHeader:
                     self.connectClient(connection, address, message)
                 else:
                     connection.close()

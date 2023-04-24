@@ -64,7 +64,7 @@ class ModelContainer(object):
 
         obj = self.model.selector().create(**args)
         if obj:
-            self.id = obj.id
+            self.id = obj._id_
             self.exist_in_database = True
             self.updated = False
             return self

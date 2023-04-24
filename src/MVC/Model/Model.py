@@ -153,14 +153,14 @@ class Model(ModelPrototype):
                 args[field.column.name] = field.value
 
         for field in self.scheme.references.values():
-            if field.id is not None:
-                args[field.column.name] = field.id
+            if field._id_ is not None:
+                args[field.column.name] = field._id_
                 if isinstance(field.value, Model):
                     field.value.save()
 
         obj = self.selector.create(**args)
         if obj:
-            self.id = obj.id
+            self.id = obj._id_
             self.exist_in_database = True
             self.updated = False
             return self
@@ -174,8 +174,8 @@ class Model(ModelPrototype):
                 args[field.column.name] = field.value
 
         for field in self.scheme.references.values():
-            if field.id is not None:
-                args[field.column.name] = field.id
+            if field._id_ is not None:
+                args[field.column.name] = field._id_
                 if issubclass(type(field.value), Model):
                     field.value.save()
 

@@ -85,7 +85,7 @@ class File(Model):
         for row in data:
             filetype = FileType.fromSuffix(row['format'])
             file = filetype.handler()
-            file.id.set(row['id'])
+            file._id_.set(row['id'])
             file.load()
             files.append(file)
         return files

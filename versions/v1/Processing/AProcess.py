@@ -362,7 +362,7 @@ class AProcess:
         if isinstance(request, Request):
             while True:
                 for message in process.replies:
-                    if message.sender() == sender and message.header == request.header and message.id == request.id:
+                    if message.sender() == sender and message.header == request.header and message._id_ == request.id:
                         process.replies.remove(message)
                         return message.data
         else:

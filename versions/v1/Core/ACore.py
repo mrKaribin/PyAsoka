@@ -292,7 +292,7 @@ class ACore(AProcess):
 
         if header == Headers.FILE_TYPE_REQUEST:
             process.channel.send(ProcessMessage(
-                Headers.FILE_TYPE_REQUEST, self.get_filetype(message.data), id=message.id))
+                Headers.FILE_TYPE_REQUEST, self.get_filetype(message.data), id=message._id_))
 
         if header == Headers.SAY_PHRASE:
             text, mode, priority, wait = message.data
@@ -316,11 +316,11 @@ class ACore(AProcess):
             for connector_id in event_connector.connectors_id:
                 if (cutaway := self.multi_connectors.find(connector_id)) is not None and isinstance(cutaway, ConnectorsCutaway):
                     # print('Core connector: ', connector.process.name, args, kwargs)
-                    if cutaway.process.name == self.name:
+                    if cutaway._process_.name == self.name:
                         self.to_connector(connector_id, args, kwargs)
                     else:
-                        cutaway.process.channel.send(ProcessMessage(Headers.EVENT_HAPPENED,
-                                                                    data=[connector_id, args, kwargs]))
+                        cutaway._process_.channel.send(ProcessMessage(Headers.EVENT_HAPPENED,
+                                                                      data=[connector_id, args, kwargs]))
                     continue
                 Log.warning(
                     f'Для события ({id()}) не найден коннектор ({connector_id}) в ядре. Не удалось соединить событие с обработчиком.')

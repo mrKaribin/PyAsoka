@@ -119,7 +119,7 @@ class SpeechEngine(Object):
             voices = engine.getProperty('voices')
             for voice in voices:
                 if voice.name == self._voice_name_:
-                    engine.setProperty('voice', voice.id)
+                    engine.setProperty('voice', voice._id_)
             engine.setProperty('rate', self._rate_)
             engine.connect('started-utterance', self.__on_start__)
             engine.connect('started-word', self.__on_word__)

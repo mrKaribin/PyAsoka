@@ -43,7 +43,7 @@ class ObjectField:
         return self.value
 
     def load(self):
-        obj_id = self.object.id
+        obj_id = self.object._id_
         if obj_id is not None:
             database = self.object.scheme.database
             database.connect(self.object.scheme.profile)
@@ -51,7 +51,7 @@ class ObjectField:
             self.decode(data[self.column.name])
 
     def save(self):
-        obj_id = self.object.id
+        obj_id = self.object._id_
         if obj_id is not None:
             database = self.object.scheme.database
             database.connect(self.object.scheme.profile)
@@ -83,7 +83,7 @@ class ObjectOneToOne:
         return self.value
 
     def valueSetter(self, obj):
-        self.id = obj.id
+        self.id = obj._id_
         self.value = obj
         obj.save()
 
@@ -109,7 +109,7 @@ class ObjectOneToMany:
         database = scheme.database
 
         database.connect(scheme.profile)
-        data = database.query(f'SELECT * FROM {table.name} WHERE {self.column.name}=?;', [self.object.id])
+        data = database.query(f'SELECT * FROM {table.name} WHERE {self.column.name}=?;', [self.object._id_])
         result = []
         if data is not False:
             for row in data:
@@ -133,7 +133,7 @@ class ObjectManyToMany:
         database = scheme.database
 
         database.connect(scheme.profile)
-        data = database.query(f'SELECT * FROM {table.name} WHERE {self.column.name}=?;', [self.object.id])
+        data = database.query(f'SELECT * FROM {table.name} WHERE {self.column.name}=?;', [self.object._id_])
         if len(data) == 0:
             return []
 
@@ -164,4 +164,4 @@ class ObjectManyToMany:
 
         database.connect(scheme.profile)
         database.execute(f'INSERT INTO {table.name}({self.column.name}, {self.refColumn.name}) VALUES(?, ?);',
-                         [self.object.id, obj.id])
+                         [self.object._id_, obj._id_])

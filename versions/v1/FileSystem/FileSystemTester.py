@@ -16,5 +16,5 @@ class FileSystemTester:
         file.save()
         tag.load()
 
-        tag_link = TagLink(tag_id=tag.id(), obj_id=file.object().id())
+        tag_link = TagLink(tag_id=tag.id(), obj_id=file.object()._id_())
         tag_link.save()

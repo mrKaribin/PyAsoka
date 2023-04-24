@@ -53,7 +53,7 @@ class ModelTester(UnitTester):
         Talker(name='Александр', priority=1, chat=chat).save(),
         Talker(name='Ден', priority=1, chat=chat).save()
 
-        chat = Chat(id=chat.id)
+        chat = Chat(id=chat._id_)
         talkers = chat.talkerList()
         cond = True
         names = ['Демьян', 'Андрей', 'Александр', 'Ден']

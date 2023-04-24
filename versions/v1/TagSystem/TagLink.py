@@ -49,7 +49,7 @@ class TagLink(Model):
         obj_id = None
 
         if isinstance(file, File):
-            obj_id = file.object().id()
+            obj_id = file.object()._id_()
         elif isinstance(file, int):
             obj_id = file
         else:

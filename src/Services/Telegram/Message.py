@@ -1,3 +1,6 @@
+from PyAsoka.src.Services.Telegram.Chat import Chat
+from PyAsoka.src.Services.Telegram.User import User
+
 from pyrogram.types import Message as TMessage
 
 
@@ -14,11 +17,14 @@ class Message:
         return self._message_.text
 
     @property
-    def sender(self):
-        from PyAsoka.src.Services.Telegram.User import User
+    def sender(self) -> User:
         return User(self._message_.from_user)
 
     @property
-    def chat(self):
-        from PyAsoka.src.Services.Telegram.Chat import Chat
+    def chat(self) -> Chat:
         return Chat(self._message_.chat)
+
+    async def reply(self, text: str):
+        from PyAsoka.src.Services.Telegram.Telegram import Telegram
+        await Telegram.current().client.send_message(self.sender.id, text)
+        # await self._message_.reply(text, *args, **kwargs)

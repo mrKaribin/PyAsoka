@@ -97,15 +97,15 @@ def connect(event, connector, _type=None, call_type=None):
     if isinstance(event, Id):
         event_id = event
     elif isinstance(event, AEvent):
-        event_id = event.id
+        event_id = event._id_
 
     if isinstance(connector, Id):
         connector_id = connector
     elif isinstance(connector, AConnector):
-        connector_id = connector.id
+        connector_id = connector._id_
     elif callable(connector):
         connector = AConnector(connector, _type=_type, call_type=call_type)
-        connector_id = connector.id
+        connector_id = connector._id_
 
     process = AProcess.current_process
     if process.name != 'CoreProcess':
@@ -122,12 +122,12 @@ def disconnect(event, connector):
     if isinstance(event, Id):
         event_id = event
     elif isinstance(event, AEvent):
-        event_id = event.id
+        event_id = event._id_
 
     if isinstance(connector, Id):
         connector_id = connector
     elif isinstance(connector, AConnector):
-        connector_id = connector.id
+        connector_id = connector._id_
 
     process = AProcess.current_process
     if process.name != 'CoreProcess':

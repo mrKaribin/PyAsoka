@@ -46,14 +46,14 @@ class ObjectField:
         return self.value is None
 
     def load(self):
-        obj_id = self.object.id
+        obj_id = self.object._id_
         if obj_id is not None:
             self.database.connect(self.database.profile)
             data = self.database.query(f'SELECT {self.column.name} FROM {self.object.table.name} WHERE id=?', [obj_id])
             self.value = self.fromSql(data[self.column.name])
 
     def save(self):
-        obj_id = self.object.id
+        obj_id = self.object._id_
         if obj_id is not None:
             self.database.connect(self.database.profile)
             self.database.execute(f'UPDATE {self.object.table.name} SET {self.column.name}=? WHERE id=?;', [self.value, obj_id])
@@ -63,7 +63,7 @@ class ObjectReference(ObjectField):
     def __init__(self, obj, field: ReferenceField, value, value_id):
         super().__init__(obj, field, value)
         if value is not None and value_id is None:
-            value_id = value.id
+            value_id = value._id_
         self.id = value_id
         self.ref_class = field.ref_class
         self.ref_field = field.ref_field
@@ -72,7 +72,7 @@ class ObjectReference(ObjectField):
         super().set(obj, value)
 
         if value is not None:
-            self.id = value.id
+            self.id = value._id_
         else:
             self.id = None
 
@@ -102,13 +102,13 @@ class ObjectReference(ObjectField):
         return self.id
 
     def saveId(self):
-        obj_id = self.object.id
+        obj_id = self.object._id_
         if obj_id is not None:
             self.database.connect(self.database.profile)
             self.database.query(f'UPDATE {self.object.table.name} SET {self.column.name}=? WHERE id=?;', [self.id, obj_id])
 
     def loadId(self):
-        obj_id = self.object.id
+        obj_id = self.object._id_
         if obj_id is not None:
             self.database.connect(self.database.profile)
             data = self.database.query(f'SELECT {self.column.name} FROM {self.object.table.name} WHERE id=?', [obj_id])
