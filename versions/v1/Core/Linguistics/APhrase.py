@@ -23,6 +23,6 @@ class APhrase:
         return result.strip()
 
     def __contains__(self, item):
-        from PyAsoka.src.Linguistics.APhraseModel import APhraseModel
-        if isinstance(item, APhraseModel):
+        from PyAsoka.src.Linguistics.APhraseModel import PhraseModel
+        if isinstance(item, PhraseModel):
             pass  # ToDo

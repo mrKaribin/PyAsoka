@@ -67,22 +67,22 @@ def _wrap_phrase_(regex: str, phrases: list, str_ind: int = 0, fin_ind: int = -1
 
 
 def _parse_phrase_(regex: str, phrases: list = []):
-    from PyAsoka.src.Linguistics.APhraseModel import APhraseModel
+    from PyAsoka.src.Linguistics.PhraseModel import PhraseModel
     lng = len(regex)
     regex = regex[1:lng - 1]
 
     reg_type = regex[0]
     regex = regex[1:]
     if reg_type == 'L':
-        _type = APhraseModel.Type.LINEAR
+        _type = PhraseModel.Type.LINEAR
     elif reg_type == 'N':
-        _type = APhraseModel.Type.NON_LINEAR
+        _type = PhraseModel.Type.NON_LINEAR
     elif reg_type == 'C':
-        _type = APhraseModel.Type.CHOICE
+        _type = PhraseModel.Type.CHOICE
     else:
         exception_broken_regex(f'Неверный тип модели фразы ({reg_type})')
         return
-    model = APhraseModel(_type)
+    model = PhraseModel(_type)
 
     regex, phrases = _wrap_phrase_(regex, phrases)
 
@@ -99,7 +99,7 @@ def _parse_phrase_(regex: str, phrases: list = []):
 
 def _parse_word_(scheme: str):
     global analyzer
-    from PyAsoka.src.Linguistics.APhraseModel import AWordModel, Word, Noun, Verb
+    from PyAsoka.src.Linguistics.PhraseModel import AWordModel, Word, Noun, Verb
     if scheme.find('{') != -1:
         word, args = scheme.split('{')
     else:

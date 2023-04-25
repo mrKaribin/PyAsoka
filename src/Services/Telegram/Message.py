@@ -7,6 +7,7 @@ from pyrogram.types import Message as TMessage
 class Message:
     def __init__(self, message: TMessage):
         self._message_ = message
+        self._phrase_ = None
 
     @property
     def id(self):
@@ -17,14 +18,25 @@ class Message:
         return self._message_.text
 
     @property
-    def sender(self) -> User:
-        return User(self._message_.from_user)
+    def phrase(self):
+        if self.text is None:
+            return None
+        if self._phrase_ is None:
+            from PyAsoka.src.Core.Core import core
+            self._phrase_ = core().communication.recognition.parsePhrase(self.text)
+        return self._phrase_
+
+    @property
+    def sender(self) -> User | Chat | None:
+        if (user := self._message_.from_user) is not None:
+            return User(user)
+        else:
+            return None
 
     @property
     def chat(self) -> Chat:
         return Chat(self._message_.chat)
 
-    async def reply(self, text: str):
-        from PyAsoka.src.Services.Telegram.Telegram import Telegram
-        await Telegram.current().client.send_message(self.sender.id, text)
-        # await self._message_.reply(text, *args, **kwargs)
+    def reply(self, text: str):
+        from PyAsoka.src.Services.Telegram.Client import Client
+        return Client.current().sendMessage(self.sender.id, text)

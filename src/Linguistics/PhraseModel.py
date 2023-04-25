@@ -5,7 +5,7 @@ from PyAsoka.src.Linguistics.AWordModel import *
 from PyAsoka.src.Linguistics.Phrase import Phrase
 
 
-class APhraseModel:
+class PhraseModel:
     DEBUG = False
 
     class Type(Enum):
@@ -26,7 +26,7 @@ class APhraseModel:
         self.coincidences = []
 
     def add(self, component):
-        if isinstance(component, AWordModel) or isinstance(component, APhraseModel):
+        if isinstance(component, AWordModel) or isinstance(component, PhraseModel):
             self.components.append(component)
         return self
 
@@ -34,7 +34,7 @@ class APhraseModel:
         phrase = copy(_phrase)
         if isinstance(phrase, Phrase):
             self.coincidences = []
-            t = APhraseModel.Type
+            t = PhraseModel.Type
 
             if self.type == t.LINEAR:
                 shift = 0
@@ -42,7 +42,7 @@ class APhraseModel:
                     if i + shift < len(phrase.words):
                         if isinstance(self.components[i], AWordModel):
                             condition = self.components[i] == phrase.words[i + shift]
-                            if APhraseModel.DEBUG:
+                            if PhraseModel.DEBUG:
                                 print(f'Comparing {self.components[i].word} and {phrase.words[i + shift]}: {condition}')
                             if condition:
                                 if self.components[i].key:
@@ -51,7 +51,7 @@ class APhraseModel:
                             else:
                                 return False
 
-                        elif isinstance(self.components[i], APhraseModel):
+                        elif isinstance(self.components[i], PhraseModel):
                             interval = self.components[i].words_count()
                             if len(phrase.words) <= i + shift + interval:
                                 if self.components[i]._type_ in (t.OPTIONS, t.CHOICE):
@@ -61,7 +61,7 @@ class APhraseModel:
 
                             fragment = Phrase(phrase.words[i + shift: i + shift + interval])
                             condition = self.components[i] == fragment
-                            if APhraseModel.DEBUG:
+                            if PhraseModel.DEBUG:
                                 print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **self.components[i].keys}
@@ -80,7 +80,7 @@ class APhraseModel:
                     for i in range(len(phrase.words)):
                         if isinstance(component, AWordModel):
                             condition = component == phrase.words[i]
-                            if APhraseModel.DEBUG:
+                            if PhraseModel.DEBUG:
                                 print(f'Comparing {component.word} and {phrase.words[i]}: {condition}')
                             if condition:
                                 if component.key:
@@ -90,7 +90,7 @@ class APhraseModel:
                                 component_ok = True
                                 break
 
-                        elif isinstance(component, APhraseModel):
+                        elif isinstance(component, PhraseModel):
                             if length + i <= len(phrase.words):
                                 fragment = Phrase(phrase.words[i: i + length])
                             elif component.type in (t.CHOICE, t.OPTIONS):
@@ -99,7 +99,7 @@ class APhraseModel:
                                 return False
 
                             condition = component == fragment
-                            if APhraseModel.DEBUG:
+                            if PhraseModel.DEBUG:
                                 print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **component.keys}
@@ -118,7 +118,7 @@ class APhraseModel:
                     if isinstance(component, AWordModel):
                         for word in phrase.words:
                             condition = component == word
-                            if APhraseModel.DEBUG:
+                            if PhraseModel.DEBUG:
                                 print(f'Comparing {component.word} and {word}: {condition}')
                             if condition:
                                 if component.key:
@@ -126,7 +126,7 @@ class APhraseModel:
                                 self.coincidences.append(word)
                                 return True
 
-                    elif isinstance(component, APhraseModel):
+                    elif isinstance(component, PhraseModel):
                         length = component.words_count()
                         for i in range(len(phrase.words) - length + 1):
                             if length + i <= len(phrase.words):
@@ -137,7 +137,7 @@ class APhraseModel:
                                 return False
 
                             condition = component == fragment
-                            if APhraseModel.DEBUG:
+                            if PhraseModel.DEBUG:
                                 print(f'Comparing component and {[word.string for word in fragment.words]}: {condition}')
                             if condition:
                                 self.keys = {**self.keys, **component.keys}
@@ -146,7 +146,7 @@ class APhraseModel:
                 return False
 
         else:
-            super(APhraseModel, self).__eq__(_phrase)
+            super(PhraseModel, self).__eq__(_phrase)
             # raise ValueError(f'Не верный тип для сравнения с APhraseModel: {type(phrase)}')
 
     def __ne__(self, other):
@@ -159,20 +159,20 @@ class APhraseModel:
             raise ValueError(f'Не верный тип для поверки принадлежности с APhraseModel: {type(phrase)}')
 
     def words_count(self):
-        t = APhraseModel.Type
+        t = PhraseModel.Type
         count = 0
         if self.type in (t.LINEAR, t.NON_LINEAR, t.OPTIONS):
             for component in self.components:
                 if isinstance(component, AWordModel):
                     count += 1
-                elif isinstance(component, APhraseModel):
+                elif isinstance(component, PhraseModel):
                     count += component.words_count()
         elif self.type == t.CHOICE:
             for component in self.components:
                 top = 0
                 if isinstance(component, AWordModel):
                     top = 1
-                elif isinstance(component, APhraseModel):
+                elif isinstance(component, PhraseModel):
                     top = component.words_count()
                 if top > count:
                     count = top

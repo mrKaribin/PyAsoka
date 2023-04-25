@@ -1,4 +1,4 @@
-from PyAsoka.src.Linguistics.APhraseModel import APhraseModel
+from PyAsoka.src.Linguistics.PhraseModel import PhraseModel
 from PyAsoka.src.Logic.Action import FunctionAction
 from PyAsoka.src.Core.Object import Object, Signal
 from PyAsoka.src.Debug.Logs import Logs
@@ -14,7 +14,7 @@ class LogicParameter:
 class LogicFunction(Object):
     call = Signal(list, dict)
 
-    def __init__(self, model: APhraseModel, callback,
+    def __init__(self, model: PhraseModel, callback,
                  _type: FunctionAction.Type = FunctionAction.Type.MOMENTARY,
                  connection_type: Object.ConnectionType = Object.ConnectionType.AutoConnection):
         super().__init__()
@@ -26,10 +26,10 @@ class LogicFunction(Object):
 class LogicObject:
     ConnectionType = Object.ConnectionType
 
-    def __init__(self, object_model: APhraseModel | str, auto_enable=True):
+    def __init__(self, object_model: PhraseModel | str, auto_enable=True):
         if isinstance(object_model, str):
-            object_model = APhraseModel.parse(object_model)
-        elif isinstance(object_model, APhraseModel):
+            object_model = PhraseModel.parse(object_model)
+        elif isinstance(object_model, PhraseModel):
             pass
         else:
             Exceptions.UnsupportableType(type(object_model))
@@ -59,17 +59,17 @@ class LogicObject:
     def functions(self):
         return self._functions_
 
-    def addFunction(self, model: APhraseModel | str, function,
+    def addFunction(self, model: PhraseModel | str, function,
                     _type: FunctionAction.Type = FunctionAction.Type.MOMENTARY,
                     connection_type: Object.ConnectionType = Object.ConnectionType.AutoConnection):
         if isinstance(model, str):
-            model = APhraseModel.parse(model)
-        elif isinstance(model, APhraseModel):
+            model = PhraseModel.parse(model)
+        elif isinstance(model, PhraseModel):
             pass
         else:
             Exceptions.UnsupportableType(type(model))
 
-        model = APhraseModel(APhraseModel.Type.NON_LINEAR).add(self.model).add(model)
+        model = PhraseModel(PhraseModel.Type.NON_LINEAR).add(self.model).add(model)
         self._functions_.append(LogicFunction(model, function, _type, connection_type))
         return self
 

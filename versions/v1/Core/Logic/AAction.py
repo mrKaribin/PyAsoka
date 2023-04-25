@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 from PyAsoka.Connections.AConnector import AConnector, AEvent
-from PyAsoka.src.Linguistics.APhraseModel import APhraseModel
+from PyAsoka.src.Linguistics.APhraseModel import PhraseModel
 
 
 class AActionPrototype:
@@ -17,7 +17,7 @@ class AActionPrototype:
 
 
 class AFunctionAction(AActionPrototype):
-    def __init__(self, model: APhraseModel, function, _type=None, call_type=AConnector.CallbackType.DEFAULT):
+    def __init__(self, model: PhraseModel, function, _type=None, call_type=AConnector.CallbackType.DEFAULT):
         super().__init__()
         from PyAsoka.Core.ACore import AProcess, ProcessMessage, Headers
         if _type is None:
