@@ -38,6 +38,10 @@ class Colors:
         def focus():
             return Color(215, 110, 0)
 
+        @staticmethod
+        def blured():
+            return Color(0, 0, 0, 120)
+
     class Line:
         @staticmethod
         def default():

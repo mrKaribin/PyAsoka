@@ -3,6 +3,14 @@ from PyAsoka.src.GUI.Style.Colors import Colors, Color
 
 
 class Styles:
+    class Desktop(Style,
+                  background=Colors.Background.blured(),
+                  background_line=Colors.BackgroundLine.default(),
+                  frame=Colors.Frame.blured(),
+                  line=Colors.Line.default(),
+                  text=Colors.Text.default()):
+        pass
+
     class Window(Style,
                  background=Colors.Background.default(),
                  background_line=Colors.BackgroundLine.default(),

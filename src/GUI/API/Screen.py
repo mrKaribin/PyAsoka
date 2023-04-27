@@ -1,38 +1,38 @@
 from PySide6.QtCore import QSize, QPoint
-from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QScreen
+from PyAsoka.src.GUI.Application.Application import Application
 from PyAsoka.src.Debug.Logs import Logs
+from PyAsoka.src.Debug.Exceptions import Exceptions
 from PyAsoka.Asoka import Asoka
 
 import os
 
 
 class Screen:
-    def __init__(self, screen=0):
-        self.index = 0
+    def __init__(self, screen: QScreen):
+        self._screen_ = screen
 
-        if isinstance(screen, int):
-            self.index = screen
-        if isinstance(screen, QPoint):
-            screen = QApplication.screenAt(screen)
-            self.index = QApplication.screens().index(screen)
+    def __str__(self):
+        print(f'Size: {self.size}')
+        print(f'Aval size: {self.availableSize}')
+        print(f'Aval geometry: {self.geometry}')
+        print(f'Aval virt geometry: {self.availableGeometry}')
 
-    def information(self):
-        print(f'Size: {QApplication.screens()[self.index].size()}')
-        print(f'Aval size: {QApplication.screens()[self.index].availableSize()}')
-        print(f'Virt size: {QApplication.screens()[self.index].virtualSize()}')
-        print(f'Phys size: {QApplication.screens()[self.index].physicalSize()}')
-        print(f'Aval virt size: {QApplication.screens()[self.index].availableVirtualSize()}')
-        print(f'Aval geometry: {QApplication.screens()[self.index].availableGeometry()}')
-        print(f'Aval virt geometry: {QApplication.screens()[self.index].availableVirtualGeometry()}')
+    @property
+    def size(self):
+        return self._screen_.size()
 
-    def getSize(self):
-        return QApplication.screens()[self.index].size()
+    @property
+    def geometry(self):
+        return self._screen_.geometry()
 
-    def getAvailableSize(self):
-        return QApplication.screens()[self.index].availableSize()
+    @property
+    def availableSize(self):
+        return self._screen_.availableSize()
 
-    def getAvailableGeometry(self):
-        return QApplication.screens()[self.index].availableGeometry()
+    @property
+    def availableGeometry(self):
+        return self._screen_.availableGeometry()
 
     def enable(self):
         if Asoka.Device.getOS() == Asoka.Device.OS.WINDOWS:
@@ -53,4 +53,23 @@ class Screen:
             Logs.message('Display disabled')
         elif Asoka.Device.getOS() == Asoka.Device.OS.LINUX:
             os.system('sleep 1 && xset -display :0.0 dpms force off ')
+
+
+class Screens:
+    def __getitem__(self, item: int):
+        if isinstance(item, int):
+            if 0 <= item < len(Application.screens()):
+                return Screen(Application.screens()[item])
+            else:
+                raise Exceptions.ValueIsOutOfRange(item, -1, len(Application.screens()))
+        else:
+            raise Exceptions.UnsupportableType(item)
+
+    @property
+    def main(self):
+        return self[0]
+
+    @property
+    def length(self):
+        return len(Application.screens())
 

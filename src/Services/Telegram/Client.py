@@ -108,33 +108,33 @@ class Client(Object):
     def pipe(self):
         return self._pipe_
 
-    def haveSession(self):
+    def authorized(self):
         from os.path import exists
         return exists(Asoka.Project.Path.Home() + '\\telegram.session')
 
     def __auth_run__(self, phone):
+        asyncio.run(self.__auth_task__(phone))
+
+    async def __auth_task__(self, phone):
         from pyrogram import Client as TClient
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        client = TClient('telegram', self._id_, self._hash_)
-        client.connect()
-        code_info = client.send_code(phone)
+        client = TClient('telegram', self._id_, self._hash_, workdir=Asoka.Project.Path.Home())
+        await client.connect()
+        code_info = await client.send_code(phone)
         self._auth_hash_ = code_info.phone_code_hash
 
         while self._auth_code_ is None:
-            sleep(Asoka.defaultCycleDelay)
+            await asyncio.sleep(Asoka.defaultCycleDelay)
 
         print('Phone:', phone)
         print('Code hash:', self._auth_hash_)
         print('Code:', self._auth_code_)
-        result = client.sign_in(phone, self._auth_hash_, self._auth_code_)
+        result = await client.sign_in(phone, self._auth_hash_, self._auth_code_)
         print(type(result))
-        client.disconnect()
-
-        client.start()
-        client.stop()
+        await client.disconnect()
 
     def sendAuthCode(self, phone: str):
         self._auth_thread_ = Thread(target=self.__auth_run__, args=(phone,))

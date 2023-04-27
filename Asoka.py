@@ -105,7 +105,7 @@ class Asoka:
     def initialization(**args):
         if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
             from PyAsoka.src.Core.Core import Core
-            from PyAsoka.src.GUI.Application import Application
+            from PyAsoka.src.GUI.Application.Application import Application
 
             app = Application()
             core = Core(modules=args.get('core'))
@@ -132,7 +132,7 @@ class Asoka:
 
     @staticmethod
     def app():
-        from PyAsoka.src.GUI.Application import app
+        from PyAsoka.src.GUI.Application.Application import app
         return app()
 
     @staticmethod

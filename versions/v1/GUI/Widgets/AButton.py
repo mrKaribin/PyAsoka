@@ -6,7 +6,7 @@ from PyAsoka.GUI.Color import Color
 
 class AButton(ATextView):
     def __init__(self, text, **kwargs):
-        super(AButton, self).__init__(text, clickable=True, style=Styles.button(), round_size=10, **kwargs)
+        super(AButton, self).__init__(text, clickable=True, style=Styles.close(), round_size=10, **kwargs)
         self._click_animations_ = AnimationManager()
         self.setTextBold(True)
         self.clicked.bind(self.click_animation)

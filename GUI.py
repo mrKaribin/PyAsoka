@@ -2,7 +2,7 @@ from PyAsoka.src.GUI.Widget.Widget import Widget
 from PyAsoka.src.GUI.Widget.State import State
 from PyAsoka.src.GUI.Widget.Layer import Layer
 
-from PyAsoka.src.GUI.Application import Application
+from PyAsoka.src.GUI.Application.Application import Application
 from PyAsoka.src.Core.Core import Signal
 
 from PyAsoka.src.GUI.Animation.Animation import Animation
