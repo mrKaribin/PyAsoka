@@ -1,6 +1,7 @@
 from PyAsoka.src.GUI.Widget.Widget import Widget
 from PyAsoka.src.GUI.Widget.State import State
 from PyAsoka.src.GUI.Widget.Layer import Layer
+from PyAsoka.src.GUI.Widget.Props import Props
 
 from PyAsoka.src.GUI.Application.Application import Application
 from PyAsoka.src.Core.Core import Signal
@@ -25,5 +26,6 @@ from PyAsoka.src.GUI.Widgets.Button import Button
 from PyAsoka.src.GUI.Layouts.LinearLayout import LinearLayout
 
 from PySide6.QtCore import QRect, QSize, QPoint
+from PySide6.QtGui import QPainter, QPaintEvent
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout
 

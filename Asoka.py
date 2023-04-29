@@ -12,6 +12,7 @@ import platform
 
 
 class Asoka:
+    AspectRatio = Qt.AspectRatioMode
     Alignment = Qt.AlignmentFlag
     ConnectionType = Qt.ConnectionType
     TextFlag = Qt.TextFlag

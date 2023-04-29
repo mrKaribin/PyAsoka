@@ -1,5 +1,5 @@
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PyAsoka.GUI.Widgets.AVideo import AVideo
+from PyAsoka.src.GUI.Widgets.AVideo import AVideo
 from PyAsoka.src.Core.Signal import Signal
 
 

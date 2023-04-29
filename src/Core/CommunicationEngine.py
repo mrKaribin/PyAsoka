@@ -64,7 +64,7 @@ class CommunicationEngine(Object):
             Exceptions.UnsupportableType(arg)
             return
 
-        self.speech.say(phrase)
+        return self.speech.say(phrase)
 
     def run(self):
         while self._active_:

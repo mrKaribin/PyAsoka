@@ -1,15 +1,15 @@
-from PyAsoka.GUI.Widgets.AWidget import AWidget, Styles, QPaintEvent, QPoint, QSize, QRect, QPainter, QPen, QBrush, \
+from PyAsoka.src.GUI.Widget.Widget import Widget, Styles, QPaintEvent, QPoint, QSize, QRect, QPainter, QPen, QBrush, \
     Color, QResizeEvent
 from PyAsoka.src.GUI.Widgets.AIconView import AIconView
-from PyAsoka.GUI.Widgets.ATextView import ATextView
+from PyAsoka.src.GUI.Widgets.TextView import TextView
 from PyAsoka.src.Core.Signal import Signal
-import PyAsoka.Asoka as a
+from PyAsoka.Asoka import Asoka
 
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from PySide6.QtGui import QWheelEvent
 
 
-class VideoPanel(AWidget):
+class VideoPanel(Widget):
     def __init__(self, position=0, volume=0, **kwargs):
         super(VideoPanel, self).__init__(style=Styles._widget_(), **kwargs)
 
@@ -18,8 +18,8 @@ class VideoPanel(AWidget):
         self.enabled_height = 50
         self.volume = volume
         self.position = position
-        self.pause = AIconView(a.dir.images() + '/pause.png', parent=self, clickable=True)
-        self.vol = ATextView(f'{self.volume}%', parent=self)
+        self.pause = AIconView(Asoka.Project.Path.Asoka.Media.Images() + '\\pause.png', parent=self, clickable=True)
+        self.vol = TextView(f'{self.volume}%', parent=self)
 
         self.pause.setFixedSize(30, 30)
         self.vol.setFixedSize(50, 50)

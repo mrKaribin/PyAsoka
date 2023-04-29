@@ -33,7 +33,6 @@ class StyleMeta(ObjectMeta):
             )
 
         attrs['_colors_default_'] = colors_default
-        attrs['_colors_'] = {}
 
         return super().__new__(mcs, classname, bases, attrs)
 
@@ -41,6 +40,7 @@ class StyleMeta(ObjectMeta):
 class Style(Object, metaclass=StyleMeta):
     def __init__(self):
         super().__init__()
+        self._colors_ = {}
         for name, color in self._colors_default_.items():
             self._colors_[name] = ColorProperty(Color(color.red(), color.green(), color.blue(), color.alpha()))
 

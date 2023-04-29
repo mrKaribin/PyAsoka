@@ -1,8 +1,10 @@
-import cv2
-import numpy
-
 from copy import copy
 from PyAsoka.src.Graphics.ImageArray import ImageArray
+
+from skimage.metrics import structural_similarity
+
+import cv2
+import numpy
 
 
 class Mask(ImageArray):
@@ -41,6 +43,9 @@ class Mask(ImageArray):
             return Mask(self.data ^ other)
         else:
             raise Exception('Передан неверный тип данных')
+
+    def similarityWith(self, mask: 'Mask'):
+        return structural_similarity(self(), mask(), full=True)
 
     def copy(self):
         data = copy(self.data)
