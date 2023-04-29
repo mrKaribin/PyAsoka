@@ -115,12 +115,12 @@ class Capture:
         self.capture.release()
 
     @staticmethod
-    def loadCycledVideoFromYoutube(url, duration, resolution):
+    def loadCycledVideoFromYoutube(url, duration, resolution, suffix):
         from os import path, remove
         from subprocess import check_call
 
-        demo_name = 'demo.mp4'
-        cycled_name = 'cycled.mp4'
+        demo_name = f'demo.{suffix}'
+        cycled_name = f'cycled.{suffix}'
         if path.exists(demo_name):
             remove(demo_name)
         if path.exists(cycled_name):
