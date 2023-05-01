@@ -1,6 +1,5 @@
 from PyAsoka.src.Linguistics.Phrase import Phrase
 from PyAsoka.src.Linguistics.Word import Word
-from PyAsoka.Asoka import Asoka
 from vosk import Model, KaldiRecognizer
 
 from threading import Thread
@@ -11,7 +10,7 @@ import json
 
 
 class SpeechRecModel:
-    def __init__(self, path, lang: Asoka.Language):
+    def __init__(self, path, lang: 'Asoka.Language'):
         self.language = lang
         self._model_ = Model(path)
 
@@ -21,10 +20,11 @@ class SpeechRecModel:
 
 class SpeechRecognition:
     class Models:
-        PERFORMANCE = Asoka.Project.Path.Asoka.Models() + '/vosk-model-small-ru-0.22'
-        QUALITY = Asoka.Project.Path.Asoka.Models() + '/vosk-model-ru-0.42'
+        PERFORMANCE = 'PyAsoka/models/vosk-model-small-ru-0.22'
+        QUALITY = 'PyAsoka/models/vosk-model-ru-0.42'
 
     def __init__(self, model: SpeechRecModel = None):
+        from PyAsoka.Asoka import Asoka
         if model is None:
             path = self.Models.PERFORMANCE
             print(path)

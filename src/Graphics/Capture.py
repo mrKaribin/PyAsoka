@@ -194,7 +194,7 @@ class Capture:
         capture.release()
 
         capture = Capture(demo_name)
-        output = cv2.VideoWriter(cycled_name, cv2.VideoWriter_fourcc(*'MP4V'), fps, res)
+        output = cv2.VideoWriter(cycled_name, cv2.VideoWriter_fourcc('V', 'P', '9', '0'), fps, res)
         print('Writing fragment...')
 
         count = 0

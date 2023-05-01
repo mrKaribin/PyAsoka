@@ -6,7 +6,6 @@ from PyAsoka.src.Instruments.Timepoint import Timepoint
 from PyAsoka.src.Core.Signal import Signal, Qt
 from PyAsoka.src.Core.Object import Object
 from PyAsoka.src.Debug.Logs import Logs
-from PyAsoka.Asoka import Asoka
 
 from threading import Thread
 import time
@@ -53,6 +52,7 @@ class ClientSocket(Socket):
         return self._connected_
 
     def waitForConnection(self):
+        from PyAsoka.Asoka import Asoka
         while not self.connected:
             time.sleep(Asoka.defaultCycleDelay)
 
@@ -108,6 +108,7 @@ class ClientSocket(Socket):
         self._readThread_.start()
 
     def __listen_server__(self):
+        from PyAsoka.Asoka import Asoka
         while True:
             message = self.readFromConnection(self)
 
@@ -137,6 +138,7 @@ class ClientSocket(Socket):
             time.sleep(Asoka.defaultCycleDelay)
 
     def generateRequestKey(self):
+        from PyAsoka.Asoka import Asoka
         ok = False
         key = ''
         while not ok:
@@ -159,6 +161,7 @@ class ClientSocket(Socket):
         self._listeners_[header] = Listener(header, callback)
 
     def request(self, header: str, data: dict = None, reply_header: str = None) -> SocketMessage:
+        from PyAsoka.Asoka import Asoka
         if reply_header is None:
             reply_header = header + 'Reply'
         if data is None:

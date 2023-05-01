@@ -1,5 +1,3 @@
-from PyAsoka.Asoka import Asoka
-
 import json
 
 
@@ -32,6 +30,7 @@ class DeviceCard:
 
     @staticmethod
     def fromThisDevice():
+        from PyAsoka.Asoka import Asoka
         return DeviceCard(
             Asoka.Device.name,
             Asoka.Device.type,

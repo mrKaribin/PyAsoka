@@ -69,11 +69,11 @@ class LinearLayout(Layout):
             else:
                 self.formalSize = newSize
 
-        print('Widget:', self.widget, 'stretch:', (self.stretch.x, self.stretch.y))
-        print('Content size: ', self.contentSize)
-        print('Available size: ', self.availableSize)
-        print('New size: ', newSize)
-        print('')
+        # print('Widget:', self.widget, 'stretch:', (self.stretch.x, self.stretch.y))
+        # print('Content size: ', self.contentSize)
+        # print('Available size: ', self.availableSize)
+        # print('New size: ', newSize)
+        # print('')
 
         # Рассчет координат дочерних виджетов
         for item in self.items:

@@ -46,7 +46,8 @@ class LayerManager(Object):
 
     def __layer_disabled__(self, layer):
         active = self._active_.lock()
-        active.pop(active.index(layer))
+        if layer in active:
+            active.pop(active.index(layer))
         self._active_.unlock()
 
     def paint(self, painter, event):

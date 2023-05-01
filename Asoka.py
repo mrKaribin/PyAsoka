@@ -4,6 +4,9 @@ from PyAsoka.src.Asoka.Project import Project
 from PyAsoka.src.Asoka.Variables import Variables
 from PyAsoka.src.Asoka.Generate import Generate
 
+from PyAsoka.src.Core.Core import Core, core
+from PyAsoka.src.GUI.Application.Application import Application, app
+
 from PySide6.QtCore import Qt
 from cryptography.fernet import Fernet
 from enum import Enum, IntEnum
@@ -12,6 +15,7 @@ import platform
 
 
 class Asoka:
+    TransformationMode = Qt.TransformationMode
     AspectRatio = Qt.AspectRatioMode
     Alignment = Qt.AlignmentFlag
     ConnectionType = Qt.ConnectionType
@@ -101,17 +105,16 @@ class Asoka:
 
     defaultPassword = 'topsecretpassword'
     defaultCycleDelay = 0.05
+    _core_: Core = None
+    _app_: 'Application' = None
 
     @staticmethod
     def initialization(**args):
         if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
-            from PyAsoka.src.Core.Core import Core
-            from PyAsoka.src.GUI.Application.Application import Application
+            global Core
 
-            app = Application()
-            core = Core(modules=args.get('core'))
-
-            return core, app
+            Asoka._app_ = Application()
+            Asoka._core_ = Core(modules=args.get('core'))
         else:
             from PyAsoka.src.Server.Core import Core
 
@@ -123,7 +126,7 @@ class Asoka:
             return core
 
     @staticmethod
-    def core():
+    def core() -> Core:
         if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
             from PyAsoka.src.Core.Core import core
             return core()
@@ -132,8 +135,7 @@ class Asoka:
             return core()
 
     @staticmethod
-    def app():
-        from PyAsoka.src.GUI.Application.Application import app
+    def app() -> Application:
         return app()
 
     @staticmethod

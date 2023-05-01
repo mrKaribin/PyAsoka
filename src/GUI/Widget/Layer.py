@@ -49,15 +49,15 @@ class Layer(Object, metaclass=LayerMeta):
         if duration is None or duration == 0:
             self.alpha = 1.0
         else:
-            self.animation = Animation(self, b'alpha', 0.0, 1.0, 500)
+            self.animation = Animation(self, b'alpha', 0.0, 1.0, duration)
             self.animation.start()
         self.enabled.emit(self)
 
     def disable(self):
         self.disabled.emit(self)
 
-    def disappearance(self):
-        animation = Animation(self, b'alpha', self.alpha, 0.0, 300)
+    def disappearance(self, duration: int = 300):
+        animation = Animation(self, b'alpha', self.alpha, 0.0, duration)
         animation.finished.connect(self.disable)
         self.animation = animation
         animation.start()

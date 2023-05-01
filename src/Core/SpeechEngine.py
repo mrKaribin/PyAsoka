@@ -1,5 +1,4 @@
 from PyAsoka.src.Core.Object import Object, Signal
-from PyAsoka.Asoka import Asoka
 from threading import Thread
 
 import random
@@ -112,6 +111,7 @@ class SpeechEngine(Object):
         self._cancel_ = True
 
     def run(self):
+        from PyAsoka.Asoka import Asoka
         pythoncom.CoInitializeEx(0)
         while True:
             engine = pyttsx3.init()

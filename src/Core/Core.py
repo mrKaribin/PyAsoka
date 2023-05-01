@@ -1,4 +1,3 @@
-from PyAsoka.Asoka import Asoka
 from PyAsoka.Debug import Logs
 from PyAsoka.src.Core.Object import Object, Signal
 from PyAsoka.src.Core.User import UsersManager
@@ -151,6 +150,7 @@ class Core(Object):
                 self._client_ = ClientSocket(host, port)
 
     def initialization(self):
+        from PyAsoka.Asoka import Asoka
         for obj in Core.Initialization._objects_:
             self._objects_.add(obj)
 
@@ -161,6 +161,7 @@ class Core(Object):
         self.initialized.emit()
 
     def waitForReady(self):
+        from PyAsoka.Asoka import Asoka
         while self._state_ != Core.State.READY:
             time.sleep(Asoka.defaultCycleDelay)
 
@@ -180,6 +181,7 @@ class Core(Object):
         return _id, _name
 
     def run(self):
+        from PyAsoka.Asoka import Asoka
         self.initialization()
         while True:
             time.sleep(Asoka.defaultCycleDelay)

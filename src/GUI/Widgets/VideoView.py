@@ -77,7 +77,8 @@ class VideoView(Widget):
                     h, w, ch = frame.shape
                     bytesPerLine = ch * w
                     image = QImage(frame, w, h, bytesPerLine, QImage.Format.Format_RGB888)
-                    image = image.scaled(self.width(), self.height(), Asoka.AspectRatio.KeepAspectRatio)
+                    image = image.scaled(self.width(), self.height(), Asoka.AspectRatio.KeepAspectRatio,
+                                         Asoka.TransformationMode.SmoothTransformation)
                     self.frameChanged.emit(image)
                     # self.runGuiTask(self.repaint)
                     del frame

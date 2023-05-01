@@ -3,7 +3,6 @@ from PyAsoka.src.Core.Object import Object, Signal
 from PyAsoka.src.Core.SpeechEngine import SpeechEngine, Phrase
 from PyAsoka.src.Core.SpeechRecognition import SpeechRecognition
 from PyAsoka.src.Core.ConversationEngine import ConversationEngine
-from PyAsoka.Asoka import Asoka
 from threading import Timer, Thread
 
 import time
@@ -67,6 +66,7 @@ class CommunicationEngine(Object):
         return self.speech.say(phrase)
 
     def run(self):
+        from PyAsoka.Asoka import Asoka
         while self._active_:
             if self._listening_:
                 phrase = self.recognition.listen()

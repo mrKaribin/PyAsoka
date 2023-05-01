@@ -1,5 +1,4 @@
 from PyAsoka.src.Network.Socket.Message import SocketMessage
-from PyAsoka.Asoka import Asoka
 
 import socket
 
@@ -46,6 +45,7 @@ class Socket:
         self.socket.sendall(SocketMessage(header, json).encode(self.getSecret()))
 
     def getSecret(self):
+        from PyAsoka.Asoka import Asoka
         return Asoka.Project.secret if self.secret is None else self.secret
 
     def createKey(self):
@@ -61,6 +61,7 @@ class Socket:
 
     @staticmethod
     def readFromConnection(connection, key=None):
+        from PyAsoka.Asoka import Asoka
         if isinstance(connection, Socket):
             if key is None:
                 key = connection.getSecret()

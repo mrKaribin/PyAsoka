@@ -1,9 +1,13 @@
+from PyAsoka.src.Core.Object import Object, Signal
 from PySide6.QtCore import QPoint
 from pynput.mouse import Controller, Listener
 
 
-class Mouse:
+class Mouse(Object):
+    clicked = Signal(QPoint)
+
     def __init__(self):
+        super().__init__()
         self.position = QPoint()
         self.click = QPoint()
         self.scroll = QPoint()
@@ -22,6 +26,7 @@ class Mouse:
     def on_click(self, x, y, button, pressed):
         self.click.x = x
         self.click.y = y
+        self.clicked.emit(QPoint(x, y))
 
     def on_scroll(self, x, y, dx, dy):
         self.scroll.x = x
