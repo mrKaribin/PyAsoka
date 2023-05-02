@@ -61,9 +61,14 @@ class SleepScreen(Object):
         from PyAsoka.src.GUI.API.API import API
         if self._enabled_:
             self._enabled_ = False
+            animation = None
+
             for desktop in self.manager.desktops.values():
                 animation = desktop.layers.video.disappearance(500)
-            animation.finished.connect(self.__stop_video__)
+            if animation is not None:
+                animation.finished.connect(self.__stop_video__)
+            else:
+                self.__stop_video__()
 
             API.Mouse.clicked.disconnect(self.disable)
 
@@ -102,8 +107,12 @@ class Overlay:
     logic = LogicObject('[N рабочий стол]')
 
     def __init__(self, manager: 'ScreenManager'):
+        from PyAsoka.src.GUI.API.API import API
+        Symbol, Key = API.Keyboard.Symbol, API.Keyboard.Key
+
         self._manager_ = manager
         self._enabled_ = False
+        self._shortcut_ = API.Keyboard.createShortcut([Key.cmd, Symbol('o')], self.__shortcut_handle__)
 
         self.logic.addFunction('[C включить]', self.enable, LogicObject.ConnectionType.QueuedConnection)
         self.logic.addFunction('[C выключить]', self.disable, LogicObject.ConnectionType.QueuedConnection)
@@ -116,17 +125,23 @@ class Overlay:
     def enabled(self):
         return self._enabled_
 
+    def __shortcut_handle__(self):
+        if self.enabled:
+            self.disable()
+        else:
+            self.enable()
+
     def enable(self, logic=None):
-        if not self._enabled_:
+        if not self.enabled:
             self._enabled_ = True
             for desktop in self.manager.desktops.values():
-                desktop.layers.background.enable(300)
+                desktop.layers.overlay.enable(300)
 
     def disable(self, logic=None):
-        if self._enabled_:
+        if self.enabled:
             self._enabled_ = False
             for desktop in self.manager.desktops.values():
-                desktop.layers.background.disappearance(300)
+                desktop.layers.overlay.disappearance(300)
 
 
 class ScreenManager:
@@ -141,7 +156,7 @@ class ScreenManager:
         for i in range(API.Screens.length):
             screen = API.Screens[i]
             desktop = Desktop(self, screen)
-            desktop.layers.background.disable()
+            # desktop.layers.background.disable()
             self.sleepScreen.frameChanged.connect(desktop.__sleep_frame_handle__)
             self._desktops_[i] = desktop
             desktop.show()
@@ -157,3 +172,6 @@ class ScreenManager:
     @property
     def desktops(self):
         return self._desktops_
+
+    def setPrimalWindow(self, window):
+        pass
