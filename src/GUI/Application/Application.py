@@ -1,14 +1,15 @@
-from PySide6.QtWidgets import QApplication
 from PyAsoka.src.GUI.Application.ScreenManager import ScreenManager
+
+from PySide6.QtWidgets import QApplication
 
 
 class Application(QApplication):
     _current_ = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, screen_manager: type(ScreenManager), *args, **kwargs):
         super().__init__(*args, **kwargs)
         Application._current_ = self
-        self._manager_ = ScreenManager()
+        self._manager_ = screen_manager()
 
     @property
     def manager(self):

@@ -113,7 +113,7 @@ class Asoka:
         if Asoka.Project.type in (Asoka.Project.Type.CLIENT, Asoka.Project.Type.LOCAL_SERVER):
             global Core
 
-            Asoka._app_ = Application()
+            Asoka._app_ = Application(args.get('screen_manager'))
             Asoka._core_ = Core(modules=args.get('core'))
         else:
             from PyAsoka.src.Server.Core import Core
