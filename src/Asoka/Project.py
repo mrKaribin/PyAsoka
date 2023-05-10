@@ -66,6 +66,7 @@ class Project:
             ICONS = '\\icons'
             IMAGES = '\\images'
             VIDEOS = '\\videos'
+            SOUNDS = '\\sounds'
 
             @staticmethod
             def Icons():
@@ -81,3 +82,8 @@ class Project:
             def Videos():
                 Path = Project.Path
                 return Path.HOME + Path.MEDIA + Path.Media.VIDEOS
+
+            @staticmethod
+            def Sounds():
+                Path = Project.Path
+                return Path.HOME + Path.MEDIA + Path.Media.SOUNDS

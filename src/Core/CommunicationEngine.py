@@ -23,11 +23,10 @@ class CommunicationEngine(Object):
         if not isinstance(self._conversation_, ConversationEngine):
             raise Exception('CommunicationEngine: класс-управляющий беседы не унаследован от ConversationEngine')
 
-        self.speech.speaking.connect(self.conversation.spokePhrase)
-        self.recognized.connect(self.conversation.recognizedPhrase)
-
-        self.thread = Thread(target=self.run)
-        self.thread.start()
+        self.speech.speakingFinished.connect(self.conversation.spokePhrase)
+        self.speech.speakingStarted.connect(self.recognition.stopListening)
+        self.speech.speakingFinished.connect(self.recognition.startListening)
+        self.recognition.recognized.connect(self.conversation.recognizedPhrase)
 
     @property
     def user(self):
@@ -64,17 +63,3 @@ class CommunicationEngine(Object):
             return
 
         return self.speech.say(phrase)
-
-    def run(self):
-        from PyAsoka.Asoka import Asoka
-        while self._active_:
-            if self._listening_:
-                phrase = self.recognition.listen()
-                self.recognized.emit(phrase)
-            time.sleep(Asoka.defaultCycleDelay)
-
-    def listeningStart(self):
-        self._listening_ = True
-
-    def listeningStop(self):
-        self._listening_ = False

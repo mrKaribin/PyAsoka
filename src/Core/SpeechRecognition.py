@@ -1,5 +1,6 @@
 from PyAsoka.src.Linguistics.Phrase import Phrase
 from PyAsoka.src.Linguistics.Word import Word
+from PyAsoka.src.Core.Object import Object, Signal
 from vosk import Model, KaldiRecognizer
 
 from threading import Thread
@@ -7,6 +8,7 @@ from threading import Thread
 import pyaudio
 import pymorphy2
 import json
+import time
 
 
 class SpeechRecModel:
@@ -18,43 +20,74 @@ class SpeechRecModel:
         return self._model_
 
 
-class SpeechRecognition:
+class SpeechRecognition(Object):
+    recognized = Signal(Phrase)
+
     class Models:
         PERFORMANCE = 'PyAsoka/models/vosk-model-small-ru-0.22'
         QUALITY = 'PyAsoka/models/vosk-model-ru-0.42'
 
     def __init__(self, model: SpeechRecModel = None):
+        super().__init__()
         from PyAsoka.Asoka import Asoka
         if model is None:
             path = self.Models.PERFORMANCE
             print(path)
             model = SpeechRecModel(path, Asoka.Language.RUSSIAN)
+        self._listening_ = True
         self.chunk = 8000
         self.rate = 16000
         self.model = model
         self.rec = KaldiRecognizer(self.model(), self.rate)
-        self.stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=1,
-                                             rate=self.rate, input=True, frames_per_buffer=8000)
+        self.stream = None
         self.analyzer = None
         self.ready = False
+
         self.loaderThread = Thread(target=self.loadAnalyzer)
         self.loaderThread.start()
+        self._listening_thread_ = Thread(target=self.listen)
+        self._listening_thread_.start()
 
     def loadAnalyzer(self):
         self.analyzer = pymorphy2.MorphAnalyzer()
         self.ready = True
 
-    def listen(self):
-        while True:
-            data = self.stream.read(self.chunk, exception_on_overflow=True)
+    def startListening(self):
+        self._listening_ = True
 
-            if self.rec.AcceptWaveform(data) and len(data) > 0:
-                answer = json.loads(self.rec.Result())
-                if answer["text"]:
-                    phrase = self.parsePhrase(answer['text'])
-                    # print('Recognized: ', phrase.text())
-                    return phrase
+    def stopListening(self):
+        self._listening_ = False
+
+    def listen(self):
+        from PyAsoka.Asoka import Asoka
+        while not self.ready:
+            time.sleep(Asoka.defaultCycleDelay)
+
+        while True:
+            if self._listening_:
+                self.stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=1,
+                                                     rate=self.rate, input=True, frames_per_buffer=8000)
                 self.rec = KaldiRecognizer(self.model(), self.rate)
+                print('listening')
+
+                while True:
+                    if not self._listening_:
+                        print('not listening')
+                        self.stream.close()
+                        # self.rec = None
+                        break
+
+                    data = self.stream.read(self.chunk, exception_on_overflow=True)
+
+                    if self._listening_ and self.rec.AcceptWaveform(data) and len(data) > 0:
+                        answer = json.loads(self.rec.Result())
+                        if answer["text"]:
+                            phrase = self.parsePhrase(answer['text'])
+                            # print('Recognized: ', phrase.text())
+                            self.recognized.emit(phrase)
+                        self.rec = KaldiRecognizer(self.model(), self.rate)
+            else:
+                time.sleep(Asoka.defaultCycleDelay)
 
     def parsePhrase(self, text: str):
         phrase = Phrase()
