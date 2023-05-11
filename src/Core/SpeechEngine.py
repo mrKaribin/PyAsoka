@@ -106,13 +106,11 @@ class SpeechEngine(Object):
 
     class Voices:
         BAYA = 'baya'
-        TATYANA = 'Tatiana'
-        IVONA = 'IVONA 2 Tatyana OEM'
-        KATYA = 'VE_Russian_Katya_22kHz'
+        XENIA = 'xenia'
 
-    def __init__(self, name=Voices.BAYA):
+    def __init__(self, name=Voices.XENIA):
         super().__init__()
-        self._voice_name_ = SpeechEngine.Voices.BAYA
+        self._voice_name_ = name
         self._rate_ = 100
         self._current_ = None
         self._cancel_ = False
@@ -170,8 +168,10 @@ class SpeechEngine(Object):
 
     def tts_run(self):
         from PyAsoka.Asoka import Asoka
+        from PyAsoka.src.Instruments.Stopwatch import Stopwatch
         while True:
             if (phrase := self.phrases.popUnprocessed()) is not False and phrase.soundPath is None:
+                timer = Stopwatch().start()
                 path = Asoka.Project.Path.Asoka.Models() + '\\model.pt'
                 self._model_ = torch.package.PackageImporter(path).load_pickle("tts_models", "model")
                 self.model.to(torch.device('cpu'))
@@ -187,6 +187,7 @@ class SpeechEngine(Object):
                         break
                 os.replace(Asoka.Project.Path.Home() + '\\test.wav', filepath)
                 phrase.soundPath = filepath
+                print(f'Silero TTS model work duration: {timer.finish():.3}s')
 
             time.sleep(Asoka.defaultCycleDelay)
 

@@ -68,13 +68,12 @@ class SpeechRecognition(Object):
                 self.stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=1,
                                                      rate=self.rate, input=True, frames_per_buffer=8000)
                 self.rec = KaldiRecognizer(self.model(), self.rate)
-                print('listening')
+                # print('listening')
 
                 while True:
                     if not self._listening_:
-                        print('not listening')
+                        # print('not listening')
                         self.stream.close()
-                        # self.rec = None
                         break
 
                     data = self.stream.read(self.chunk, exception_on_overflow=True)
@@ -92,7 +91,6 @@ class SpeechRecognition(Object):
     def parsePhrase(self, text: str):
         phrase = Phrase()
         all_sym, words = self.splitText(text)
-        # words = text.split(' ')
         for word in words:
             params = self.analyzer.parse(word)
             params = params[0]

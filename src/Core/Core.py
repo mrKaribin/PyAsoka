@@ -38,7 +38,7 @@ class Core(Object):
         @staticmethod
         def Speach(name, voice=None, conversation_engine=None):
             if voice is None:
-                voice = SpeechEngine.Voices.IVONA
+                voice = SpeechEngine.Voices.XENIA
             if conversation_engine is None:
                 from PyAsoka.src.Core.ConversationEngine import ConversationEngine
                 conversation_engine = ConversationEngine

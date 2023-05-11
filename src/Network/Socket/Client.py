@@ -5,6 +5,7 @@ from PyAsoka.src.Network.DeviceCard import DeviceCard
 from PyAsoka.src.Instruments.Timepoint import Timepoint
 from PyAsoka.src.Core.Signal import Signal, Qt
 from PyAsoka.src.Core.Object import Object
+from PyAsoka.src.Debug.Exceptions import Exceptions
 from PyAsoka.src.Debug.Logs import Logs
 
 from threading import Thread
@@ -19,6 +20,53 @@ class Listener(Object):
         self.header = header
         self.callback = callback
         self.detected.connect(callback, Qt.ConnectionType.QueuedConnection)
+
+
+class Request(Object):
+    replied = Signal(SocketMessage)
+
+    def __init__(self, request_header, request_key, timepoint):
+        super().__init__()
+        self._header_ = request_header
+        self._key_ = request_key
+        self._time_ = timepoint
+        self._reply_state_ = False
+        self._reply_ = None
+
+    @property
+    def header(self):
+        return self._header_
+
+    @property
+    def key(self):
+        return self._key_
+
+    @property
+    def reply(self) -> SocketMessage | None:
+        return self._reply_
+
+    @reply.setter
+    def reply(self, data: SocketMessage):
+        if isinstance(data, SocketMessage):
+            self._reply_ = data
+            self.replied.emit(data)
+        else:
+            raise Exceptions.UnsupportableType(data)
+
+    def haveReply(self):
+        return self._reply_state_
+
+    def waitForReply(self):
+        from PyAsoka.Asoka import Asoka
+        while not self.haveReply():
+            time.sleep(Asoka.defaultCycleDelay)
+
+    def toDict(self):
+        return {
+            'header': self._header_,
+            'key': self._key_,
+            'time': self._time_
+        }
 
 
 class Events(Object):
@@ -59,8 +107,6 @@ class ClientSocket(Socket):
     def isInternetConnected(self):
         from socket import create_connection
         try:
-            # connect to the host -- tells us if the host is actually
-            # reachable
             create_connection(("1.1.1.1", 53))
             return True
         except OSError:
@@ -131,7 +177,8 @@ class ClientSocket(Socket):
                     listener.callback(self.socket, message)
                     Logs.message(f'Получено сообщение с заголовком <{message.header}>')
                 elif request is not None:
-                    request['reply'] = message
+                    request.reply = message
+                    self._requests_.remove(request)
                 else:
                     Logs.warning(f'Не распознан заголовок <{message.header}>')
 
@@ -147,39 +194,29 @@ class ClientSocket(Socket):
                 if request['key'] == key:
                     continue
             ok = True
+            time.sleep(Asoka.defaultCycleDelay)
         return key
 
     def findRequest(self, message: SocketMessage):
         if message.isRequest():
             key = message.json['request']['key']
             for request in self._requests_:
-                if request['header'] == message.header and request['key'] == key:
+                if request.header == message.header and request.key == key:
                     return request
         return None
 
     def addListener(self, header, callback):
         self._listeners_[header] = Listener(header, callback)
 
-    def request(self, header: str, data: dict = None, reply_header: str = None) -> SocketMessage:
-        from PyAsoka.Asoka import Asoka
+    def request(self, header: str, data: dict = None, reply_header: str = None) -> Request:
         if reply_header is None:
             reply_header = header + 'Reply'
         if data is None:
             data = {}
 
-        request = {
-            'header': reply_header,
-            'key': self.generateRequestKey(),
-            'time': Timepoint.now().toDict()
-        }
-        data['request'] = request
+        request = Request(reply_header, self.generateRequestKey(), Timepoint.now().toDict())
+        data['request'] = request.toDict()
         self.send(header, data)
 
-        request['reply'] = False
         self._requests_.append(request)
-
-        while not request['reply']:
-            time.sleep(Asoka.defaultCycleDelay)
-
-        self._requests_.remove(request)
-        return request['reply']
+        return request
