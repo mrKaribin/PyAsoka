@@ -1,18 +1,17 @@
 from PyAsoka.src.Linguistics.Phrase import Phrase
 from PyAsoka.src.Linguistics.Word import Word
 from PyAsoka.src.Core.Object import Object, Signal
-from vosk import Model, KaldiRecognizer
 
 from threading import Thread
 
 import pyaudio
-import pymorphy2
 import json
 import time
 
 
 class SpeechRecModel:
     def __init__(self, path, lang: 'Asoka.Language'):
+        from vosk import Model
         self.language = lang
         self._model_ = Model(path)
 
@@ -38,7 +37,7 @@ class SpeechRecognition(Object):
         self.chunk = 8000
         self.rate = 16000
         self.model = model
-        self.rec = KaldiRecognizer(self.model(), self.rate)
+        self.rec = None
         self.stream = None
         self.analyzer = None
         self.ready = False
@@ -49,7 +48,11 @@ class SpeechRecognition(Object):
         self._listening_thread_.start()
 
     def loadAnalyzer(self):
-        self.analyzer = pymorphy2.MorphAnalyzer()
+        from vosk import KaldiRecognizer
+        from pymorphy2 import MorphAnalyzer
+
+        self.rec = KaldiRecognizer(self.model(), self.rate)
+        self.analyzer = MorphAnalyzer()
         self.ready = True
 
     def startListening(self):
@@ -60,6 +63,8 @@ class SpeechRecognition(Object):
 
     def listen(self):
         from PyAsoka.Asoka import Asoka
+        from vosk import KaldiRecognizer
+
         while not self.ready:
             time.sleep(Asoka.defaultCycleDelay)
 

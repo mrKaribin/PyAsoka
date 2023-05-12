@@ -5,7 +5,6 @@ from threading import Thread
 from enum import IntEnum
 
 import time
-import torch
 import pyaudio
 import wave
 import os
@@ -169,12 +168,14 @@ class SpeechEngine(Object):
     def tts_run(self):
         from PyAsoka.Asoka import Asoka
         from PyAsoka.src.Instruments.Stopwatch import Stopwatch
+        from torch import package as torch_package, device as torch_device
+
         while True:
             if (phrase := self.phrases.popUnprocessed()) is not False and phrase.soundPath is None:
                 timer = Stopwatch().start()
                 path = Asoka.Project.Path.Asoka.Models() + '\\model.pt'
-                self._model_ = torch.package.PackageImporter(path).load_pickle("tts_models", "model")
-                self.model.to(torch.device('cpu'))
+                self._model_ = torch_package.PackageImporter(path).load_pickle("tts_models", "model")
+                self.model.to(torch_device('cpu'))
                 self.model.save_wav(text=phrase.text,
                                     speaker=self._voice_name_,
                                     sample_rate=48000)

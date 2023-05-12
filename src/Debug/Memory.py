@@ -23,7 +23,7 @@ class Memory:
 
     @staticmethod
     def getObjectSize(obj, to_type: Units = Units.BYTES, accuracy=None):
-        BLACKLIST = type, ModuleType, FunctionType
+        BLACKLIST = ModuleType, FunctionType
         """sum size of object & members."""
         if isinstance(obj, BLACKLIST):
             raise TypeError('getsize() does not take argument of type: ' + str(type(obj)))

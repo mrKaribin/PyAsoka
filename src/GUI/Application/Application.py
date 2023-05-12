@@ -8,6 +8,9 @@ class Application(QApplication):
 
     def __init__(self, screen_manager: type(ScreenManager), *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if screen_manager is None:
+            screen_manager = ScreenManager
+
         Application._current_ = self
         self._manager_ = screen_manager()
 

@@ -78,24 +78,9 @@ class Asoka:
         def incorrect(self):
             return not self._ok_
 
-    class Modules:
-        class Users:
-            active = False
-
-            @staticmethod
-            def enable():
-                Asoka.Modules.Users.active = True
-
-        class Speach:
-            active = False
-            voice = ''
-            name = ''
-
-            @staticmethod
-            def enable(name, voice=None):
-                Asoka.Modules.Speach.active = True
-                Asoka.Modules.Speach.name = name
-                Asoka.Modules.Speach.voice = voice
+    class Async:
+        maxThreads = 4
+        maxProcesses = 4
 
     Databases = Databases()
     Variables = Variables
@@ -107,6 +92,30 @@ class Asoka:
     defaultCycleDelay = 0.05
     _core_: Core = None
     _app_: 'Application' = None
+
+    @staticmethod
+    def getStaticMemoryStatistic(globs, locs):
+        from types import ModuleType, FunctionType
+        from PyAsoka.src.Debug.Memory import Memory
+
+        total = 0
+        print('Globals:')
+        for name, value in globs.items():
+            BLACKLIST = ModuleType, FunctionType
+            if not isinstance(value, BLACKLIST):
+                size = Memory.getObjectSize(value, Memory.Units.MEGABYTES, 2)
+                print(f'{name} size: {size} Mb')
+                total += size
+
+        print('Locals:')
+        for name, value in locs.items():
+            BLACKLIST = ModuleType, FunctionType
+            if not isinstance(value, BLACKLIST):
+                size = Memory.getObjectSize(value, Memory.Units.MEGABYTES, 2)
+                print(f'{name} size: {size} Mb')
+                total += size
+
+        print(f'Total size: {total:.3} Mb')
 
     @staticmethod
     def initialization(**args):
