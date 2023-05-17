@@ -12,8 +12,8 @@ class TextView(TextWidget):
         if 'style' not in kwargs.keys():
             kwargs['style'] = Styles.Widget
 
-        super().__init__(flags=Asoka.Alignment.AlignLeft | Asoka.TextFlag.TextSingleLine,
-                         visualization=TextWidget.Visualization.DEFAULT, single_line=True, editable=False, **kwargs)
+        super().__init__(flags=(Asoka.Alignment.AlignLeft, Asoka.TextFlag.TextSingleLine),
+                         visualization=TextWidget.Visualization.DEFAULT, editable=False, **kwargs)
 
         self.text.string = text
 

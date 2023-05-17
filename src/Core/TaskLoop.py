@@ -8,7 +8,7 @@ from threading import Thread
 
 class Headers:
     NEW_TASK = 'NewTask'
-    TASK_COMPLETE = 'TaskComplete'
+    TASK_COMPLETED = 'TaskComplete'
     TASK_UPDATED = 'TaskUpdated'
     TASKS_COUNT = 'TasksCount'
 
@@ -92,7 +92,7 @@ class TaskLoop:
         return self._connection_
 
     @property
-    def tasks(self) -> list[ TaskInstance ]:
+    def tasks(self) -> list[TaskInstance]:
         return self._tasks_
 
     def start(self):
@@ -103,6 +103,9 @@ class TaskLoop:
         return ProcessInstance(self._process_, connection)
 
     def loop(self):
+        from time import sleep
+        from PyAsoka.Asoka import Asoka
+
         while True:
             if self.connection.poll():
                 message = self.connection.recv()
@@ -111,15 +114,31 @@ class TaskLoop:
 
                 if message.header == Headers.NEW_TASK:
                     task: 'AsyncTask' = message.data['task']
+                    task.setUpdateCallback(self.taskUpdated)
+                    task.setCompleteCallback(self.taskCompleted)
                     thread = Thread(target=task.run)
                     instance = TaskInstance(message.data['id'], task, thread)
-                    self._tasks_.append(instance)
+                    self.tasks.append(instance)
                     thread.start()
+                    self.updateTasksNumber()
 
-            for task in self.tasks:
-                while len(task.updates) > 0:
-                    args, kwargs = task.updates.pop(0)
-                    self.connection.send(ProcessMessage(Headers.TASK_UPDATED, {'args': args, 'kwargs': kwargs}))
+            for task in list(self.tasks):
+                if isinstance(task, TaskInstance):
+                    if not task.thread.is_alive():
+                        task.thread.join()
+                        self.tasks.remove(task)
+                        self.updateTasksNumber()
+
+            sleep(Asoka.defaultCycleDelay)
+
+    def updateTasksNumber(self):
+        self.connection.send(ProcessMessage(Headers.TASKS_COUNT, {'number': len(self.tasks)}))
+
+    def taskUpdated(self, _id, args, kwargs):
+        self.connection.send(ProcessMessage(Headers.TASK_UPDATED, {'id': _id, 'args': args, 'kwargs': kwargs}))
+
+    def taskCompleted(self, _id, args, kwargs):
+        self.connection.send(ProcessMessage(Headers.TASK_COMPLETED, {'id': _id, 'args': args, 'kwargs': kwargs}))
 
 
 

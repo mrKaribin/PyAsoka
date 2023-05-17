@@ -12,13 +12,6 @@ from PySide6.QtGui import QKeyEvent, QKeySequence, QFontMetrics
 from enum import IntEnum
 
 
-class CursorPosition:
-    def __init__(self, paragraph: int, line: int, symbol: int):
-        self.paragraph = paragraph
-        self.line = line
-        self.symbol = symbol
-
-
 class Indent:
     def __init__(self, left, right, top, bottom):
         self.left = left
@@ -30,122 +23,49 @@ class Indent:
 class TextCursor:
     def __init__(self, text_props):
         self._text_ = text_props
-        self._position_ = CursorPosition(0, 0, 0)
+        self._position_ = 0
         self._geometry_ = QRect(0, 0, 0, 0)
 
     @property
-    def text(self):
+    def text(self) -> 'TextProperties':
         return self._text_
 
     @property
-    def position(self) -> CursorPosition:
+    def position(self) -> int:
         return self._position_
 
     @position.setter
-    def position(self, paragraph: int = None, line: int = None, symbol: int = None):
-        if paragraph is None:
-            paragraph = self.position.paragraph
-        if line is None:
-            line = self.position.line
-        if symbol is None:
-            symbol = self.position.symbol
-
-        if isinstance(paragraph, int) and isinstance(line, int) and isinstance(symbol, int):
-            if 0 <= paragraph <= len(self._text_.para):
-                self._position_.paragraph = paragraph
-                self._position_.line = line
-                self._position_.symbol = symbol
+    def position(self, position: int):
+        if isinstance(position, int):
+            if 0 <= position <= len(self.text.string):
+                self._position_ = position
         else:
-            Exceptions.UnsupportableType(paragraph, line, symbol)
+            Exceptions.UnsupportableType(position)
 
     def isMin(self):
-        return self.position.paragraph == 0 and self.position.line == 0 and self.position.symbol == 0
+        return self.position == 0
 
     def isMax(self):
-        return self.position.paragraph == len(self.text.paragraphs) - 1 and \
-            self.position.line == len(self.text.paragraphs[self.position.line]) - 1 and \
-            self.position.symbol == len(self.currentLine())
-
-    def print(self):
-        print(self.position.paragraph, self.position.line, self.position.symbol)
-
-    def currentLine(self):
-        return self.text.paragraphs[self.position.paragraph][self.position.line]
-
-    def currentParagraph(self):
-        return self.text.paragraphs[self.position.paragraph]
+        return self.position == len(self.text.string)
 
     def insert(self, text: str):
         if isinstance(text, str):
-            line = self.currentLine()
-            line = line[:self.position.symbol] + text + line[self.position.symbol:]
-            self.text.paragraphs[self.position.paragraph][self.position.line] = line
+            self.text.string = self.text.string[:self.position] + text + self.text.string[self.position:]
             self.move(len(text))
         else:
             Exceptions.UnsupportableType(text)
 
     def backspace(self):
-        if self.position.symbol > 0:
-            line = self.currentLine()
-            line = line[:self.position.symbol - 1] + line[self.position.symbol:]
-            self.text.paragraphs[self.position.paragraph][self.position.line] = line
-            self.move(-1)
-        else:
-            if self.position.line > 0:
-                self.position.line -= 1
-                self.position.symbol = len(self.currentLine())
-                self.backspace()
-            else:
-                if self.position.paragraph > 0:
-                    self.position.paragraph -= 1
-                    self.text.paragraphs.pop(self.position.paragraph + 1)
-                    self.position.line = len(self.currentParagraph()) - 1
-                    self.position.symbol = len(self.currentLine())
-                    self.backspace()
-                else:
-                    return
+        if not self.text.isEmpty():
+            self.text.string = self.text.string[:self.position - 1] + self.text.string[self.position:]
+            self.text.cursor.move(-1)
 
     def delete(self):
-        if self.position.symbol < len(self.currentLine()):
-            line = self.currentLine()
-            line = line[:self.position.symbol] + line[self.position.symbol + 1:]
-            self.text.paragraphs[self.position.paragraph][self.position.line] = line
+        pass
 
     def move(self, value: int):
         if isinstance(value, int):
-            line = self.currentLine()
-            if self.position.symbol + value > len(line):
-                if self.position.line + 1 < len(self.currentParagraph()):
-                    value = value - (len(line) - self.position.symbol)
-                    self.position.symbol = 0
-                    self.position.line += 1
-                    self.move(value)
-                    return
-                elif self.position.paragraph + 1 < len(self.text.paragraphs):
-                    value = value - (len(line) - self.position.symbol)
-                    self.position.symbol = 0
-                    self.position.line = 0
-                    self.position.paragraph += 1
-                    self.move(value)
-                else:
-                    self.position.symbol = len(line)
-            elif self.position.symbol + value < 0:
-                if self.position.line > 0:
-                    value = value - self.position.symbol
-                    self.position.line -= 1
-                    self.position.symbol = len(self.currentLine())
-                    self.move(value)
-                elif self.position.paragraph > 0:
-                    value = value - self.position.symbol
-                    self.position.paragraph -= 1
-                    self.position.line = len(self.text.paragraphs[self.position.paragraph]) - 1
-                    self.position.symbol = len(self.currentLine())
-                    self.move(value)
-                else:
-                    self.position.symbol = 0
-            else:
-                self.position.symbol += value
-
+            self.position = self.position + value
         else:
             Exceptions.UnsupportableType(value)
 
@@ -155,15 +75,7 @@ class TextCursor:
         cursor = text.cursor
         metric = QFontMetrics(text.font)
         vertIndent = (widget.height() - metric.height()) // 2
-        # rect = QRect(text.indent, vertIndent, metric.boundingRect(text.string).width(), widget.height() - vertIndent * 2)
-        if text.wordWrap:
-            pass
-        else:
-            leftWidth = metric.boundingRect(text.cursor.currentLine()[:cursor.position.symbol]).width()
-            if leftWidth - text.shift.width() + text.indent.left * 2 > widget.width():
-                text.shift.setWidth(leftWidth - widget.width() + text.indent.left * 2)
-            elif leftWidth < text.shift.width():
-                text.shift.setWidth(leftWidth)
+
         widget.repaint()
 
 
@@ -172,27 +84,51 @@ class TextProperties:
         DEFAULT = 1
         SECRET = 2
 
+    class TextFlags:
+        def __init__(self):
+            self._flags_: list[Asoka.TextFlag] = []
+
+        def __call__(self):
+            value = 0
+            for flag in self._flags_:
+                value = value | flag
+            return value
+
+        def add(self, flag: Asoka.TextFlag):
+            if not self.exists(flag):
+                self._flags_.append(flag)
+            return self
+
+        def remove(self, flag: Asoka.TextFlag):
+            if self.exists(flag):
+                self._flags_.remove(flag)
+            return self
+
+        def exists(self, flag: Asoka.TextFlag):
+            return flag is self._flags_
+
     def __init__(self, widget: Widget,
                  label: str = '',
-                 flags=Asoka.Alignment.AlignLeft | Asoka.TextFlag.TextSingleLine,
+                 flags=(Asoka.Alignment.AlignLeft, Asoka.TextFlag.TextSingleLine),
                  font: Font = None,
                  visualization: Visualization = Visualization.DEFAULT,
-                 single_line: bool = False,
                  indent: tuple = (10, 10, 10, 10)):
         if font is None:
             font = Font("Times", 10, Font.Weight.Normal, False)
 
         self._widget_ = widget
-        self._paragraphs_ = [['']]
         self._label_ = label
-        self._flags_ = flags
+        self._string_ = ''
+        self._flags_ = TextProperties.TextFlags()
         self._font_ = font
         self._indent_ = Indent(*indent)
         self._cursor_ = TextCursor(self)
         self._visualization_ = visualization
-        self._single_line_ = single_line
         self._word_wrap_ = False
         self._shift_ = QSize(0, 0)
+
+        for flag in flags:
+            self.flags.add(flag)
 
     @property
     def widget(self):
@@ -203,53 +139,20 @@ class TextProperties:
         return self._label_
 
     @property
+    def flags(self):
+        return self._flags_
+
+    @property
     def string(self):
-        string = ''
-        for i in range(len(self.paragraphs)):
-            if i >= 1:
-                string += '\n'
-            for j in range(len(self.paragraphs[i])):
-                string += self.paragraphs[i][j]
-        return string
+        return self._string_
 
     @string.setter
     def string(self, string: str):
         if isinstance(string, str):
-            metric = QFontMetrics(self.font)
-            paragraphs = []
-            pre_lines = string.split('\n')
-            for pre_line in pre_lines:
-                paragraph = []
-                if self.wordWrap:
-                    width = metric.boundingRect(pre_line).width()
-                    if width > self.widget.width():
-                        sub_line = ''
-                        words = pre_line.split(pre_line)
-                        for word in words:
-                            sub_line += word
-                            width = metric.boundingRect(sub_line).width()
-                            if width > self.widget.width():
-                                paragraph.append(str(sub_line))
-                                sub_line = ''
-                        if sub_line != '':
-                            paragraph.append(str(sub_line))
-                else:
-                    paragraph.append(pre_line)
-                paragraphs.append(paragraph)
-            self._paragraphs_ = paragraphs
-
-            lastPar = paragraphs[len(paragraphs) - 1]
-            lastLineSize = lastPar[len(lastPar) - 1]
-            self.cursor.position = (len(paragraphs) - 1, len(lastPar) - 1, len(lastLineSize) - 1)
-
-            # self._string_ = string
-            # self.cursor.position = len(string)
+            self._string_ = string
+            self.widget.repaint()
         else:
             Exceptions.UnsupportableType(string)
-
-    @property
-    def paragraphs(self):
-        return self._paragraphs_
 
     @property
     def visualization(self):
@@ -283,7 +186,17 @@ class TextProperties:
 
     @property
     def singleLine(self):
-        return self._single_line_
+        return self.flags.exists(Asoka.TextFlag.TextSingleLine)
+
+    @singleLine.setter
+    def singleLine(self, state: bool):
+        if isinstance(state, bool):
+            if state:
+                self.flags.add(Asoka.TextFlag.TextSingleLine)
+            else:
+                self.flags.remove(Asoka.TextFlag.TextSingleLine)
+        else:
+            raise Exceptions.UnsupportableType(state)
 
     @property
     def wordWrap(self):
@@ -301,25 +214,20 @@ class TextProperties:
         return self._shift_
 
     def isEmpty(self):
-        return self.paragraphs == [['']]
+        return self.string == ''
 
     def updateGeometry(self, string):
         metric = QFontMetrics(self.font)
 
     def format(self):
         if self.visualization == self.Visualization.DEFAULT:
-            return self.paragraphs
+            return self.string
         elif self.visualization == self.Visualization.SECRET:
-            paragraphs = []
-            for paragraph in self.paragraphs:
-                par = []
-                for line in paragraph:
-                    ln = ''
-                    for sym in line:
-                        ln += '*'
-                    par.append(ln)
-                paragraphs.append(par)
-            return paragraphs
+            result = self.string
+            for sym in result:
+                if sym != '\n':
+                    sym = '*'
+            return result
 
 
 class TextWidget(Widget):
@@ -344,7 +252,7 @@ class TextWidget(Widget):
             kwargs['min_size'] = (100, 35)
 
         super().__init__(**kwargs)
-        self._text_ = TextProperties(self, label, flags, font, visualization, single_line, indent)
+        self._text_ = TextProperties(self, label, flags, font, visualization, indent)
         if text_bold is not None:
             self.text.font.setBold(text_bold)
         if text_size is not None:
@@ -409,35 +317,33 @@ class TextWidget(Widget):
             cursor = text.cursor
             font = text.font
             metric = QFontMetrics(font)
-            # string = text.format()
             label = text.label
             painter.setCompositionMode(painter.CompositionMode.CompositionMode_SourceOver)
 
             if not text.isEmpty():
                 y = widget.text.indent.top
-                for paragraph in widget.text.format():
-                    for line in paragraph:
-                        met = metric.boundingRect(line)
-                        painter.setPen(widget.style.current.text)
-                        rect = QRect(text.indent.left - text.shift.width(), y,
-                                     met.width(), met.height())
-                        painter.setFont(font)
-                        painter.drawText(rect, text._flags_, line)
-                        y += widget.text.indent.top // 2
-                    y += widget.text.indent.top // 2
+                string = text.format()
+                met = metric.boundingRect(string)
+                painter.setPen(widget.style.current.text)
+                rect = QRect(text.indent.left - text.shift.width(), y,
+                             met.width() + 2, met.height())
+                painter.setFont(font)
+                painter.drawText(rect, text.flags(), string)
+                y += widget.text.indent.top // 2
             elif label != '':
                 painter.setPen(Color(255, 255, 255, 80))
                 met = metric.boundingRect(label)
-                rect = QRect(text.indent.left, text.indent.top, met.width(), met.height())
+                rect = QRect(text.indent.left, text.indent.top, met.width() + 2, met.height())
                 painter.setFont(font)
-                # print(rect, text._flags_, label)
-                painter.drawText(rect, text._flags_, label)
+                painter.drawText(rect, text.flags(), label)
 
             if widget.editable and widget.hasFocus():
                 painter.setPen(Color(255, 255, 0, 255))
                 if not text.isEmpty():
-                    fragment = text.format()[cursor.position.paragraph][cursor.position.line][:cursor.position.symbol]
+                    print(text.format(), cursor.position)
+                    fragment = text.format()[:cursor.position]
                     met = metric.boundingRect(fragment)
+
                     posX, height = text.indent.left + met.width() + 1, met.height()
                 else:
                     fragment = 'text'

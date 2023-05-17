@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication
 class Application(QApplication):
     _current_ = None
 
-    def __init__(self, screen_manager: type(ScreenManager), *args, **kwargs):
+    def __init__(self, screen_manager: type(ScreenManager) = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if screen_manager is None:
             screen_manager = ScreenManager

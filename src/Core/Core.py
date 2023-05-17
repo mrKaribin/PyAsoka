@@ -8,45 +8,9 @@ from PyAsoka.src.Linguistics import APhraseModelParser as Model
 from PyAsoka.src.Network.Socket.Client import ClientSocket
 
 from threading import Thread
-from multiprocessing import Process
 
 from enum import IntEnum
 import time
-
-
-def testProcess():
-    from time import sleep
-
-    def memorySize():
-        from types import ModuleType, FunctionType
-        from PyAsoka.src.Debug.Memory import Memory
-
-        total = 0
-        print('Globals:')
-        for name, value in globals().items():
-            BLACKLIST = ModuleType, FunctionType
-            if not isinstance(value, BLACKLIST):
-                size = Memory.getObjectSize(value, Memory.Units.MEGABYTES, 2)
-                print(f'{name} size: {size} Mb')
-                total += size
-
-        print('Locals:')
-        for name, value in locals().items():
-            BLACKLIST = ModuleType, FunctionType
-            if not isinstance(value, BLACKLIST):
-                size = Memory.getObjectSize(value, Memory.Units.MEGABYTES, 2)
-                print(f'{name} size: {size} Mb')
-                total += size
-
-        print(f'Total size: {total:.3} Mb')
-
-    sec = 0
-    while True:
-        # print(f'Секунд прошло {sec}')
-        if sec == 5:
-            memorySize()
-        sleep(1)
-        sec += 1
 
 
 class Core(Object):
@@ -202,9 +166,6 @@ class Core(Object):
                 time.sleep(Asoka.defaultCycleDelay)
         self._state_ = Core.State.READY
         self.initialized.emit()
-
-        self.process = Process(target=testProcess)
-        self.process.start()
 
     def waitForReady(self):
         from PyAsoka.Asoka import Asoka

@@ -26,7 +26,7 @@ class LineEdit(TextWidget):
         else:
             visualization = LineEdit.Visualization.DEFAULT
 
-        super().__init__(flags=Asoka.Alignment.AlignLeft | Asoka.TextFlag.TextSingleLine,
+        super().__init__(flags=(Asoka.Alignment.AlignLeft, Asoka.TextFlag.TextSingleLine),
                          visualization=visualization, label=label, single_line=True, editable=True, **kwargs)
         self._type_ = type
         # self.text.font.setPointSize(self.height() // 3)
