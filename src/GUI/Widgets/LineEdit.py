@@ -1,15 +1,12 @@
-from PyAsoka.src.GUI.Widget.Widget import Widget, QPainter, Props, QPaintEvent, QRect
 from PyAsoka.src.GUI.Widgets.IconView import IconView
-from PyAsoka.src.GUI.Widgets.TextWidget import TextWidget, QFontMetrics
-from PyAsoka.src.GUI.Widget.State import State
-from PyAsoka.src.GUI.Widget.Layer import Layer
+from PyAsoka.src.GUI.Widgets.SimpleTextWidget.SimpleTextWidget import SimpleTextWidget, QFontMetrics
 from PyAsoka.src.GUI.Style.Styles import Styles
 from PyAsoka.Asoka import Asoka
 
 from enum import IntEnum
 
 
-class LineEdit(TextWidget):
+class LineEdit(SimpleTextWidget):
     class Type(IntEnum):
         DEFAULT = 1
         PASSWORD = 2
@@ -27,7 +24,7 @@ class LineEdit(TextWidget):
             visualization = LineEdit.Visualization.DEFAULT
 
         super().__init__(flags=(Asoka.Alignment.AlignLeft, Asoka.TextFlag.TextSingleLine),
-                         visualization=visualization, label=label, single_line=True, editable=True, **kwargs)
+                         visualization=visualization, label=label, editable=True, **kwargs)
         self._type_ = type
         # self.text.font.setPointSize(self.height() // 3)
 

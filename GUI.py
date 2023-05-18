@@ -20,6 +20,7 @@ from PyAsoka.src.GUI.Style.Color import Color
 
 from PyAsoka.src.GUI.Widgets.TextView import TextView
 from PyAsoka.src.GUI.Widgets.LineEdit import LineEdit
+from PyAsoka.src.GUI.Widgets.TextEdit import TextEdit
 from PyAsoka.src.GUI.Widgets.ImageView import ImageView
 from PyAsoka.src.GUI.Widgets.Button import Button
 
