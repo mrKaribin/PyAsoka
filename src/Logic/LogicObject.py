@@ -26,7 +26,7 @@ class LogicFunction(Object):
 class LogicObject:
     ConnectionType = Object.ConnectionType
 
-    def __init__(self, object_model: PhraseModel | str, auto_enable=True):
+    def __init__(self, object_model: PhraseModel | str, auto_enable=True, parent: 'LogicObject' = None):
         if isinstance(object_model, str):
             object_model = PhraseModel.parse(object_model)
         elif isinstance(object_model, PhraseModel):
@@ -34,9 +34,11 @@ class LogicObject:
         else:
             Exceptions.UnsupportableType(type(object_model))
 
+        self._parent_ = parent
         self._active_ = False
         self._model_ = object_model
         self._functions_ = []
+        self._objects_ = []
 
         if auto_enable:
             from PyAsoka.src.Core.Core import core, Core
@@ -46,6 +48,9 @@ class LogicObject:
             else:
                 self.enable()
 
+    @property
+    def parent(self):
+        return self._parent_
 
     @property
     def active(self):
@@ -72,6 +77,10 @@ class LogicObject:
         model = PhraseModel(PhraseModel.Type.NON_LINEAR).add(self.model).add(model)
         self._functions_.append(LogicFunction(model, function, _type, connection_type))
         return self
+
+    def addObject(self, _object: 'LogicObject'):
+        _object._parent_ = self
+        self._objects_.append(_object)
 
     def enable(self):
         from PyAsoka.src.Core.Core import core
